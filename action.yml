@@ -58,6 +58,9 @@ runs:
     - name: "Run Atmos Component Updater"
       shell: bash
       run: |
+        echo "${{ github.workspace }}"
+        ls -l
+        pwd
         cd ${{ github.workspace }}/github-action-atmos-component-updater
         python src/main.py \
           --github-api-token ${{ inputs.token }} \
