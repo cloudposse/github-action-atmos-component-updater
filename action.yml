@@ -66,7 +66,7 @@ runs:
         cd ${{ github.action_path }}
         python src/main.py \
           --github-api-token ${{ inputs.token }} \
-          --components-version $TERRAFORM_AWS_COMPONENTS_LATEST_TAG \
+          --components-version ${{ env.TERRAFORM_AWS_COMPONENTS_LATEST_TAG }} \
           --infra-repo-name ${{ inputs.infra-repo-name }} \
           --infra-repo-dir ${{ inputs.infra-repo-dir }} \
           --log-level DEBUG
