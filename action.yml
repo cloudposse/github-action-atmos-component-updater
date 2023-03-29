@@ -35,9 +35,7 @@ runs:
     - name: "Install Python Dependencies"
       shell: bash
       run: |
-        echo "${{ github.action_path }}"
         cd ${{ github.action_path }}
-        ls -l
         pip install -r src/requirements.txt
 
     - if: ${{ inputs.desired-components-version == '' }}
@@ -65,9 +63,7 @@ runs:
     - name: "Run Atmos Component Updater"
       shell: bash
       run: |
-        echo "${{ github.action_path }}"
         cd ${{ github.action_path }}
-        ls -l
         python src/main.py \
           --github-api-token ${{ inputs.token }} \
           --components-version $TERRAFORM_AWS_COMPONENTS_LATEST_TAG \
