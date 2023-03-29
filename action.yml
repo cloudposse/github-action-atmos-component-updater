@@ -30,6 +30,7 @@ runs:
         python-version: '3.10'
 
     - name: "Install Python Dependencies"
+      shell: bash
       run: |
         pip install -r src/requirements.txt
 
@@ -43,6 +44,7 @@ runs:
 
     - if: ${{ inputs.desired-components-version == '' }}
       name: "Get latest tag for cloudposse/terraform-aws-components"
+      shell: bash
       run: |
         cd tmp/terraform-aws-components
         TERRAFORM_AWS_COMPONENTS_LATEST_TAG=$(git describe --tags --abbrev=0)
@@ -50,12 +52,14 @@ runs:
 
     - if: ${{ inputs.desired-components-version != '' }}
       name: "Set desired component version"
+      shell: bash
       run: |
         echo "TERRAFORM_AWS_COMPONENTS_LATEST_TAG=${{ inputs.desired-components-version }}" >> "$GITHUB_ENV"
 
     - name: "Run Atmos Component Updater"
+      shell: bash
       run: |
-        python \
+        python src/main.py \
           --github-api-token ${{ inputs.token }} \
           --components-version $TERRAFORM_AWS_COMPONENTS_LATEST_TAG \
           --infra-repo-name ${{ inputs.infra-repo-name }} \
