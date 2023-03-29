@@ -5,19 +5,24 @@ branding:
   icon: 'server'
   color: 'white'
 inputs:
-  param1:
+  token:
     required: true
-    description: "Input parameter placeholder"
-    default: "true"
-outputs:
-  result1:
-    description: "Output result placeholder"
-    value: "${{ steps.context.outputs.action-result }}"
+    description: "Private Access Token"
 runs:
   using: "composite"
   steps:
-    - id: context
-      shell: bash
-      run: |
-          echo "::set-output name=action-result::${{ inputs.param1 }}"
+    - name: "Checkout Repository"
+      uses: actions/checkout@v3
 
+    - name: "Setup Python"
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: "Install Python Dependencies"
+      run: |
+        pip install -r src/requirements.txt
+
+    - name: "Test"
+      run: |
+        echo "test"
