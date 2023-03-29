@@ -21,6 +21,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: "Setup Terraform"
+      uses: hashicorp/setup-terraform@v2
+
+    - name: "Setup Atmos"
+      uses: cloudposse/setup-atmos@v1
+
     - name: "Setup Python"
       uses: actions/setup-python@v4
       with:
