@@ -46,7 +46,7 @@ class ComponentUpdater:
 
         for rendered_file in rendered_component_files:
             # skip "component.yaml" or ends with .md
-            if rendered_file == COMPONENT_YAML or rendered_file.endswith('.md'):
+            if rendered_file.endswith(COMPONENT_YAML) or rendered_file.endswith('.md'):
                 continue
 
             relative_path = os.path.relpath(rendered_file, rendered_component.get_infra_repo_dir())
