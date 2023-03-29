@@ -29,8 +29,9 @@ runs:
     - name: "Install Python Dependencies"
       shell: bash
       run: |
+        echo "${{ github.action_path }}"
+        cd ${{ github.action_path }}
         ls -l
-        pwd
         pip install -r src/requirements.txt
 
     - if: ${{ inputs.desired-components-version == '' }}
