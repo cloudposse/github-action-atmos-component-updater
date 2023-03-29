@@ -32,6 +32,8 @@ runs:
     - name: "Install Python Dependencies"
       shell: bash
       run: |
+        ls -l
+        pwd
         pip install -r src/requirements.txt
 
     - if: ${{ inputs.desired-components-version == '' }}
