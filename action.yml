@@ -1,8 +1,8 @@
-name: 'Example composite GitHub action'
-description: 'Example composite GitHub action'
+name: 'GitHub Action Atmos Component Updater'
+description: 'GitHub Action Atmos Component Updater'
 author: hello@cloudposse.com
 branding:
-  icon: 'file'
+  icon: 'server'
   color: 'white'
 inputs:
   param1:
