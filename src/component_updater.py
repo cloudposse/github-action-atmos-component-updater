@@ -111,9 +111,9 @@ class ComponentUpdater:
 
         for opened_pr in opened_prs:
             if opened_pr.number != pr.number:
-                closing_message = f"Closing in favor of PR {pr.number}"
+                closing_message = f"Closing in favor of PR #{pr.number}"
                 self.__github_provider.close_pr(opened_pr, closing_message)
-                logging.info(f"Closed pr {opened_pr.number} in favor of {pr.number}")
+                logging.info(f"Closed pr {opened_pr.number} in favor of #{pr.number}")
 
     def __execute_atmos_vendor_pull(self, infra_dir, component_name):
         response = subprocess.run(["atmos", "vendor", "pull", "-c", component_name],

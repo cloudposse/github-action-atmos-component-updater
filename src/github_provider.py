@@ -54,4 +54,5 @@ class GitHubProvider:
         return open_prs
 
     def close_pr(self, pr: PullRequest, message: str):
-        pr.edit(state='closed', body=message)
+        pr.edit(state='closed')
+        pr.create_comment(message)
