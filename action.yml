@@ -21,9 +21,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: "Checkout Repository"
-      uses: actions/checkout@v3
-
     - name: "Setup Python"
       uses: actions/setup-python@v4
       with:
@@ -61,6 +58,7 @@ runs:
     - name: "Run Atmos Component Updater"
       shell: bash
       run: |
+        cd ${{ github.workspace }}/github-action-atmos-component-updater
         python src/main.py \
           --github-api-token ${{ inputs.token }} \
           --components-version $TERRAFORM_AWS_COMPONENTS_LATEST_TAG \
