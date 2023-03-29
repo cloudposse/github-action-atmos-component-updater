@@ -25,7 +25,7 @@ runs:
       uses: hashicorp/setup-terraform@v2
 
     - name: "Setup Atmos"
-      uses: cloudposse/github-action-setup-atmos@v1
+      uses: cloudposse/github-action-setup-atmos@v1.0.0
 
     - name: "Setup Python"
       uses: actions/setup-python@v4
