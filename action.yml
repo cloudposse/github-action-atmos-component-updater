@@ -7,7 +7,17 @@ branding:
 inputs:
   token:
     required: true
-    description: "Private Access Token"
+    description: "GitHub Private Access Token"
+  desired-components-version:
+    required: false
+    description: "Desired Components Version. If not set it gets latest tag from cloudposse/terraform-aws-components repo"
+    default: ''
+  infra-repo-name:
+    required: true
+    description: "Infrastructure repository name"
+  infra-repo-dir:
+    required: true
+    description: "Infrastructure repository directory"
 runs:
   using: "composite"
   steps:
@@ -23,6 +33,31 @@ runs:
       run: |
         pip install -r src/requirements.txt
 
-    - name: "Test"
+    - if: ${{ inputs.desired-components-version == '' }}
+      name: "Checkout 'terraform-aws-components' Repository"
+      uses: actions/checkout@v3
+      with:
+        repository: cloudposse/terraform-aws-components
+        path: tmp/terraform-aws-components
+        fetch-depth: 0
+
+    - if: ${{ inputs.desired-components-version == '' }}
+      name: "Get latest tag for cloudposse/terraform-aws-components"
       run: |
-        echo "test"
+        cd tmp/terraform-aws-components
+        TERRAFORM_AWS_COMPONENTS_LATEST_TAG=$(git describe --tags --abbrev=0)
+        echo "TERRAFORM_AWS_COMPONENTS_LATEST_TAG=$TERRAFORM_AWS_COMPONENTS_LATEST_TAG" >> "$GITHUB_ENV"
+
+    - if: ${{ inputs.desired-components-version != '' }}
+      name: "Set desired component version"
+      run: |
+        echo "TERRAFORM_AWS_COMPONENTS_LATEST_TAG=${{ inputs.desired-components-version }}" >> "$GITHUB_ENV"
+
+    - name: "Run Atmos Component Updater"
+      run: |
+        python \
+          --github-api-token ${{ inputs.token }} \
+          --components-version $TERRAFORM_AWS_COMPONENTS_LATEST_TAG \
+          --infra-repo-name ${{ inputs.infra-repo-name }} \
+          --infra-repo-dir ${{ inputs.infra-repo-dir }} \
+          --log-level DEBUG
