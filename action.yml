@@ -58,10 +58,9 @@ runs:
     - name: "Run Atmos Component Updater"
       shell: bash
       run: |
-        echo "${{ github.workspace }}"
+        echo "${{ github.action_path }}"
+        cd ${{ github.action_path }}
         ls -l
-        pwd
-        cd ${{ github.workspace }}/github-action-atmos-component-updater
         python src/main.py \
           --github-api-token ${{ inputs.token }} \
           --components-version $TERRAFORM_AWS_COMPONENTS_LATEST_TAG \
