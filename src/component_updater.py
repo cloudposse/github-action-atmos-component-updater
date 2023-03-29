@@ -64,6 +64,8 @@ class ComponentUpdater:
                 break
 
         if can_auto_update:
+            updated_component.update_version(self.__new_version)
+            updated_component.persist()
             self.__update_component(original_component, updated_component)
         else:
             logging.warning(f"Component can not be updated: {updated_component.get_name()}")
