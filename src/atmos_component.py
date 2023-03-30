@@ -20,10 +20,10 @@ class AtmosComponent:
     def get_uri(self):
         return self.__uri
 
-    def get_repo_uri(self):
+    def get_component_uri_repo(self):
         return self.__component_uri_repo
 
-    def get_uri_path(self):
+    def get_component_uri_path(self):
         return self.__component_uri_path
 
     def get_name(self):
@@ -35,9 +35,6 @@ class AtmosComponent:
     def get_relative_path(self):
         return self.__relative_path
 
-    def get_relative_dir(self):
-        return self.__relative_dir
-
     def get_infra_repo_dir(self):
         return self.__infra_repo_dir
 
@@ -46,7 +43,6 @@ class AtmosComponent:
         self.__content: str = self.__load_file()
         self.__yaml_content = self.__load_yaml_content()
         self.__relative_path: str = os.path.relpath(self.__component_file, self.__infra_repo_dir)
-        self.__relative_dir: str = os.path.dirname(self.__relative_path)
         self.__component_dir: str = os.path.dirname(self.__component_file)
         self.__uri: str = self.__yaml_content.get('spec', {}).get('source', {}).get('uri')
         uri_parts = self.__uri.split('//')

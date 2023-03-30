@@ -85,12 +85,12 @@ class GitHubProvider:
     def __build_component_version(self, component):
         component_version = f'`{component.get_version()}`'
 
-        if component.get_repo_uri().startswith('github.com'):
-            normalized_repo_uri = self.__remove_git_suffix(component.get_repo_uri())
-            component_version = f'[`{component.get_version()}`](https://{normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()})'
-        elif component.get_repo_uri().startswith('https://github.com'):
-            normalized_repo_uri = self.__remove_git_suffix(component.get_repo_uri())
-            component_version = f'[`{component.get_version()}`]({normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()})'
+        if component.get_component_uri_repo().startswith('github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.get_component_uri_repo())
+            component_version = f'[`{component.get_version()}`](https://{normalized_repo_uri}/tree/{component.get_version()}/{component.get_component_uri_path()})'
+        elif component.get_component_uri_repo().startswith('https://github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.get_component_uri_repo())
+            component_version = f'[`{component.get_version()}`]({normalized_repo_uri}/tree/{component.get_version()}/{component.get_component_uri_path()})'
 
         return component_version
 
