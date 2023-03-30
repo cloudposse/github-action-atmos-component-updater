@@ -176,7 +176,8 @@ class ComponentUpdater:
         return response.stdout.decode()
 
     def __execute_go_getter(self, component, destination_dir):
-        response = subprocess.run(["/Users/zinovii/go/bin/go-getter", component.get_repo_uri(), destination_dir],
+        go_getter_path = os.environ.get('GO_GETTER_PATH')
+        response = subprocess.run([go_getter_path, component.get_repo_uri(), destination_dir],
                                   capture_output=True,
                                   cwd=self.__download_dir)
 

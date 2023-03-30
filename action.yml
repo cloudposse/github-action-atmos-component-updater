@@ -33,7 +33,9 @@ runs:
       run: |
         cd ${{ github.action_path }}
         go mod download
-        echo "GO_GETTER_PATH=$(go env GOPATH)/bin/go-getter" >> "$GITHUB_ENV"
+        go list -m all
+        GO_PATH=$(go env GOPATH)
+        echo "GO_GETTER_PATH=${GO_PATH}/bin/go-getter" >> "$GITHUB_ENV"
 
     - name: Setup Python
       uses: actions/setup-python@v4
