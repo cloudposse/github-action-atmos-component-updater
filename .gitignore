@@ -1,3 +1,6 @@
 .build-harness
 build-harness
 .idea/
+tmp/
+__pycache__
+.pyc

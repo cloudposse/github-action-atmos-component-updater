@@ -1,6 +1,6 @@
 import git
 
-BRANCH_PREFIX = 'component-update'
+BRANCH_PREFIX = 'component-updater'
 
 
 class GitProvider:
@@ -9,7 +9,7 @@ class GitProvider:
         self.__repo = git.Repo(repo_dir)
 
     def get_component_branch_name(self, component_name: str, version: str):
-        return f'component-update/{component_name}/{version}'
+        return f'{BRANCH_PREFIX}/{component_name}/{version}'
 
     def get_default_branch(self):
         return self.__repo.heads[self.__repo.active_branch.name].remote_head

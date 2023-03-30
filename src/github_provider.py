@@ -1,6 +1,7 @@
 from github import Github, PullRequest
+from atmos_component import AtmosComponent
 
-BRANCH_PREFIX = 'component-update'
+BRANCH_PREFIX = 'component-updater'
 PR_TITLE_TEMPLATE = "Component {component_name} update from {old_version} to {new_version}"
 PR_BODY_TEMPLATE = """
 ## what
@@ -10,8 +11,8 @@ This is an auto-generated PR that updates component `{component_name}` to versio
 | Meta               | Details            |
 |:-------------------|:-------------------|
 | **Component name** | `{component_name}` |
-| **Old Version**    | `{old_version}`    |
-| **New Version**    | `{new_version}`    |
+| **Old Version**    | {old_version}      |
+| **New Version**    | {new_version}      |
 
 ## why
 
@@ -35,8 +36,6 @@ We recommend merging the PR, that way it's easier to identify when there are bre
 
 ### What to do if there are changes due to the updates?
 We recommend carefully reviewing the plan to ensure there's nothing destructive before applying any changes in the automated PRs. If the changes seem reasonable, confirm and deploy. If the changes are unexpected, consider raising an issue.
-
-
 """
 
 
@@ -45,16 +44,19 @@ class GitHubProvider:
         self.__github = Github(api_token)
         self.__repo = self.__github.get_repo(repo_name)
 
-    def open_pr(self, branch_name: str, component_name: str, old_version: str, new_version: str):
+    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent):
         branch = self.__repo.get_branch(branch_name)
 
-        title = PR_TITLE_TEMPLATE.format(component_name=component_name,
-                                         old_version=old_version,
-                                         new_version=new_version)
+        original_component_version = self.__build_component_version(original_component)
+        updated_component_version = self.__build_component_version(updated_component)
 
-        body = PR_BODY_TEMPLATE.format(component_name=component_name,
-                                       old_version=old_version,
-                                       new_version=new_version)
+        title = PR_TITLE_TEMPLATE.format(component_name=original_component.get_name(),
+                                         old_version=original_component.get_version(),
+                                         new_version=updated_component.get_version())
+
+        body = PR_BODY_TEMPLATE.format(component_name=original_component.get_name(),
+                                       old_version=original_component_version,
+                                       new_version=updated_component_version)
 
         pr: PullRequest = self.__repo.create_pull(title=title,
                                                   body=body,
@@ -77,3 +79,23 @@ class GitHubProvider:
     def close_pr(self, pr: PullRequest, message: str):
         pr.edit(state='closed')
         pr.create_comment(message)
+
+    def __build_component_version(self, component):
+        component_version = f'`{component.get_version()}`'
+
+        if component.get_repo_uri().startswith('github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.get_repo_uri())
+            component_version = f'[`{component.get_version()}`](https://{normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()})'
+        elif component.get_repo_uri().startswith('https://github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.get_repo_uri())
+            component_version = f'[`{component.get_version()}`]({normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()})'
+
+        return component_version
+
+    def __remove_git_suffix(self, repo_uri):
+        repo_uri = repo_uri
+
+        if repo_uri.endswith('.git'):
+            repo_uri = repo_uri[:-4]
+
+        return repo_uri
