@@ -35,6 +35,7 @@ runs:
         go mod download
         go list -m all
         GO_PATH=$(go env GOPATH)
+        ls -l $GO_PATH/bin/
         echo "GO_GETTER_PATH=${GO_PATH}/bin/go-getter" >> "$GITHUB_ENV"
 
     - name: Setup Python
