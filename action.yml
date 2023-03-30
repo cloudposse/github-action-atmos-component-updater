@@ -51,6 +51,8 @@ runs:
       env:
         GO_GETTER_PATH: ${{ env.GO_GETTER_PATH }}
       run: |
+        echo "github.repository=${{ github.repository }}"
+        echo "GO_GETTER_PATH=${{ env.GO_GETTER_PATH }}"
         cd ${{ github.action_path }}
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
