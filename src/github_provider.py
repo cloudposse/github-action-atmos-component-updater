@@ -43,6 +43,7 @@ class GitHubProvider:
     def __init__(self, api_token: str, repo_name: str):
         self.__github = Github(api_token)
         self.__repo = self.__github.get_repo(repo_name)
+        self.__pull_requests = []
 
     def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent):
         branch = self.__repo.get_branch(branch_name)
@@ -68,9 +69,11 @@ class GitHubProvider:
 
     def get_open_prs_for_component(self, component_name: str):
         open_prs = []
-        pull_requests = self.__repo.get_pulls(state='open')
 
-        for pr in pull_requests:
+        if len(self.__pull_requests) == 0:
+            self.__pull_requests = self.__repo.get_pulls(state='open')
+
+        for pr in self.__pull_requests:
             pr_branch_name = pr.head.ref
 
             if pr_branch_name.startswith(f'{BRANCH_PREFIX}/{component_name}/'):
