@@ -8,11 +8,11 @@ PR_BODY_TEMPLATE = """
 
 This is an auto-generated PR that updates component `{component_name}` to version `{new_version}`.
 
-| Meta               | Details            |
-|:-------------------|:-------------------|
-| **Component name** | `{component_name}` |
-| **Old Version**    | {old_version}      |
-| **New Version**    | {new_version}      |
+| Meta               | Details             |
+|:-------------------|:--------------------|
+| **Component name** | `{component_name}`  |
+| **Old Version**    | {old_version_link}  |
+| **New Version**    | {new_version_link}  |
 
 ## why
 
@@ -55,8 +55,10 @@ class GitHubProvider:
                                          new_version=updated_component.get_version())
 
         body = PR_BODY_TEMPLATE.format(component_name=original_component.get_name(),
-                                       old_version=original_component_version,
-                                       new_version=updated_component_version)
+                                       old_version=original_component.get_version(),
+                                       new_version=updated_component.get_version(),
+                                       old_version_link=original_component_version,
+                                       new_version_link=updated_component_version)
 
         pr: PullRequest = self.__repo.create_pull(title=title,
                                                   body=body,
