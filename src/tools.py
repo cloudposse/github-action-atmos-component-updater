@@ -11,6 +11,9 @@ class ToolExecutionError(Exception):
 
 def atmos_vendor_component(component: AtmosComponent):
     command = ["atmos", "vendor", "pull", "-c", component.get_name()]
+
+    logging.debug(f"Executing: '{' '.join(command)}' ... ")
+
     response = subprocess.run(command, capture_output=True, cwd=component.get_infra_repo_dir())
 
     if response.returncode != 0:
