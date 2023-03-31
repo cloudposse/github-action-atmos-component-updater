@@ -21,8 +21,7 @@ def main(github_api_token, infra_repo_name, infra_repo_dir, go_getter_tool):
 
 @click.command()
 @click.option('--github-api-token', envvar='REPO_ACCESS_TOKEN', required=True, help="GitHub API token")
-@click.option('--infra-repo-name', required=True,
-              help="Organization and repo in format '<organization>/<infra-repo-name>' for infra. For example 'cloudposse/infra-live'")
+@click.option('--infra-repo-name', required=True, help="Organization and repo in format '<organization>/<infra-repo-name>' for infra. For example 'cloudposse/infra-live'")
 @click.option('--infra-repo-dir', required=True, help="Path to cloned infra/repo")
 @click.option('--go-getter-tool', required=True, help="Path to go-getter")
 @click.option('--log-level', default='INFO', required=False, help="Log Level: [CRITICAL|ERROR|WARNING|INFO|DEBUG]")

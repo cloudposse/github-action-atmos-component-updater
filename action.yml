@@ -16,9 +16,6 @@ runs:
       with:
         fetch-depth: 0
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-
     - name: Setup Atmos
       uses: cloudposse/github-action-setup-atmos@v1.0.0
 
@@ -26,16 +23,14 @@ runs:
       uses: actions/setup-go@v3
       with:
         go-version: "1.20"
-      id: go
 
     - name: Install Go Dependencies
       shell: bash
       run: |
         cd ${{ github.action_path }}
         go mod download
-        GO_PATH=$(go env GOPATH)
         go install github.com/hashicorp/go-getter/cmd/go-getter
-        echo "GO_GETTER_PATH=${GO_PATH}/bin/go-getter" >> "$GITHUB_ENV"
+        echo "GO_GETTER_TOOL=$(go env GOPATH)/bin/go-getter" >> "$GITHUB_ENV"
 
     - name: Setup Python
       uses: actions/setup-python@v4
@@ -50,12 +45,11 @@ runs:
 
     - name: "Run Atmos Component Updater"
       shell: bash
-      env:
-        GO_GETTER_PATH: ${{ env.GO_GETTER_PATH }}
       run: |
         cd ${{ github.action_path }}
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
           --infra-repo-name ${{ github.repository }} \
           --infra-repo-dir ${{ github.workspace }} \
+          --go-getter-tool ${{ env.GO_GETTER_TOOL }} \
           --log-level INFO
