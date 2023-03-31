@@ -18,7 +18,8 @@ class ComponentUpdaterError(Exception):
 
 
 class ComponentUpdater:
-    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str, go_getter_tool: str):
+    def __init__(self, git_provider: GitProvider, github_provider: GitHubProvider, infra_repo_dir: str, go_getter_tool: str):
+        self.__git_provider = git_provider
         self.__github_provider = github_provider
         self.__infra_repo_dir = infra_repo_dir
         self.__download_dir = io.create_tmp_dir()
@@ -79,20 +80,26 @@ class ComponentUpdater:
             return
 
         updated_component = self.__clone_infra_for_component(original_component)
+        branch_name = self.__git_provider.build_component_branch_name(updated_component.get_name(), latest_tag)
+
+        if self.__git_provider.branch_exists(updated_component.get_infra_repo_dir(), branch_name):
+            logging.info(f"Branch '{branch_name}' already exists. Skipping")
+            return
+
         updated_component.update_version(latest_tag)
         updated_component.persist()
 
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
             tools.atmos_vendor_component(updated_component)
-            self.__create_branch_and_pr(original_component, updated_component, latest_tag)
+            self.__create_branch_and_pr(original_component, updated_component, branch_name)
             return
 
         # re-vendor component
         tools.atmos_vendor_component(updated_component)
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            self.__create_branch_and_pr(original_component, updated_component, latest_tag)
+            self.__create_branch_and_pr(original_component, updated_component, branch_name)
         else:
             logging.info(f"Looking good. No changes found")
 
@@ -142,19 +149,11 @@ class ComponentUpdater:
 
         return needs_update
 
-    def __create_branch_and_pr(self, original_component, updated_component, latest_tag):
-        git_provider = GitProvider(updated_component.get_infra_repo_dir())
-        branch_name = git_provider.get_component_branch_name(updated_component.get_name(), latest_tag)
-        remote_branch_name = f'origin/{branch_name}'
-
-        if git_provider.branch_exists(branch_name) or git_provider.branch_exists(remote_branch_name):
-            logging.warning(f"Branch '{branch_name}' already exists. Skipping")
-            return
-
-        git_provider.create_branch_and_push_all_changes(branch_name,
-                                                        COMMIT_MESSAGE_TEMPLATE.format(
-                                                            component_name=updated_component.get_name(),
-                                                            component_version=updated_component.get_version()))
+    def __create_branch_and_pr(self, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str):
+        self.__git_provider.create_branch_and_push_all_changes(branch_name,
+                                                               COMMIT_MESSAGE_TEMPLATE.format(
+                                                                   component_name=updated_component.get_name(),
+                                                                   component_version=updated_component.get_version()))
 
         logging.info(f"Created branch: {branch_name} in 'origin'")
 
