@@ -8,6 +8,7 @@ from git_provider import GitProvider
 
 TERRAFORM_COMPONENTS_SUBDIR = 'components/terraform'
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
+MAX_NUMBER_OF_DIFF_TO_SHOW = 3
 
 
 class ComponentUpdaterError(Exception):
@@ -26,7 +27,7 @@ class ComponentUpdater:
     def update(self):
         infra_components_dir = os.path.join(self.__infra_repo_dir, TERRAFORM_COMPONENTS_SUBDIR)
 
-        logging.info(f"Looking for components in this directory: {infra_components_dir}")
+        logging.debug(f"Looking for components in: {infra_components_dir}")
 
         component_files = self.__get_components(infra_components_dir)
 
@@ -36,104 +37,114 @@ class ComponentUpdater:
             self.__update_component(component_file)
 
     def __get_components(self, infra_components_dir):
-        paths = []
+        component_yaml_paths = []
 
         try:
             for root, dirs, files in os.walk(infra_components_dir):
                 for file in files:
                     if file == COMPONENT_YAML:
-                        paths.append(os.path.join(root, file))
+                        component_yaml_paths.append(os.path.join(root, file))
         except FileNotFoundError:
-            raise ComponentUpdaterError(
-                f"Could not find components in '{infra_components_dir}'. Directory doesn't exist.")
+            raise ComponentUpdaterError(f"Could not get components from '{infra_components_dir}'")
 
-        return paths
+        return component_yaml_paths
 
     def __update_component(self, component_file: str):
         original_component = AtmosComponent(self.__infra_repo_dir, component_file)
 
         logging.info(f"Processing component: {original_component.get_name()}")
 
-        if not original_component.get_version():
-            logging.info(f"Component doesn't have version specified. Skipping.")
+        if not original_component.has_version():
+            logging.warning(f"Component doesn't have 'version' specified. Skipping")
             return
 
-        normalized_repo_path: str = original_component.get_component_uri_repo().replace('/', '-')
-        tools.go_getter(self.__go_getter_tool, original_component, normalized_repo_path, self.__download_dir)
-        repo_dir = os.path.join(self.__download_dir, normalized_repo_path)
-
-        if not os.path.exists(os.path.join(repo_dir, '.git')):
-            logging.info(f"Component repository is not .git repo. Can't figure out latest version. Skipping")
+        if not original_component.has_valid_uri():
+            logging.warning(f"Component doesn't have valid 'uri' specified. Skipping")
             return
 
-        try:
-            latest_tag = tools.git_describe_tag(repo_dir)
-        except tools.ToolExecutionError as e:
-            logging.warning("No tags in component repo. Can not figure out latest version. Skipping")
+        repo_dir = self.__fetch_component_repo(original_component)
+
+        if not self.__is_git_repo():
+            logging.warning(f"Component repository is not git repo. Can't figure out latest version. Skipping")
+            return
+
+        latest_tag = tools.git_get_latest_tag(repo_dir)
+
+        if not latest_tag:
+            logging.warning("Unable to figure out latest tag. Skipping")
             return
 
         if original_component.get_version() == latest_tag:
-            logging.info(f"Component already updated: {original_component.get_name()}")
+            logging.info(f"Component already updated. Skipping")
             return
 
         updated_component = self.__clone_infra_for_component(original_component)
+        updated_component.update_version(latest_tag)
+        updated_component.persist()
 
-        if self.__is_not_vendored(updated_component):
-            logging.debug(f"Component was not vendored: {original_component.get_name()}")
-            updated_component.update_version(latest_tag)
-            updated_component.persist()
-            self.__create_pr(original_component, updated_component, latest_tag)
+        if not self.__is_vendored(updated_component):
+            logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
+            tools.atmos_vendor_component(updated_component.get_infra_repo_dir(), updated_component.get_name())
+            self.__create_branch_and_pr(original_component, updated_component, latest_tag)
             return
 
         vendored_component = self.__clone_infra_for_component(original_component)
         vendored_component.update_version(latest_tag)
-        io.remove_all_from_dir(vendored_component.get_component_dir())
         vendored_component.persist()
-
         tools.atmos_vendor_pull(vendored_component.get_infra_repo_dir(), vendored_component.get_name())
 
+        if self.__does_component_needs_to_be_updated(original_component, vendored_component):
+            self.__create_branch_and_pr(original_component, updated_component, latest_tag)
+        else:
+            logging.info(f"Looking good. No changes found")
+
+    def __fetch_component_repo(self, component: AtmosComponent):
+        normalized_repo_path = component.get_component_uri_repo().replace('/', '-')
+        tools.go_getter_pull_component_repo(self.__go_getter_tool, component, normalized_repo_path, self.__download_dir)
+        return os.path.join(self.__download_dir, normalized_repo_path)
+
+    def __is_git_repo(self, repo_dir: str):
+        return os.path.exists(os.path.join(repo_dir, '.git'))
+
+    def __is_vendored(self, component: AtmosComponent):
+        updated_component_files = io.get_filenames_in_dir(component.get_component_dir(), ['**/*'])
+        return len(updated_component_files) > 1
+
+    def __clone_infra_for_component(self, component: AtmosComponent):
+        update_infra_repo_dir = io.create_tmp_dir()
+        io.copy_dirs(self.__infra_repo_dir, update_infra_repo_dir)
+        component_file = os.path.join(update_infra_repo_dir, component.get_relative_path())
+        return AtmosComponent(update_infra_repo_dir, component_file)
+
+    def __does_component_needs_to_be_updated(self, updated_component: AtmosComponent, vendored_component: AtmosComponent):
         vendored_component_files = io.get_filenames_in_dir(vendored_component.get_component_dir(), ['**/*'])
 
-        updatable = True
+        needs_update = False
+        num_diffs = 0
 
         for vendored_file in vendored_component_files:
-            # skip "component.yaml" or ends with .md
-            if vendored_file.endswith(COMPONENT_YAML) or vendored_file.endswith('.md'):
+            # skip "component.yaml"
+            if vendored_file.endswith(COMPONENT_YAML):
                 continue
 
             relative_path = os.path.relpath(vendored_file, vendored_component.get_infra_repo_dir())
             original_file = os.path.join(updated_component.get_infra_repo_dir(), relative_path)
 
             if not os.path.isfile(original_file):
-                logging.warning(f"File doesn't exist: {relative_path}")
-                updatable = False
-                break
+                logging.info(f"New file: {relative_path}")
+                needs_update = True
+                continue
 
             if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(vendored_file):
-                logging.warning(f"File has changed: {relative_path}")
-                logging.warning(f"diff: " + tools.diff(original_file, vendored_file))
-                updatable = False
-                break
+                logging.info(f"File changed: {relative_path}")
+                if num_diffs < MAX_NUMBER_OF_DIFF_TO_SHOW:
+                    logging.info(f"diff: " + tools.diff(original_file, vendored_file))
+                    num_diffs += 1
+                needs_update = True
 
-        if updatable:
-            updated_component.update_version(latest_tag)
-            updated_component.persist()
-            self.__create_pr(original_component, updated_component, latest_tag)
-        else:
-            logging.warning(f"Component can not be updated: {updated_component.get_name()}")
+        return needs_update
 
-    def __is_not_vendored(self, component: AtmosComponent):
-        updated_component_files = io.get_filenames_in_dir(component.get_component_dir(), ['**/*'])
-        return len(updated_component_files) == 1 and updated_component_files[0].endswith(COMPONENT_YAML)
-
-    def __clone_infra_for_component(self, component):
-        update_infra_repo_dir = io.create_tmp_dir()
-        logging.debug(f"Infra repo dir: {update_infra_repo_dir}")
-        io.copy_dirs(self.__infra_repo_dir, update_infra_repo_dir)
-        component_file = os.path.join(update_infra_repo_dir, component.get_relative_path())
-        return AtmosComponent(update_infra_repo_dir, component_file)
-
-    def __create_pr(self, original_component, updated_component, latest_tag):
+    def __create_branch_and_pr(self, original_component, updated_component, latest_tag):
         git_provider = GitProvider(updated_component.get_infra_repo_dir())
         branch_name = git_provider.get_component_branch_name(updated_component.get_name(), latest_tag)
         remote_branch_name = f'origin/{branch_name}'
@@ -147,11 +158,14 @@ class ComponentUpdater:
                                                             component_name=updated_component.get_name(),
                                                             component_version=updated_component.get_version()))
 
+        logging.info(f"Created branch: {branch_name} in 'origin'")
+
         logging.info(f"Opening PR for branch {branch_name}")
 
         pr = self.__github_provider.open_pr(branch_name,
                                             original_component,
                                             updated_component)
+
         logging.info(f"Opened PR #{pr.number}")
 
         opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.get_name())
