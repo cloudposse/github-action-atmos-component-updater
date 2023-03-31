@@ -32,7 +32,7 @@ def diff(file1, file2):
 
     result = response.stdout
 
-    return result.strip.decode("utf-8") if result else None
+    return result.strip().decode("utf-8") if result else None
 
 
 def go_getter_pull_component_repo(go_getter_tool, component, destination_dir, download_dir):
