@@ -91,12 +91,23 @@ class ComponentUpdater:
 
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
-            tools.atmos_vendor_component(updated_component)
+
+            try:
+                tools.atmos_vendor_component(updated_component)
+            except tools.ToolExecutionError as e:
+                logging.error(f"Failed to vendor component: {e}")
+                return
+
             self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
             return
 
         # re-vendor component
         tools.atmos_vendor_component(updated_component)
+        try:
+            tools.atmos_vendor_component(updated_component)
+        except tools.ToolExecutionError as e:
+            logging.error(f"Failed to vendor component: {e}")
+            return
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
             self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)

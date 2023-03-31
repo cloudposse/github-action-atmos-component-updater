@@ -17,7 +17,8 @@ def atmos_vendor_component(component: AtmosComponent):
     response = subprocess.run(command, capture_output=True, cwd=component.get_infra_repo_dir())
 
     if response.returncode != 0:
-        error_message = response.stderr.decode("utf-8")
+        # atmos doesn't report error to stderr
+        error_message = response.stderr.decode("utf-8") if response.stderr else response.stdout.decode("utf-8")
         logging.error(error_message)
         raise ToolExecutionError(error_message)
 
