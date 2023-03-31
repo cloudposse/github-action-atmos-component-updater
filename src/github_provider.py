@@ -94,10 +94,10 @@ class GitHubProvider:
 
         if component.get_uri_repo().startswith('github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.get_uri_repo())
-            component_version = f'[`{component.get_version()}`](https://{normalized_repo_uri}/tree/{component.get_version()}/{component.get_component_uri_path()})'
+            component_version = f'[`{component.get_version()}`](https://{normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()})'
         elif component.get_uri_repo().startswith('https://github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.get_uri_repo())
-            component_version = f'[`{component.get_version()}`]({normalized_repo_uri}/tree/{component.get_version()}/{component.get_component_uri_path()})'
+            component_version = f'[`{component.get_version()}`]({normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()})'
 
         return component_version
 
