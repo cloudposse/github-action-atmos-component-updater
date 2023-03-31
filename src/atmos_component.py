@@ -4,6 +4,7 @@ import re
 import os
 import yaml
 
+TERRAFORM_COMPONENTS_SUBDIR = 'components/terraform'
 VERSION_PATTERN = r"version:\s*\d+\.\d+\.\d+"
 COMPONENT_YAML = 'component.yaml'
 
@@ -56,7 +57,7 @@ class AtmosComponent:
         (self.__uri_repo, self.__uri_path) = self.__parse_uri()
 
     def __fetch_name(self):
-        return os.path.dirname(self.__relative_path)
+        return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, TERRAFORM_COMPONENTS_SUBDIR)))
 
     def __load_file(self):
         return io.read_file_to_string(self.__component_file)
