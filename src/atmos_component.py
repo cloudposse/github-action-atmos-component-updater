@@ -33,6 +33,9 @@ class AtmosComponent:
     def get_name(self):
         return self.__name
 
+    def get_normalized_name(self):
+        return self.__name.replace('/', '-')
+
     def get_relative_path(self):
         return self.__relative_path
 
@@ -46,14 +49,14 @@ class AtmosComponent:
         return os.path.dirname(self.__component_file)
 
     def __initialize(self):
+        self.__relative_path: str = os.path.relpath(self.__component_file, self.__infra_repo_dir)
         self.__name: str = self.__fetch_name()
         self.__content: str = self.__load_file()
         self.__yaml_content = self.__load_yaml_content()
-        self.__relative_path: str = os.path.relpath(self.__component_file, self.__infra_repo_dir)
         (self.__uri_repo, self.__uri_path) = self.__parse_uri()
 
     def __fetch_name(self):
-        return os.path.basename(os.path.dirname(self.__component_file))
+        return os.path.dirname(self.__relative_path)
 
     def __load_file(self):
         return io.read_file_to_string(self.__component_file)

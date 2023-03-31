@@ -80,7 +80,7 @@ class ComponentUpdater:
             return
         
         updated_component = self.__clone_infra_for_component(original_component)
-        branch_name = self.__git_provider.build_component_branch_name(updated_component.get_name(), latest_tag)
+        branch_name = self.__git_provider.build_component_branch_name(updated_component.get_normalized_name(), latest_tag)
 
         if self.__git_provider.branch_exists(updated_component.get_infra_repo_dir(), branch_name):
             logging.info(f"Branch '{branch_name}' already exists. Skipping")
@@ -165,7 +165,7 @@ class ComponentUpdater:
 
         logging.info(f"Opened PR #{pr.number}")
 
-        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.get_name())
+        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.get_normalized_name())
 
         for opened_pr in opened_prs:
             if opened_pr.number != pr.number:
