@@ -91,7 +91,7 @@ class ComponentUpdater:
         vendored_component = self.__clone_infra_for_component(original_component)
         vendored_component.update_version(latest_tag)
         vendored_component.persist()
-        tools.atmos_vendor_pull(vendored_component.get_infra_repo_dir(), vendored_component.get_name())
+        tools.atmos_vendor_component(vendored_component.get_infra_repo_dir(), vendored_component.get_name())
 
         if self.__does_component_needs_to_be_updated(original_component, vendored_component):
             self.__create_branch_and_pr(original_component, updated_component, latest_tag)
