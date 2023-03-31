@@ -4,7 +4,7 @@ import sys
 
 from component_updater import ComponentUpdater, ComponentUpdaterError
 from github_provider import GitHubProvider
-from utils.tools import ToolExecutionError
+from tools import ToolExecutionError
 
 
 def main(github_api_token, infra_repo_name, infra_repo_dir, go_getter_tool):

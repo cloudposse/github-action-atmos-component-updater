@@ -1,14 +1,14 @@
 import logging
 import os
 from utils import io
-from utils import tools
+import tools
 from atmos_component import AtmosComponent, COMPONENT_YAML
 from github_provider import GitHubProvider
 from git_provider import GitProvider
 
 TERRAFORM_COMPONENTS_SUBDIR = 'components/terraform'
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
-MAX_NUMBER_OF_DIFF_TO_SHOW = 3
+MAX_NUMBER_OF_DIFF_TO_SHOW = 2
 
 
 class ComponentUpdaterError(Exception):
@@ -84,16 +84,15 @@ class ComponentUpdater:
 
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
-            tools.atmos_vendor_component(updated_component.get_infra_repo_dir(), updated_component.get_name())
+            tools.atmos_vendor_component(updated_component)
             self.__create_branch_and_pr(original_component, updated_component, latest_tag)
             return
 
-        vendored_component = self.__clone_infra_for_component(original_component)
-        vendored_component.update_version(latest_tag)
-        vendored_component.persist()
-        tools.atmos_vendor_component(vendored_component.get_infra_repo_dir(), vendored_component.get_name())
+        # re-vendor component
+        tools.atmos_vendor_component(updated_component)
 
-        if self.__does_component_needs_to_be_updated(original_component, vendored_component):
+        if self.__does_component_needs_to_be_updated(original_component, updated_component):
+            tools.atmos_vendor_component(updated_component.get_infra_repo_dir(), updated_component.get_name())
             self.__create_branch_and_pr(original_component, updated_component, latest_tag)
         else:
             logging.info(f"Looking good. No changes found")
@@ -116,29 +115,29 @@ class ComponentUpdater:
         component_file = os.path.join(update_infra_repo_dir, component.get_relative_path())
         return AtmosComponent(update_infra_repo_dir, component_file)
 
-    def __does_component_needs_to_be_updated(self, updated_component: AtmosComponent, vendored_component: AtmosComponent):
-        vendored_component_files = io.get_filenames_in_dir(vendored_component.get_component_dir(), ['**/*'])
+    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent):
+        updated_files = io.get_filenames_in_dir(updated_component.get_component_dir(), ['**/*'])
 
         needs_update = False
         num_diffs = 0
 
-        for vendored_file in vendored_component_files:
+        for updated_file in updated_files:
             # skip "component.yaml"
-            if vendored_file.endswith(COMPONENT_YAML):
+            if updated_file.endswith(COMPONENT_YAML):
                 continue
 
-            relative_path = os.path.relpath(vendored_file, vendored_component.get_infra_repo_dir())
-            original_file = os.path.join(updated_component.get_infra_repo_dir(), relative_path)
+            relative_path = os.path.relpath(updated_file, updated_component.get_infra_repo_dir())
+            original_file = os.path.join(original_component.get_infra_repo_dir(), relative_path)
 
             if not os.path.isfile(original_file):
                 logging.info(f"New file: {relative_path}")
                 needs_update = True
                 continue
 
-            if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(vendored_file):
+            if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(updated_file):
                 logging.info(f"File changed: {relative_path}")
                 if num_diffs < MAX_NUMBER_OF_DIFF_TO_SHOW:
-                    logging.info(f"diff: " + tools.diff(original_file, vendored_file))
+                    logging.info(f"diff: " + tools.diff(original_file, updated_file))
                     num_diffs += 1
                 needs_update = True
 
