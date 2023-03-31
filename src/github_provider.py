@@ -1,8 +1,9 @@
 from github import Github, PullRequest
 from atmos_component import AtmosComponent
 
-BRANCH_PREFIX = 'component-updater'
-PR_TITLE_TEMPLATE = "Component {component_name} update from {old_version} to {new_version}"
+BRANCH_PREFIX = 'component-update'
+GITHUB_PULL_REQUEST_LABEL = 'component-update'
+PR_TITLE_TEMPLATE = "Component `{component_name}` update from {old_version} to {new_version}"
 PR_BODY_TEMPLATE = """
 ## what
 
@@ -65,6 +66,9 @@ class GitHubProvider:
                                                   body=body,
                                                   base=self.__repo.default_branch,
                                                   head=branch.name)
+
+        pr.add_to_labels(GITHUB_PULL_REQUEST_LABEL)
+
         return pr
 
     def get_open_prs_for_component(self, component_name: str):
