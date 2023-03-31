@@ -17,10 +17,11 @@ class ComponentUpdaterError(Exception):
 
 
 class ComponentUpdater:
-    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str):
+    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str, go_getter_tool: str):
         self.__github_provider = github_provider
         self.__infra_repo_dir = infra_repo_dir
         self.__download_dir = io.create_tmp_dir()
+        self.__go_getter_tool = go_getter_tool
 
     def update(self):
         infra_components_dir = os.path.join(self.__infra_repo_dir, TERRAFORM_COMPONENTS_SUBDIR)
@@ -58,7 +59,7 @@ class ComponentUpdater:
             return
 
         normalized_repo_path: str = original_component.get_component_uri_repo().replace('/', '-')
-        tools.go_getter(original_component, normalized_repo_path)
+        tools.go_getter(self.__go_getter_tool, original_component, normalized_repo_path, self.__download_dir)
         repo_dir = os.path.join(self.__download_dir, normalized_repo_path)
 
         if not os.path.exists(os.path.join(repo_dir, '.git')):
@@ -68,7 +69,7 @@ class ComponentUpdater:
         try:
             latest_tag = tools.git_describe_tag(repo_dir)
         except tools.ToolExecutionError as e:
-            logging.warning("No tags in components repo. Can not figure out latest version. Skipping")
+            logging.warning("No tags in component repo. Can not figure out latest version. Skipping")
             return
 
         if original_component.get_version() == latest_tag:
@@ -110,7 +111,7 @@ class ComponentUpdater:
 
             if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(vendored_file):
                 logging.warning(f"File has changed: {relative_path}")
-                logging.debug(f"diff: " + tools.diff(original_file, vendored_file))
+                logging.warning(f"diff: " + tools.diff(original_file, vendored_file))
                 updatable = False
                 break
 

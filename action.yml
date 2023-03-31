@@ -33,7 +33,6 @@ runs:
       run: |
         cd ${{ github.action_path }}
         go mod download
-        go list -m all
         GO_PATH=$(go env GOPATH)
         go install github.com/hashicorp/go-getter/cmd/go-getter
         echo "GO_GETTER_PATH=${GO_PATH}/bin/go-getter" >> "$GITHUB_ENV"
@@ -54,11 +53,9 @@ runs:
       env:
         GO_GETTER_PATH: ${{ env.GO_GETTER_PATH }}
       run: |
-        echo "github.repository=${{ github.repository }}"
-        echo "GO_GETTER_PATH=${{ env.GO_GETTER_PATH }}"
         cd ${{ github.action_path }}
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
           --infra-repo-name ${{ github.repository }} \
           --infra-repo-dir ${{ github.workspace }} \
-          --log-level DEBUG
+          --log-level INFO

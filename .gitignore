@@ -4,3 +4,4 @@ build-harness
 tmp/
 __pycache__
 .pyc
+.vscode/

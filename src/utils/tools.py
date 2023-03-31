@@ -31,11 +31,10 @@ def diff(file1, file2):
     return response.stdout.decode("utf-8")
 
 
-def go_getter(component, destination_dir):
-    go_getter_path = os.environ.get('GO_GETTER_PATH')
-    response = subprocess.run([go_getter_path, component.get_component_uri_repo(), destination_dir],
+def go_getter(go_getter_tool, component, destination_dir, download_dir):
+    response = subprocess.run([go_getter_tool, component.get_component_uri_repo(), destination_dir],
                               capture_output=True,
-                              cwd=self.__download_dir)
+                              cwd=download_dir)
 
     if response.returncode != 0:
         error_message = response.stderr.decode("utf-8")
