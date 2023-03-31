@@ -74,7 +74,7 @@ class GitHubProvider:
     def get_open_prs_for_component(self, component_name: str):
         open_prs = []
 
-        if not self.__pull_requests == 0:
+        if not self.__pull_requests:
             self.__pull_requests = self.__repo.get_pulls(state='open')
 
         for pr in self.__pull_requests:
