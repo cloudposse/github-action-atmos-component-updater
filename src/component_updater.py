@@ -68,8 +68,12 @@ class ComponentUpdater:
         if not self.__is_git_repo(repo_dir):
             logging.warning(f"Component repository is not git repo. Can't figure out latest version. Skipping")
             return
+        
+        logging.debug(f"here1: {repo_dir}");
 
         latest_tag = tools.git_get_latest_tag(repo_dir)
+
+        logging.debug("here2");
 
         if not latest_tag:
             logging.warning("Unable to figure out latest tag. Skipping")

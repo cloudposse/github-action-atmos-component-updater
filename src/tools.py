@@ -59,6 +59,7 @@ def git_get_latest_tag(git_dir: str):
 
     if response.returncode != 0:
         error_message = response.stderr.decode("utf-8")
+        logging.error(error_message)
         return None
 
     tag = response.stdout
