@@ -28,7 +28,7 @@ def diff(file1, file2):
 
     if response.returncode != 0:
         error_message = response.stderr.decode("utf-8")
-        raise ToolExecutionError(error_message)
+        logging.error(error_message)
 
     result = response.stdout
 
