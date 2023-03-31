@@ -39,6 +39,12 @@ class AtmosComponent:
     def get_infra_repo_dir(self):
         return self.__infra_repo_dir
 
+    def get_component_file(self):
+        return self.__component_file
+
+    def get_component_dir(self):
+        return os.path.dirname(self.__component_file)
+
     def __initialize(self):
         self.__name: str = self.__fetch_name()
         self.__content: str = self.__load_file()

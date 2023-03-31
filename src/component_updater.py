@@ -64,7 +64,7 @@ class ComponentUpdater:
 
         repo_dir = self.__fetch_component_repo(original_component)
 
-        if not self.__is_git_repo():
+        if not self.__is_git_repo(repo_dir):
             logging.warning(f"Component repository is not git repo. Can't figure out latest version. Skipping")
             return
 
@@ -99,7 +99,7 @@ class ComponentUpdater:
             logging.info(f"Looking good. No changes found")
 
     def __fetch_component_repo(self, component: AtmosComponent):
-        normalized_repo_path = component.get_component_uri_repo().replace('/', '-')
+        normalized_repo_path = component.get_uri_repo().replace('/', '-')
         tools.go_getter_pull_component_repo(self.__go_getter_tool, component, normalized_repo_path, self.__download_dir)
         return os.path.join(self.__download_dir, normalized_repo_path)
 

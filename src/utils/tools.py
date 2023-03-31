@@ -36,7 +36,7 @@ def diff(file1, file2):
 
 
 def go_getter_pull_component_repo(go_getter_tool, component, destination_dir, download_dir):
-    command = [go_getter_tool, component.get_component_uri_repo(), destination_dir]
+    command = [go_getter_tool, component.get_uri_repo(), destination_dir]
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
@@ -46,7 +46,7 @@ def go_getter_pull_component_repo(go_getter_tool, component, destination_dir, do
         error_message = response.stderr.decode("utf-8")
         raise ToolExecutionError(error_message)
 
-    logging.debug(f"Pulled whole component repo successfully: {component.get_component_uri_repo()}")
+    logging.debug(f"Pulled whole component repo successfully: {component.get_uri_repo()}")
 
 
 def git_get_latest_tag(git_dir):
