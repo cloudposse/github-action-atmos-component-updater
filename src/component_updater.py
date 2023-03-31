@@ -92,7 +92,6 @@ class ComponentUpdater:
         tools.atmos_vendor_component(updated_component)
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            tools.atmos_vendor_component(updated_component.get_infra_repo_dir(), updated_component.get_name())
             self.__create_branch_and_pr(original_component, updated_component, latest_tag)
         else:
             logging.info(f"Looking good. No changes found")
