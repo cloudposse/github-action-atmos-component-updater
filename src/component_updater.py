@@ -94,14 +94,18 @@ class ComponentUpdater:
             logging.info(f"Branch '{branch_name}' already exists. Skipping")
             return
 
+        logging.debug("here4")
         updated_component.update_version(latest_tag)
+        logging.debug("here6")
         updated_component.persist()
+        logging.debug("here7")
 
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
             tools.atmos_vendor_component(updated_component)
             self.__create_branch_and_pr(original_component, updated_component, branch_name)
             return
+        logging.debug("here8")
 
         # re-vendor component
         tools.atmos_vendor_component(updated_component)
