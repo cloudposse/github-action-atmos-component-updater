@@ -92,14 +92,14 @@ class ComponentUpdater:
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
             tools.atmos_vendor_component(updated_component)
-            self.__create_branch_and_pr(original_component, updated_component, branch_name)
+            self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
             return
 
         # re-vendor component
         tools.atmos_vendor_component(updated_component)
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            self.__create_branch_and_pr(original_component, updated_component, branch_name)
+            self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
         else:
             logging.info(f"Looking good. No changes found")
 
@@ -149,8 +149,9 @@ class ComponentUpdater:
 
         return needs_update
 
-    def __create_branch_and_pr(self, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str):
-        self.__git_provider.create_branch_and_push_all_changes(branch_name,
+    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str):
+        self.__git_provider.create_branch_and_push_all_changes(repo_dir,
+                                                               branch_name,
                                                                COMMIT_MESSAGE_TEMPLATE.format(
                                                                    component_name=updated_component.get_name(),
                                                                    component_version=updated_component.get_version()))
