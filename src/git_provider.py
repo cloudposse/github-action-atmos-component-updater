@@ -1,6 +1,6 @@
 import git
 
-BRANCH_PREFIX = 'component-updater'
+BRANCH_PREFIX = 'component-update'
 
 
 class GitProvider:
