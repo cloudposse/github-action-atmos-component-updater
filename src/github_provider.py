@@ -87,7 +87,7 @@ class GitHubProvider:
 
     def close_pr(self, pr: PullRequest, message: str):
         pr.edit(state='closed')
-        pr.create_comment(message)
+        pr.create_issue_comment(message)
 
     def __build_component_version(self, component):
         component_version = f'`{component.get_version()}`'
