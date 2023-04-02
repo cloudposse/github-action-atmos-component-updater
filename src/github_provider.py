@@ -1,6 +1,7 @@
-import git
-from github import Github, PullRequest
 import jinja2
+import git.repo
+from github import Github
+from github.PullRequest import PullRequest
 from jinja2 import FileSystemLoader
 from atmos_component import AtmosComponent
 
@@ -24,7 +25,7 @@ class GitHubProvider:
     def get_branches(self, repo_dir: str):
         branches = []
 
-        repo = git.Repo(repo_dir)
+        repo = git.repo.Repo(repo_dir)
 
         for branch in repo.heads:
             branches.append(branch.name)
@@ -37,7 +38,7 @@ class GitHubProvider:
         return set(branches)
 
     def create_branch_and_push_all_changes(self, repo_dir: str, branch_name: str, commit_message: str):
-        repo = git.Repo(repo_dir)
+        repo = git.repo.Repo(repo_dir)
 
         new_branch = repo.create_head(branch_name)
 
@@ -55,9 +56,9 @@ class GitHubProvider:
     def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent):
         branch = self.__repo.get_branch(branch_name)
 
-        title = PR_TITLE_TEMPLATE.format(component_name=original_component.get_name(),
-                                         old_version=original_component.get_version(),
-                                         new_version=updated_component.get_version())
+        title = PR_TITLE_TEMPLATE.format(component_name=original_component.name,
+                                         old_version=original_component.version,
+                                         new_version=updated_component.version)
 
         original_component_version_link = self.__build_component_version_link(original_component)
         updated_component_version_link = self.__build_component_version_link(updated_component)
@@ -65,9 +66,9 @@ class GitHubProvider:
         original_component_release_link = self.__build_component_release_tag_link(original_component)
         updated_component_release_link = self.__build_component_release_tag_link(updated_component)
 
-        body = self.__pr_body_template.render(component_name=original_component.get_name(),
-                                              old_version=original_component.get_version(),
-                                              new_version=updated_component.get_version(),
+        body = self.__pr_body_template.render(component_name=original_component.name,
+                                              old_version=original_component.version,
+                                              new_version=updated_component.version,
                                               old_version_link=original_component_version_link,
                                               new_version_link=updated_component_version_link,
                                               old_component_release_link=original_component_release_link,
@@ -100,31 +101,31 @@ class GitHubProvider:
         pull_request.edit(state='closed')
         pull_request.create_issue_comment(message)
 
-    def __build_component_version_link(self, component):
+    def __build_component_version_link(self, component: AtmosComponent):
         component_version_link = None
 
-        if component.get_uri_repo().startswith('github.com'):
-            normalized_repo_uri = self.__remove_git_suffix(component.get_uri_repo())
-            component_version_link = f'https://{normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()}'
-        elif component.get_uri_repo().startswith('https://github.com'):
-            normalized_repo_uri = self.__remove_git_suffix(component.get_uri_repo())
-            component_version_link = f'{normalized_repo_uri}/tree/{component.get_version()}/{component.get_uri_path()}'
+        if component.uri_repo.startswith('github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
+            component_version_link = f'https://{normalized_repo_uri}/tree/{component.version}/{component.uri_path}'
+        elif component.uri_repo.startswith('https://github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
+            component_version_link = f'{normalized_repo_uri}/tree/{component.version}/{component.uri_path}'
 
         return component_version_link
 
-    def __build_component_release_tag_link(self, component):
+    def __build_component_release_tag_link(self, component: AtmosComponent):
         component_release_tag_link = None
 
-        if component.get_uri_repo().startswith('github.com'):
-            normalized_repo_uri = self.__remove_git_suffix(component.get_uri_repo())
-            component_release_tag_link = f'https://{normalized_repo_uri}/releases/tag/{component.get_version()}'
-        elif component.get_uri_repo().startswith('https://github.com'):
-            normalized_repo_uri = self.__remove_git_suffix(component.get_uri_repo())
-            component_release_tag_link = f'{normalized_repo_uri}/releases/tag/{component.get_version()}'
+        if component.uri_repo.startswith('github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
+            component_release_tag_link = f'https://{normalized_repo_uri}/releases/tag/{component.version}'
+        elif component.uri_repo.startswith('https://github.com'):
+            normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
+            component_release_tag_link = f'{normalized_repo_uri}/releases/tag/{component.version}'
 
         return component_release_tag_link
 
-    def __remove_git_suffix(self, repo_uri):
+    def __remove_git_suffix(self, repo_uri: str):
         if repo_uri.endswith('.git'):
             repo_uri = repo_uri[:-4]
 

@@ -1,5 +1,6 @@
 import re
 import os
+from typing import Tuple
 import yaml
 
 from utils import io
@@ -13,42 +14,51 @@ class AtmosComponent:
         self.__infra_repo_dir = infra_repo_dir
         self.__infra_terraform_dir = infra_terraform_dir
         self.__component_file = component_file
-        self.__content = None
-        self.__yaml_content = None
+        self.__content = ''
+        self.__yaml_content = {}
         self.__initialize()
 
-    def has_version(self):
-        return self.get_version()
+    def has_version(self) -> bool:
+        return bool(self.version)
 
-    def has_valid_uri(self):
-        return self.get_uri_repo() and self.get_uri_path()
+    def has_valid_uri(self) -> bool:
+        return bool(self.uri_repo and self.uri_path)
 
-    def get_version(self):
+    @property
+    def version(self):
         version = self.__yaml_content.get('spec', {}).get('source', {}).get('version')
         return version.strip() if version else None
 
-    def get_uri_repo(self):
+    @property
+    def uri_repo(self) -> str:
         return self.__uri_repo
 
-    def get_uri_path(self):
+    @property
+    def uri_path(self) -> str:
         return self.__uri_path
 
-    def get_name(self):
+    @property
+    def name(self) -> str:
         return self.__name
 
-    def get_normalized_name(self):
+    @property
+    def normalized_name(self) -> str:
         return self.__name.replace('/', '-')
 
-    def get_relative_path(self):
+    @property
+    def relative_path(self) -> str:
         return self.__relative_path
 
-    def get_infra_repo_dir(self):
+    @property
+    def infra_repo_dir(self) -> str:
         return self.__infra_repo_dir
 
-    def get_component_file(self):
+    @property
+    def component_file(self) -> str:
         return self.__component_file
 
-    def get_component_dir(self):
+    @property
+    def component_dir(self) -> str:
         return os.path.dirname(self.__component_file)
 
     def __initialize(self):
@@ -58,22 +68,22 @@ class AtmosComponent:
         self.__yaml_content = self.__load_yaml_content()
         (self.__uri_repo, self.__uri_path) = self.__parse_uri()
 
-    def __fetch_name(self):
+    def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
 
-    def __load_file(self):
+    def __load_file(self) -> str:
         return io.read_file_to_string(self.__component_file)
 
-    def __parse_uri(self):
+    def __parse_uri(self) -> Tuple[str, str]:
         uri = self.__yaml_content.get('spec', {}).get('source', {}).get('uri')
 
         if not uri:
-            return None, None
+            return None, None  # type: ignore
 
         uri_parts = uri.split('//')
 
         if len(uri_parts) < 2:
-            return uri_parts[0], None
+            return uri_parts[0], None  # type: ignore
 
         uri_repo = uri_parts[0]
         uri_path = uri_parts[1].split('?')[0]
@@ -87,7 +97,7 @@ class AtmosComponent:
         self.__content = re.sub(VERSION_PATTERN, f"version: {new_version}", self.__content)
         self.__yaml_content = self.__load_yaml_content()
 
-    def persist(self, output_file: str = None):
+    def persist(self, output_file=None):
         output_file = output_file if output_file else self.__component_file
 
         io.save_string_to_file(output_file, self.__content)

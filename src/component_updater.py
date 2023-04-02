@@ -1,5 +1,7 @@
 import os
 import logging
+import fnmatch
+from typing import List
 import tools
 from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
@@ -16,12 +18,20 @@ class ComponentUpdaterError(Exception):
 
 
 class ComponentUpdater:
-    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str, infra_terraform_dir: str, go_getter_tool: str):
+    def __init__(self,
+                 github_provider: GitHubProvider,
+                 infra_repo_dir: str,
+                 infra_terraform_dir: str,
+                 includes: str,
+                 excludes: str,
+                 go_getter_tool: str):
         self.__github_provider = github_provider
         self.__infra_repo_dir = infra_repo_dir
         self.__infra_terraform_dir = infra_terraform_dir
         self.__download_dir = io.create_tmp_dir()
         self.__go_getter_tool = go_getter_tool
+        self.__includes = self.__parse_csv(includes)
+        self.__excludes = self.__parse_csv(excludes)
 
     def update(self):
         infra_components_dir = os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)
@@ -35,13 +45,18 @@ class ComponentUpdater:
         for component_file in component_files:
             self.__update_component(component_file)
 
-    def __get_components(self, infra_components_dir):
+    def __get_components(self, infra_components_dir: str) -> List[str]:
         component_yaml_paths = []
 
         try:
             for root, _, files in os.walk(infra_components_dir):
                 for file in files:
                     if file == COMPONENT_YAML:
+                        component_name = os.path.relpath(root, infra_components_dir)
+
+                        if not self.__should_component_be_processed(component_name):
+                            continue
+
                         component_yaml_paths.append(os.path.join(root, file))
         except FileNotFoundError as error:
             logging.error(f"Could not get components from '{infra_components_dir}': {error}")
@@ -52,7 +67,7 @@ class ComponentUpdater:
     def __update_component(self, component_file: str):
         original_component = AtmosComponent(self.__infra_repo_dir, self.__infra_terraform_dir, component_file)
 
-        logging.info(f"Processing component: {original_component.get_name()}")
+        logging.info(f"Processing component: {original_component.name}")
 
         if not original_component.has_version():
             logging.warning("Component doesn't have 'version' specified. Skipping")
@@ -74,14 +89,14 @@ class ComponentUpdater:
             logging.warning("Unable to figure out latest tag. Skipping")
             return
 
-        if original_component.get_version() == latest_tag:
+        if original_component.version == latest_tag:
             logging.info("Component already updated. Skipping")
             return
 
         updated_component = self.__clone_infra_for_component(original_component)
-        branch_name = self.__github_provider.build_component_branch_name(updated_component.get_normalized_name(), latest_tag)
+        branch_name = self.__github_provider.build_component_branch_name(updated_component.normalized_name, latest_tag)
 
-        if self.__github_provider.branch_exists(updated_component.get_infra_repo_dir(), branch_name):
+        if self.__github_provider.branch_exists(updated_component.infra_repo_dir, branch_name):
             logging.info(f"Branch '{branch_name}' already exists. Skipping")
             return
 
@@ -97,7 +112,7 @@ class ComponentUpdater:
                 logging.error(f"Failed to vendor component: {error}")
                 return
 
-            self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
+            self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
             return
 
         # re-vendor component
@@ -109,30 +124,30 @@ class ComponentUpdater:
             return
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
+            self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
         else:
             logging.info("Looking good. No changes found")
 
     def __fetch_component_repo(self, component: AtmosComponent):
-        normalized_repo_path = component.get_uri_repo().replace('/', '-')
+        normalized_repo_path = component.uri_repo.replace('/', '-') if component.uri_repo else ''
         tools.go_getter_pull_component_repo(self.__go_getter_tool, component, normalized_repo_path, self.__download_dir)
         return os.path.join(self.__download_dir, normalized_repo_path)
 
-    def __is_git_repo(self, repo_dir: str):
+    def __is_git_repo(self, repo_dir: str) -> bool:
         return os.path.exists(os.path.join(repo_dir, '.git'))
 
-    def __is_vendored(self, component: AtmosComponent):
-        updated_component_files = io.get_filenames_in_dir(component.get_component_dir(), ['**/*'])
+    def __is_vendored(self, component: AtmosComponent) -> bool:
+        updated_component_files = io.get_filenames_in_dir(component.component_dir, ['**/*'])
         return len(updated_component_files) > 1
 
     def __clone_infra_for_component(self, component: AtmosComponent):
         update_infra_repo_dir = io.create_tmp_dir()
         io.copy_dirs(self.__infra_repo_dir, update_infra_repo_dir)
-        component_file = os.path.join(update_infra_repo_dir, component.get_relative_path())
+        component_file = os.path.join(update_infra_repo_dir, component.relative_path)
         return AtmosComponent(update_infra_repo_dir, self.__infra_terraform_dir, component_file)
 
-    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent):
-        updated_files = io.get_filenames_in_dir(updated_component.get_component_dir(), ['**/*'])
+    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> bool:
+        updated_files = io.get_filenames_in_dir(updated_component.component_dir, ['**/*'])
 
         needs_update = False
         num_diffs = 0
@@ -142,8 +157,8 @@ class ComponentUpdater:
             if updated_file.endswith(COMPONENT_YAML):
                 continue
 
-            relative_path = os.path.relpath(updated_file, updated_component.get_infra_repo_dir())
-            original_file = os.path.join(original_component.get_infra_repo_dir(), relative_path)
+            relative_path = os.path.relpath(updated_file, updated_component.infra_repo_dir)
+            original_file = os.path.join(original_component.infra_repo_dir, relative_path)
 
             if not os.path.isfile(original_file):
                 logging.info(f"New file: {relative_path}")
@@ -163,8 +178,8 @@ class ComponentUpdater:
         self.__github_provider.create_branch_and_push_all_changes(repo_dir,
                                                                   branch_name,
                                                                   COMMIT_MESSAGE_TEMPLATE.format(
-                                                                      component_name=updated_component.get_name(),
-                                                                      component_version=updated_component.get_version()))
+                                                                      component_name=updated_component.name,
+                                                                      component_version=updated_component.version))
 
         logging.info(f"Created branch: {branch_name} in 'origin'")
 
@@ -176,10 +191,33 @@ class ComponentUpdater:
 
         logging.info(f"Opened PR #{pull_request.number}")
 
-        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.get_normalized_name())
+        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
 
         for opened_pr in opened_prs:
             if opened_pr.number != pull_request.number:
                 closing_message = f"Closing in favor of PR #{pull_request.number}"
                 self.__github_provider.close_pr(opened_pr, closing_message)
                 logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
+
+    def __parse_csv(self, csv_list: str) -> List[str]:
+        return [x.strip() for x in csv_list.split(',')] if csv_list else []
+
+    def __should_component_be_processed(self, component_name: str) -> bool:
+        if len(self.__includes) == 0 and len(self.__excludes) == 0:
+            return True
+
+        should_be_processed = False
+
+        if self.__includes:
+            for include_pattern in self.__includes:
+                if fnmatch.fnmatch(component_name, include_pattern):
+                    should_be_processed = True
+                    break
+
+        if self.__excludes:
+            for exclude_pattern in self.__excludes:
+                if fnmatch.fnmatch(component_name, exclude_pattern):
+                    should_be_processed = False
+                    break
+
+        return should_be_processed

@@ -10,11 +10,11 @@ class ToolExecutionError(Exception):
 
 
 def atmos_vendor_component(component: AtmosComponent):
-    command = ["atmos", "vendor", "pull", "-c", component.get_name()]
+    command = ["atmos", "vendor", "pull", "-c", component.name]
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
-    response = subprocess.run(command, capture_output=True, cwd=component.get_infra_repo_dir(), check=False)
+    response = subprocess.run(command, capture_output=True, cwd=component.infra_repo_dir, check=False)
 
     if response.returncode != 0:
         # atmos doesn't report error to stderr
@@ -22,7 +22,7 @@ def atmos_vendor_component(component: AtmosComponent):
         logging.error(error_message)
         raise ToolExecutionError(error_message)
 
-    logging.debug(f"Successfully vendored component: {component.get_name()}")
+    logging.debug(f"Successfully vendored component: {component.name}")
 
 
 def diff(file1: str, file2: str):
@@ -42,7 +42,7 @@ def diff(file1: str, file2: str):
 
 
 def go_getter_pull_component_repo(go_getter_tool: str, component: AtmosComponent, destination_dir: str, download_dir: str):
-    command = [go_getter_tool, component.get_uri_repo(), destination_dir]
+    command = [go_getter_tool, component.uri_repo, destination_dir]
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
@@ -52,7 +52,7 @@ def go_getter_pull_component_repo(go_getter_tool: str, component: AtmosComponent
         error_message = response.stderr.decode("utf-8")
         raise ToolExecutionError(error_message)
 
-    logging.debug(f"Pulled whole component repo successfully: {component.get_uri_repo()}")
+    logging.debug(f"Pulled whole component repo successfully: {component.uri_repo}")
 
 
 def git_get_latest_tag(git_dir: str):
