@@ -14,7 +14,7 @@ def atmos_vendor_component(component: AtmosComponent):
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
-    response = subprocess.run(command, capture_output=True, cwd=component.get_infra_repo_dir())
+    response = subprocess.run(command, capture_output=True, cwd=component.get_infra_repo_dir(), check=False)
 
     if response.returncode != 0:
         # atmos doesn't report error to stderr
@@ -30,7 +30,7 @@ def diff(file1: str, file2: str):
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
-    response = subprocess.run(command, capture_output=True)
+    response = subprocess.run(command, capture_output=True, check=False)
 
     if response.returncode != 0:
         error_message = response.stderr.decode("utf-8")
@@ -46,7 +46,7 @@ def go_getter_pull_component_repo(go_getter_tool: str, component: AtmosComponent
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
-    response = subprocess.run(command, capture_output=True, cwd=download_dir)
+    response = subprocess.run(command, capture_output=True, cwd=download_dir, check=False)
 
     if response.returncode != 0:
         error_message = response.stderr.decode("utf-8")
@@ -60,7 +60,7 @@ def git_get_latest_tag(git_dir: str):
 
     logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
-    response = subprocess.run(command, capture_output=True, cwd=git_dir)
+    response = subprocess.run(command, capture_output=True, cwd=git_dir, check=False)
 
     if response.returncode != 0:
         error_message = response.stderr.decode("utf-8")

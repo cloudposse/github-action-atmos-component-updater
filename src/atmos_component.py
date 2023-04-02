@@ -1,8 +1,8 @@
-import logging
-from utils import io
 import re
 import os
 import yaml
+
+from utils import io
 
 TERRAFORM_COMPONENTS_SUBDIR = 'components/terraform'
 VERSION_PATTERN = r"version:\s*\d+\.\d+\.\d+"
@@ -13,8 +13,10 @@ class AtmosComponent:
     def __init__(self, infra_repo_dir: str, component_file: str):
         self.__infra_repo_dir = infra_repo_dir
         self.__component_file = component_file
+        self.__content = None
+        self.__yaml_content = None
         self.__initialize()
-    
+
     def has_version(self):
         return self.get_version()
 

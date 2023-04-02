@@ -1,10 +1,9 @@
-import logging
 import os
-from utils import io
+import logging
 import tools
+from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
 from github_provider import GitHubProvider
-from git_provider import GitProvider
 
 TERRAFORM_COMPONENTS_SUBDIR = 'components/terraform'
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
@@ -18,8 +17,7 @@ class ComponentUpdaterError(Exception):
 
 
 class ComponentUpdater:
-    def __init__(self, git_provider: GitProvider, github_provider: GitHubProvider, infra_repo_dir: str, go_getter_tool: str):
-        self.__git_provider = git_provider
+    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str, go_getter_tool: str):
         self.__github_provider = github_provider
         self.__infra_repo_dir = infra_repo_dir
         self.__download_dir = io.create_tmp_dir()
@@ -41,11 +39,12 @@ class ComponentUpdater:
         component_yaml_paths = []
 
         try:
-            for root, dirs, files in os.walk(infra_components_dir):
+            for root, _, files in os.walk(infra_components_dir):
                 for file in files:
                     if file == COMPONENT_YAML:
                         component_yaml_paths.append(os.path.join(root, file))
-        except FileNotFoundError:
+        except FileNotFoundError as error:
+            logging.error(f"Could not get components from '{infra_components_dir}': {error}")
             raise ComponentUpdaterError(f"Could not get components from '{infra_components_dir}'")
 
         return component_yaml_paths
@@ -56,19 +55,19 @@ class ComponentUpdater:
         logging.info(f"Processing component: {original_component.get_name()}")
 
         if not original_component.has_version():
-            logging.warning(f"Component doesn't have 'version' specified. Skipping")
+            logging.warning("Component doesn't have 'version' specified. Skipping")
             return
 
         if not original_component.has_valid_uri():
-            logging.warning(f"Component doesn't have valid 'uri' specified. Skipping")
+            logging.warning("Component doesn't have valid 'uri' specified. Skipping")
             return
 
         repo_dir = self.__fetch_component_repo(original_component)
 
         if not self.__is_git_repo(repo_dir):
-            logging.warning(f"Component repository is not git repo. Can't figure out latest version. Skipping")
+            logging.warning("Component repository is not git repo. Can't figure out latest version. Skipping")
             return
-        
+
         latest_tag = tools.git_get_latest_tag(repo_dir)
 
         if not latest_tag:
@@ -76,13 +75,13 @@ class ComponentUpdater:
             return
 
         if original_component.get_version() == latest_tag:
-            logging.info(f"Component already updated. Skipping")
+            logging.info("Component already updated. Skipping")
             return
-        
-        updated_component = self.__clone_infra_for_component(original_component)
-        branch_name = self.__git_provider.build_component_branch_name(updated_component.get_normalized_name(), latest_tag)
 
-        if self.__git_provider.branch_exists(updated_component.get_infra_repo_dir(), branch_name):
+        updated_component = self.__clone_infra_for_component(original_component)
+        branch_name = self.__github_provider.build_component_branch_name(updated_component.get_normalized_name(), latest_tag)
+
+        if self.__github_provider.branch_exists(updated_component.get_infra_repo_dir(), branch_name):
             logging.info(f"Branch '{branch_name}' already exists. Skipping")
             return
 
@@ -94,8 +93,8 @@ class ComponentUpdater:
 
             try:
                 tools.atmos_vendor_component(updated_component)
-            except tools.ToolExecutionError as e:
-                logging.error(f"Failed to vendor component: {e}")
+            except tools.ToolExecutionError as error:
+                logging.error(f"Failed to vendor component: {error}")
                 return
 
             self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
@@ -105,14 +104,14 @@ class ComponentUpdater:
         tools.atmos_vendor_component(updated_component)
         try:
             tools.atmos_vendor_component(updated_component)
-        except tools.ToolExecutionError as e:
-            logging.error(f"Failed to vendor component: {e}")
+        except tools.ToolExecutionError as error:
+            logging.error(f"Failed to vendor component: {error}")
             return
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
             self.__create_branch_and_pr(updated_component.get_infra_repo_dir(), original_component, updated_component, branch_name)
         else:
-            logging.info(f"Looking good. No changes found")
+            logging.info("Looking good. No changes found")
 
     def __fetch_component_repo(self, component: AtmosComponent):
         normalized_repo_path = component.get_uri_repo().replace('/', '-')
@@ -154,33 +153,33 @@ class ComponentUpdater:
             if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(updated_file):
                 logging.info(f"File changed: {relative_path}")
                 if num_diffs < MAX_NUMBER_OF_DIFF_TO_SHOW:
-                    logging.info(f"diff: " + tools.diff(original_file, updated_file))
+                    logging.info(f"diff: {tools.diff(original_file, updated_file)}")
                     num_diffs += 1
                 needs_update = True
 
         return needs_update
 
     def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str):
-        self.__git_provider.create_branch_and_push_all_changes(repo_dir,
-                                                               branch_name,
-                                                               COMMIT_MESSAGE_TEMPLATE.format(
-                                                                   component_name=updated_component.get_name(),
-                                                                   component_version=updated_component.get_version()))
+        self.__github_provider.create_branch_and_push_all_changes(repo_dir,
+                                                                  branch_name,
+                                                                  COMMIT_MESSAGE_TEMPLATE.format(
+                                                                      component_name=updated_component.get_name(),
+                                                                      component_version=updated_component.get_version()))
 
         logging.info(f"Created branch: {branch_name} in 'origin'")
 
         logging.info(f"Opening PR for branch {branch_name}")
 
-        pr = self.__github_provider.open_pr(branch_name,
-                                            original_component,
-                                            updated_component)
+        pull_request = self.__github_provider.open_pr(branch_name,
+                                                      original_component,
+                                                      updated_component)
 
-        logging.info(f"Opened PR #{pr.number}")
+        logging.info(f"Opened PR #{pull_request.number}")
 
         opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.get_normalized_name())
 
         for opened_pr in opened_prs:
-            if opened_pr.number != pr.number:
-                closing_message = f"Closing in favor of PR #{pr.number}"
+            if opened_pr.number != pull_request.number:
+                closing_message = f"Closing in favor of PR #{pull_request.number}"
                 self.__github_provider.close_pr(opened_pr, closing_message)
-                logging.info(f"Closed pr {opened_pr.number} in favor of #{pr.number}")
+                logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")

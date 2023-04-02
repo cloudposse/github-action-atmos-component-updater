@@ -1,23 +1,21 @@
+import sys
 import logging
 import click
-import sys
 
 from component_updater import ComponentUpdater, ComponentUpdaterError
 from github_provider import GitHubProvider
-from git_provider import GitProvider
 from tools import ToolExecutionError
 
 
 def main(github_api_token, infra_repo_name, infra_repo_dir, go_getter_tool):
     github_provider = GitHubProvider(github_api_token, infra_repo_name)
-    git_provider = GitProvider()
 
-    component_updater = ComponentUpdater(git_provider, github_provider, infra_repo_dir, go_getter_tool)
+    component_updater = ComponentUpdater(github_provider, infra_repo_dir, go_getter_tool)
 
     try:
         component_updater.update()
-    except (ComponentUpdaterError, ToolExecutionError) as e:
-        logging.error(e.message)
+    except (ComponentUpdaterError, ToolExecutionError) as error:
+        logging.error(error.message)
         sys.exit(1)
 
 
@@ -36,4 +34,5 @@ def cli_main(github_api_token, infra_repo_name, infra_repo_dir, go_getter_tool, 
 
 
 if __name__ == "__main__":
+    # pylint: disable=no-value-for-parameter
     cli_main()
