@@ -5,7 +5,6 @@ from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
 from github_provider import GitHubProvider
 
-TERRAFORM_COMPONENTS_SUBDIR = 'components/terraform'
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
 MAX_NUMBER_OF_DIFF_TO_SHOW = 2
 
@@ -17,14 +16,15 @@ class ComponentUpdaterError(Exception):
 
 
 class ComponentUpdater:
-    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str, go_getter_tool: str):
+    def __init__(self, github_provider: GitHubProvider, infra_repo_dir: str, infra_terraform_dir: str, go_getter_tool: str):
         self.__github_provider = github_provider
         self.__infra_repo_dir = infra_repo_dir
+        self.__infra_terraform_dir = infra_terraform_dir
         self.__download_dir = io.create_tmp_dir()
         self.__go_getter_tool = go_getter_tool
 
     def update(self):
-        infra_components_dir = os.path.join(self.__infra_repo_dir, TERRAFORM_COMPONENTS_SUBDIR)
+        infra_components_dir = os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)
 
         logging.debug(f"Looking for components in: {infra_components_dir}")
 
@@ -50,7 +50,7 @@ class ComponentUpdater:
         return component_yaml_paths
 
     def __update_component(self, component_file: str):
-        original_component = AtmosComponent(self.__infra_repo_dir, component_file)
+        original_component = AtmosComponent(self.__infra_repo_dir, self.__infra_terraform_dir, component_file)
 
         logging.info(f"Processing component: {original_component.get_name()}")
 
@@ -129,7 +129,7 @@ class ComponentUpdater:
         update_infra_repo_dir = io.create_tmp_dir()
         io.copy_dirs(self.__infra_repo_dir, update_infra_repo_dir)
         component_file = os.path.join(update_infra_repo_dir, component.get_relative_path())
-        return AtmosComponent(update_infra_repo_dir, component_file)
+        return AtmosComponent(update_infra_repo_dir, self.__infra_terraform_dir, component_file)
 
     def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent):
         updated_files = io.get_filenames_in_dir(updated_component.get_component_dir(), ['**/*'])
