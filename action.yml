@@ -14,12 +14,10 @@ inputs:
     default: 'components/terraform'
   includes:
     description: "CSV list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included. Default '*'"
-    required: true
-    default: '*'
+    required: false
   excludes:
     description: "CSV list of component names to exclude. For example: 'vpc,eks/*,rds'. By default no components are excluded. Default ''"
-    required: true
-    default: ''
+    required: false
   log-level:
     description: "Log level for this action. Default 'INFO'"
     required: true
@@ -63,7 +61,6 @@ runs:
       shell: bash
       run: |
         cd ${{ github.action_path }}
-        echo "${{ env.GO_GETTER_TOOL }}"
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
           --go-getter-tool ${{ env.GO_GETTER_TOOL }} \
