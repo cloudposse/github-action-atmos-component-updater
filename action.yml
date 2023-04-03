@@ -67,6 +67,6 @@ runs:
           --infra-repo-name ${{ github.repository }} \
           --infra-repo-dir ${{ github.workspace }} \
           --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
-          --includes ${{ inputs.includes }} \
-          --excludes ${{ inputs.excludes }} \
+          --includes "${{ inputs.includes }}" \
+          --excludes "${{ inputs.excludes }}" \
           --log-level ${{ inputs.log-level }}
