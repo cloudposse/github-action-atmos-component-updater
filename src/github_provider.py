@@ -8,7 +8,7 @@ from atmos_component import AtmosComponent
 BRANCH_PREFIX = 'component-update'
 TEMPLATES_DIR = 'src/templates'
 GITHUB_PULL_REQUEST_LABEL = 'component-update'
-PR_TITLE_TEMPLATE = "Component `{component_name}` update from {old_version} to {new_version}"
+PR_TITLE_TEMPLATE = "Component `{component_name}` update from {old_version} → {new_version}"
 
 
 class GitHubProvider:

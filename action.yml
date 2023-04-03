@@ -63,12 +63,13 @@ runs:
       shell: bash
       run: |
         cd ${{ github.action_path }}
+        echo "${{ env.GO_GETTER_TOOL }}"
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
+          --go-getter-tool ${{ env.GO_GETTER_TOOL }} \
           --infra-repo-name ${{ github.repository }} \
           --infra-repo-dir ${{ github.workspace }} \
           --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
           --includes ${{ inputs.includes }} \
           --excludes ${{ inputs.excludes }} \
-          --go-getter-tool ${{ env.GO_GETTER_TOOL }} \
           --log-level ${{ inputs.log-level }}
