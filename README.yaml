@@ -5,11 +5,12 @@
 #
 
 # Name of this project
-name: example-github-action-composite
+name: github-action-atmos-component-updater
 
 # Tags of this project
 tags:
   - github-action
+  - atmos
 
 # Logo for this project
 #logo: docs/logo.png
@@ -18,13 +19,13 @@ tags:
 license: "APACHE2"
 
 # Canonical GitHub repo
-github_repo: cloudposse/example-github-action-composite
+github_repo: cloudposse/github-action-atmos-component-updater
 
 # Badges to display
 badges:
   - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/example-github-action-composite.svg"
-    url: "https://github.com/cloudposse/example-github-action-composite/releases/latest"
+    image: "https://img.shields.io/github/release/cloudposse/github-action-atmos-component-updater.svg"
+    url: "https://github.com/cloudposse/github-action-atmos-component-updater/releases/latest"
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
@@ -32,11 +33,10 @@ badges:
 related: []
 
 # Short description of this project
-description: Template repository of composite GitHub Action
+description: This is GitHub Action that can be used as workflow for automatic update via Pull Requests you infra repository according to versions to your components sources.
 
 introduction: |-
-  This is template repository to create composite GitHub Actions. 
-  Feel free to use it as reference and starting point.
+  This is GitHub Action that can be used as workflow for automatic update via Pull Requests you infra repository according to versions to your components sources.
 
 references:
   - name: "github-actions-workflows"
@@ -49,24 +49,23 @@ references:
 # How to use this project
 usage: |-
   ```yaml
-    name: Pull Request
+    name: "atmos-components"
+
     on:
-      pull_request:
-        branches: [ 'main' ]
-        types: [opened, synchronize, reopened, closed, labeled, unlabeled]
+      workflow_dispatch: {}
+
+      schedule:
+        - cron:  '0 8 * * 1'         # Execute every week on Monday at 08:00
 
     jobs:
-      context:
+      update:
         runs-on: ubuntu-latest
         steps:
-          - name: Example action
-            uses: cloudposse/example-github-action-composite@main
-            id: example
+          - name: Update Atmos Components
+            uses: cloudposse/github-action-atmos-component-updater@1
             with:
-              param1: true
-  
-        outputs:
-          result: ${{ steps.example.outputs.result1 }}
+              github-access-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+              excludes: 'eks/*'
   ```
 
 include:
@@ -74,5 +73,7 @@ include:
 
 # Contributors to this project
 contributors:
-  - name: "Igor Rodionov"
-    github: "goruha"
+  - name: "Zinovii Dmytriv"
+    github: "zdmytriv"
+  - name: "Erik Osterman"
+    github: "osterman"
