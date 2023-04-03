@@ -15,9 +15,11 @@ inputs:
   includes:
     description: "CSV list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included. Default '*'"
     required: false
+    default: '*'
   excludes:
     description: "CSV list of component names to exclude. For example: 'vpc,eks/*,rds'. By default no components are excluded. Default ''"
     required: false
+    default: ''
   log-level:
     description: "Log level for this action. Default 'INFO'"
     required: true
