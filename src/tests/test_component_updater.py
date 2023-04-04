@@ -234,7 +234,8 @@ def test_no_changes_found():
     # setup
     infra_dir = io.create_tmp_dir()
     components_download_dir = 'src/tests/fixtures/terraform-aws-components'
-    create_component('test_component', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test-component?ref={{ .Version }}', '1.107.0', infra_dir, 'infra-repo-03-vendored-no-changes')
+    create_component('test_component', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test-component?ref={{ .Version }}',
+                     '1.107.0', infra_dir, 'infra-repo-03-vendored-no-changes')
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider('test/repo', fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=False)

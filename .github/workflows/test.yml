@@ -27,9 +27,14 @@ jobs:
       - name: Install Python Dependencies
         shell: bash
         run: |
-          pip install -r src/requirements.txt
+          make install-deps
+
+      - name: Prep Test Fixtures
+        shell: bash
+        run: |
+          make prep-fixtures
 
       - name: Run Tests
         shell: bash
         run: |
-          pytest -s -v --pyargs src/
+          make test
