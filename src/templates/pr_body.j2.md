@@ -24,7 +24,7 @@ This is an auto-generated PR that updates component `{{ component_name }}` to ve
 ## FAQ
 
 ### What to do if there are breaking changes?
-Please let Cloud Posse know by raising an issue.
+Please let Cloud Posse know by [raising an issue](https://github.com/cloudposse/terraform-aws-components/issues/new/choose).
 
 ### What to do if there are no changes to the deployed infrastructure?
 We recommend merging the PR, that way it's easier to identify when there are breaking changes in the future and at what version.
