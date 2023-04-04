@@ -12,6 +12,7 @@ def main(github_api_token: str,
          infra_repo_dir: str,
          infra_terraform_dirs: str,
          skip_component_vendoring: bool,
+         max_number_of_prs: int,
          includes: str,
          excludes: str,
          go_getter_tool: str):
@@ -24,7 +25,8 @@ def main(github_api_token: str,
                                              includes,
                                              excludes,
                                              go_getter_tool,
-                                             skip_component_vendoring)
+                                             skip_component_vendoring,
+                                             max_number_of_prs)
 
         try:
             component_updater.update()
@@ -54,6 +56,11 @@ def main(github_api_token: str,
               show_default=True,
               default=False,
               help="Do not perform 'atmos vendor <component-name>' on components that wasn't vendored")
+@click.option('--max-number-of-prs',
+              required=True,
+              show_default=True,
+              default=10,
+              help="Number of PRs to create. Maximum is 10.")
 @click.option('--includes',
               required=False,
               help="Comma or new line separated list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included")
@@ -68,12 +75,12 @@ def main(github_api_token: str,
               show_default=True,
               required=False,
               help="Log Level: [CRITICAL|ERROR|WARNING|INFO|DEBUG]")
-def cli_main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, includes, excludes, go_getter_tool, log_level):
+def cli_main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, max_number_of_prs, includes, excludes, go_getter_tool, log_level):
     logging.basicConfig(format='[%(asctime)s] %(levelname)-7s %(message)s',
                         datefmt='%d-%m-%Y %H:%M:%S',
                         level=logging.getLevelName(log_level))
 
-    main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, includes, excludes, go_getter_tool)
+    main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, max_number_of_prs, includes, excludes, go_getter_tool)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,10 @@ inputs:
     description: "Do not perform 'atmos vendor component-name' on components that wasn't vendored"
     required: false
     default: 'false'
+  max-number-of-prs:
+    description: "Number of PRs to create. Maximum is 10."
+    required: false
+    default: 10
   includes:
     description: "CSV list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included. Default '*'"
     required: false
@@ -74,6 +78,7 @@ runs:
           --infra-repo-dir ${{ github.workspace }} \
           --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
           --skip-component-vendoring ${{ inputs.skip-component-vendoring }} \
+          --max-number-of-prs ${{ inputs.max-number-of-prs }} \
           --includes "${{ inputs.includes }}" \
           --excludes "${{ inputs.excludes }}" \
           --log-level ${{ inputs.log-level }}

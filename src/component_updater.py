@@ -34,7 +34,6 @@ class ComponentUpdaterResponseState(Enum):
 class ComponentUpdaterResponse:
     def __init__(self, component: AtmosComponent):
         self.component = component
-        self.was_updated: bool = False
         self.state: ComponentUpdaterResponseState = ComponentUpdaterResponseState.UNDEFINED
         self.component_path: str
         self.branch_name: str
@@ -49,7 +48,8 @@ class ComponentUpdater:
                  includes: str,
                  excludes: str,
                  go_getter_tool: str,
-                 skip_component_vendoring: bool = False,
+                 skip_component_vendoring: bool,
+                 max_number_of_prs: int,
                  components_download_dir: str = io.create_tmp_dir(),
                  skip_component_repo_fetching: bool = False):
         self.__github_provider = github_provider
@@ -58,6 +58,7 @@ class ComponentUpdater:
         self.__download_dir = components_download_dir
         self.__go_getter_tool = go_getter_tool
         self.__skip_component_vendoring = skip_component_vendoring
+        self.__max_number_of_prs = min(max_number_of_prs, 10)
         self.__skip_component_repo_fetching = skip_component_repo_fetching
         self.__includes = self.__parse_csv(includes)
         self.__excludes = self.__parse_csv(excludes)
@@ -73,8 +74,17 @@ class ComponentUpdater:
 
         responses = []
 
+        num_pr_created = 0
+
         for component_file in component_files:
-            responses.append(self.__update_component(component_file))
+            response = self.__update_component(component_file)
+            responses.append(response)
+
+            num_pr_created += 1 if hasattr(response, 'pull_request') and response.pull_request else 0
+
+            if num_pr_created >= self.__max_number_of_prs:
+                logging.info(f"Max number of PRs ({self.__max_number_of_prs}) reached. Skipping the rest")
+                break
 
         return responses
 
