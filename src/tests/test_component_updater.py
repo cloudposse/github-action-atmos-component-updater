@@ -25,6 +25,8 @@ TERRAFORM_COMPONENTS_INVALID_REPO_PATH = 'src/tests/fixtures/terraform-aws-compo
 def module_setup():
     # initialize 'terraform-aws-components'
     subprocess.run(['git', 'init'], cwd=TERRAFORM_COMPONENTS_REPO_PATH, check=False)
+    subprocess.run(['git', 'config', '--global', 'user.email', "you@example.com"], cwd=TERRAFORM_COMPONENTS_REPO_PATH, check=False)
+    subprocess.run(['git', 'config', '--global', 'user.name', "Your Name"], cwd=TERRAFORM_COMPONENTS_REPO_PATH, check=False)
     subprocess.run(['git', 'checkout', '-b', 'main'], cwd=TERRAFORM_COMPONENTS_REPO_PATH, check=False)
     subprocess.run(['git', 'add', '.'], cwd=TERRAFORM_COMPONENTS_REPO_PATH, check=False)
     subprocess.run(['git', 'commit', '-m', '"update"'], cwd=TERRAFORM_COMPONENTS_REPO_PATH, check=False)
