@@ -18,12 +18,6 @@ class AtmosComponent:
         self.__yaml_content = {}
         self.__initialize()
 
-    def has_version(self) -> bool:
-        return bool(self.version)
-
-    def has_valid_uri(self) -> bool:
-        return bool(self.uri_repo and self.uri_path)
-
     @property
     def version(self):
         version = self.__yaml_content.get('spec', {}).get('source', {}).get('version')

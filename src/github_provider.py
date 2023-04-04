@@ -12,8 +12,8 @@ PR_TITLE_TEMPLATE = "Component `{component_name}` update from {old_version} → 
 
 
 class GitHubProvider:
-    def __init__(self, api_token: str, repo_name: str):
-        self.__github = Github(api_token)
+    def __init__(self, repo_name: str, github: Github):
+        self.__github = github
         self.__repo = self.__github.get_repo(repo_name)
         self.__pull_requests = None
         jenv = jinja2.Environment(loader=FileSystemLoader(TEMPLATES_DIR))
@@ -53,7 +53,7 @@ class GitHubProvider:
 
         return branch_name in branches or remote_branch_name in branches
 
-    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent):
+    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent) -> PullRequest:
         branch = self.__repo.get_branch(branch_name)
 
         title = PR_TITLE_TEMPLATE.format(component_name=original_component.name,

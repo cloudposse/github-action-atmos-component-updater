@@ -1,7 +1,7 @@
 import sys
 import logging
 import click
-
+from github import Github
 from component_updater import ComponentUpdater, ComponentUpdaterError
 from github_provider import GitHubProvider
 from tools import ToolExecutionError
@@ -14,7 +14,7 @@ def main(github_api_token: str,
          includes: str,
          excludes: str,
          go_getter_tool: str):
-    github_provider = GitHubProvider(github_api_token, infra_repo_name)
+    github_provider = GitHubProvider(infra_repo_name, Github(github_api_token))
 
     for infra_terraform_dir in infra_terraform_dirs.split(','):
         component_updater = ComponentUpdater(github_provider,
@@ -45,13 +45,13 @@ def main(github_api_token: str,
 @click.option('--infra-terraform-dirs',
               required=True,
               default='components/terraform',
-              help="CSV list of terraform directories in infra repo. For example 'components/terraform,components/terraform2")
+              help="Comma or new line separated list of terraform directories in infra repo. For example 'components/terraform/gcp,components/terraform/aws")
 @click.option('--includes',
               required=False,
-              help="CSV list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included")
+              help="Comma or new line separated list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included")
 @click.option('--excludes',
               required=False,
-              help="CSV list of component names to exclude. For example: 'vpc,eks/*,rds'. By default no components are excluded")
+              help="Comma or new line separated list of component names to exclude. For example: 'vpc,eks/*,rds'. By default no components are excluded")
 @click.option('--go-getter-tool',
               required=True,
               help="Path to go-getter")

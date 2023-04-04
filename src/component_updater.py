@@ -2,6 +2,8 @@ import os
 import logging
 import fnmatch
 from typing import List
+from enum import Enum
+from github.PullRequest import PullRequest
 import tools
 from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
@@ -17,6 +19,28 @@ class ComponentUpdaterError(Exception):
         super().__init__(message)
 
 
+class ComponentUpdaterResponseState(Enum):
+    UNDEFINED = 1
+    UPDATED = 2
+    NO_VERSION_FOUND_IN_SOURCE_YAML = 3
+    NOT_VALID_URI_FOUND_IN_SOURCE_YAML = 4
+    URI_IS_NOT_GIT_REPO = 5
+    NO_LATEST_TAG_FOUND_IN_COMPONENT_REPO = 6
+    ALREADY_UP_TO_DATE = 7
+    REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST = 8
+    NO_CHANGES_FOUND = 9
+
+
+class ComponentUpdaterResponse:
+    def __init__(self, component: AtmosComponent):
+        self.component = component
+        self.was_updated: bool = False
+        self.state: ComponentUpdaterResponseState = ComponentUpdaterResponseState.UNDEFINED
+        self.component_path: str
+        self.branch_name: str
+        self.pull_request: PullRequest
+
+
 class ComponentUpdater:
     def __init__(self,
                  github_provider: GitHubProvider,
@@ -24,16 +48,21 @@ class ComponentUpdater:
                  infra_terraform_dir: str,
                  includes: str,
                  excludes: str,
-                 go_getter_tool: str):
+                 go_getter_tool: str,
+                 skip_component_vendoring: bool = False,
+                 components_download_dir: str = io.create_tmp_dir(),
+                 skip_component_repo_fetching: bool = False):
         self.__github_provider = github_provider
         self.__infra_repo_dir = infra_repo_dir
         self.__infra_terraform_dir = infra_terraform_dir
-        self.__download_dir = io.create_tmp_dir()
+        self.__download_dir = components_download_dir
         self.__go_getter_tool = go_getter_tool
+        self.__skip_component_vendoring = skip_component_vendoring
+        self.__skip_component_repo_fetching = skip_component_repo_fetching
         self.__includes = self.__parse_csv(includes)
         self.__excludes = self.__parse_csv(excludes)
 
-    def update(self):
+    def update(self) -> List[ComponentUpdaterResponse]:
         infra_components_dir = os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)
 
         logging.debug(f"Looking for components in: {infra_components_dir}")
@@ -42,8 +71,12 @@ class ComponentUpdater:
 
         logging.info(f"Found {len(component_files)} components")
 
+        responses = []
+
         for component_file in component_files:
-            self.__update_component(component_file)
+            responses.append(self.__update_component(component_file))
+
+        return responses
 
     def __get_components(self, infra_components_dir: str) -> List[str]:
         component_yaml_paths = []
@@ -64,41 +97,53 @@ class ComponentUpdater:
 
         return component_yaml_paths
 
-    def __update_component(self, component_file: str):
+    def __update_component(self, component_file: str) -> ComponentUpdaterResponse:
         original_component = AtmosComponent(self.__infra_repo_dir, self.__infra_terraform_dir, component_file)
+        response = ComponentUpdaterResponse(original_component)
 
         logging.info(f"Processing component: {original_component.name}")
 
-        if not original_component.has_version():
+        if not self.__component_has_version(original_component):
             logging.warning("Component doesn't have 'version' specified. Skipping")
-            return
+            response.state = ComponentUpdaterResponseState.NO_VERSION_FOUND_IN_SOURCE_YAML
+            return response
 
-        if not original_component.has_valid_uri():
+        if not self.__component_has_valid_uri(original_component):
             logging.warning("Component doesn't have valid 'uri' specified. Skipping")
-            return
+            response.state = ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
+            return response
 
-        repo_dir = self.__fetch_component_repo(original_component)
+        repo_dir = self.__fetch_component_repo(original_component) if not self.__skip_component_repo_fetching else self.__download_dir
 
         if not self.__is_git_repo(repo_dir):
             logging.warning("Component repository is not git repo. Can't figure out latest version. Skipping")
-            return
+            response.state = ComponentUpdaterResponseState.URI_IS_NOT_GIT_REPO
+            return response
 
         latest_tag = tools.git_get_latest_tag(repo_dir)
 
         if not latest_tag:
             logging.warning("Unable to figure out latest tag. Skipping")
-            return
+            response.state = ComponentUpdaterResponseState.NO_LATEST_TAG_FOUND_IN_COMPONENT_REPO
+            return response
 
         if original_component.version == latest_tag:
             logging.info("Component already updated. Skipping")
-            return
+            response.state = ComponentUpdaterResponseState.ALREADY_UP_TO_DATE
+            return response
 
         updated_component = self.__clone_infra_for_component(original_component)
+
+        response.component = updated_component
+
         branch_name = self.__github_provider.build_component_branch_name(updated_component.normalized_name, latest_tag)
+
+        response.branch_name = branch_name
 
         if self.__github_provider.branch_exists(updated_component.infra_repo_dir, branch_name):
             logging.info(f"Branch '{branch_name}' already exists. Skipping")
-            return
+            response.state = ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST
+            return response
 
         updated_component.update_version(latest_tag)
         updated_component.persist()
@@ -106,27 +151,34 @@ class ComponentUpdater:
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
 
-            try:
-                tools.atmos_vendor_component(updated_component)
-            except tools.ToolExecutionError as error:
-                logging.error(f"Failed to vendor component: {error}")
-                return
+            if not self.__skip_component_vendoring:
+                try:
+                    tools.atmos_vendor_component(updated_component)
+                except tools.ToolExecutionError as error:
+                    logging.error(f"Failed to vendor component: {error}")
+                    return response
 
-            self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
-            return
+            pull_request: PullRequest = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
+            response.pull_request = pull_request
+            response.state = ComponentUpdaterResponseState.UPDATED
+            return response
 
         # re-vendor component
-        tools.atmos_vendor_component(updated_component)
         try:
             tools.atmos_vendor_component(updated_component)
         except tools.ToolExecutionError as error:
             logging.error(f"Failed to vendor component: {error}")
-            return
+            return response
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
-        else:
-            logging.info("Looking good. No changes found")
+            pull_request: PullRequest = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
+            response.pull_request = pull_request
+            response.state = ComponentUpdaterResponseState.UPDATED
+            return response
+
+        logging.info("Looking good. No changes found")
+        response.state = ComponentUpdaterResponseState.NO_CHANGES_FOUND
+        return response
 
     def __fetch_component_repo(self, component: AtmosComponent):
         normalized_repo_path = component.uri_repo.replace('/', '-') if component.uri_repo else ''
@@ -174,7 +226,7 @@ class ComponentUpdater:
 
         return needs_update
 
-    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str):
+    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequest:
         self.__github_provider.create_branch_and_push_all_changes(repo_dir,
                                                                   branch_name,
                                                                   COMMIT_MESSAGE_TEMPLATE.format(
@@ -185,9 +237,9 @@ class ComponentUpdater:
 
         logging.info(f"Opening PR for branch {branch_name}")
 
-        pull_request = self.__github_provider.open_pr(branch_name,
-                                                      original_component,
-                                                      updated_component)
+        pull_request: PullRequest = self.__github_provider.open_pr(branch_name,
+                                                                   original_component,
+                                                                   updated_component)
 
         logging.info(f"Opened PR #{pull_request.number}")
 
@@ -198,6 +250,14 @@ class ComponentUpdater:
                 closing_message = f"Closing in favor of PR #{pull_request.number}"
                 self.__github_provider.close_pr(opened_pr, closing_message)
                 logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
+
+        return pull_request
+
+    def __component_has_version(self, component) -> bool:
+        return bool(component.version)
+
+    def __component_has_valid_uri(self, component) -> bool:
+        return bool(component.uri_repo and component.uri_path)
 
     def __parse_csv(self, csv_list: str) -> List[str]:
         return [x.strip() for x in csv_list.split(',')] if csv_list else []
