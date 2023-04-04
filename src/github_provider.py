@@ -132,10 +132,12 @@ class GitHubProvider:
         return component_release_tag_link
 
     def __build_get_source(self, component: AtmosComponent) -> Tuple[str, str]:
-        matches = re.search(r'github\.com/([^/]+/[^/]+)(?!\.git)', component.uri_repo)
+        match = re.match(r"https://github.com/(?P<company>[\w\-~.%]+)/(?P<repo>[\w\-~.%]+)", component.uri_repo)
 
-        if matches:
-            source_name = matches.group(1)
+        if match:
+            company = match.group("company")
+            repo = re.sub(r"\.git", "", match.group("repo"))
+            source_name = f'{company}/{repo}'
             source_link = f'https://github.com/{source_name}'
         else:
             source_name = component.uri_repo

@@ -10,12 +10,12 @@ inputs:
     required: true
   infra-terraform-dirs:
     description: "CSV list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform'"
-    required: true
+    required: false
     default: 'components/terraform'
   skip-component-vendoring:
     description: "Do not perform 'atmos vendor component-name' on components that wasn't vendored"
     required: false
-    default: false
+    default: 'false'
   includes:
     description: "CSV list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included. Default '*'"
     required: false
@@ -26,8 +26,8 @@ inputs:
     default: ''
   log-level:
     description: "Log level for this action. Default 'INFO'"
-    required: true
-    default: INFO
+    required: false
+    default: 'INFO'
 runs:
   using: "composite"
   steps:

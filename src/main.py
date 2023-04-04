@@ -46,10 +46,12 @@ def main(github_api_token: str,
               help="Path to cloned infra/repo")
 @click.option('--infra-terraform-dirs',
               required=True,
+              show_default=True,
               default='components/terraform',
               help="Comma or new line separated list of terraform directories in infra repo. For example 'components/terraform/gcp,components/terraform/aws")
 @click.option('--skip-component-vendoring',
               required=True,
+              show_default=True,
               default=False,
               help="Do not perform 'atmos vendor <component-name>' on components that wasn't vendored")
 @click.option('--includes',
@@ -63,6 +65,7 @@ def main(github_api_token: str,
               help="Path to go-getter")
 @click.option('--log-level',
               default='INFO',
+              show_default=True,
               required=False,
               help="Log Level: [CRITICAL|ERROR|WARNING|INFO|DEBUG]")
 def cli_main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, includes, excludes, go_getter_tool, log_level):
