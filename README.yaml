@@ -62,7 +62,7 @@ usage: |-
         runs-on: ubuntu-latest
         steps:
           - name: Update Atmos Components
-            uses: cloudposse/github-action-atmos-component-updater@1
+            uses: cloudposse/github-action-atmos-component-updater@v1
             with:
               github-access-token: ${{ secrets.REPO_ACCESS_TOKEN }}
               excludes: 'eks/*'
