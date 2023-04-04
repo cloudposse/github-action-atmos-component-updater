@@ -1,3 +1,5 @@
+import re
+from typing import Tuple
 import jinja2
 import git.repo
 from github import Github
@@ -17,7 +19,7 @@ class GitHubProvider:
         self.__repo = self.__github.get_repo(repo_name)
         self.__pull_requests = None
         jenv = jinja2.Environment(loader=FileSystemLoader(TEMPLATES_DIR))
-        self.__pr_body_template = jenv.get_template('pr_body.md')
+        self.__pr_body_template = jenv.get_template('pr_body.j2.md')
 
     def build_component_branch_name(self, component_name: str, tag: str):
         return f'{BRANCH_PREFIX}/{component_name}/{tag}'
@@ -66,7 +68,11 @@ class GitHubProvider:
         original_component_release_link = self.__build_component_release_tag_link(original_component)
         updated_component_release_link = self.__build_component_release_tag_link(updated_component)
 
+        source_name, source_link = self.__build_get_source(original_component)
+
         body = self.__pr_body_template.render(component_name=original_component.name,
+                                              source_name=source_name,
+                                              source_link=source_link,
                                               old_version=original_component.version,
                                               new_version=updated_component.version,
                                               old_version_link=original_component_version_link,
@@ -124,6 +130,18 @@ class GitHubProvider:
             component_release_tag_link = f'{normalized_repo_uri}/releases/tag/{component.version}'
 
         return component_release_tag_link
+
+    def __build_get_source(self, component: AtmosComponent) -> Tuple[str, str]:
+        matches = re.search(r'github\.com/([^/]+/[^/]+)', component.uri_repo)
+
+        if matches:
+            source_name = matches.group(1)
+            source_link = f'https://github.com/{source_name}'
+        else:
+            source_name = component.uri_repo
+            source_link = component.uri_repo
+
+        return source_name, source_link
 
     def __remove_git_suffix(self, repo_uri: str):
         if repo_uri.endswith('.git'):

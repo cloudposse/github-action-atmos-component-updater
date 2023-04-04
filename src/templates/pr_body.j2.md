@@ -2,9 +2,10 @@
 
 This is an auto-generated PR that updates component `{{ component_name }}` to version `{{ new_version }}`.
 
-| Meta               | Details                |
-|:-------------------|:-----------------------|
-| **Component** | `{{ component_name }}` |
+| Meta               | Details                                |
+|:-------------------|:---------------------------------------|
+| **Component**      | `{{ component_name }}`                 |
+| **Source**         | [{{ source_name }}]({{ source_link }}) |
 | **Old Version**    | {% if old_version_link is defined %}[`{{ old_version }}`]({{ old_version_link }}){% else %}`{{ old_version }}`{% endif %}{% if old_component_release_link is defined %}, [Release notes]({{ old_component_release_link }}){% endif %} |
 | **New Version**    | {% if new_version_link is defined %}[`{{ new_version }}`]({{ new_version_link }}){% else %}`{{ new_version }}`{% endif %}{% if new_component_release_link is defined %}, [Release notes]({{ new_component_release_link }}){% endif %} |
 
