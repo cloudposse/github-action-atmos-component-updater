@@ -87,7 +87,12 @@ This is GitHub Action that can be used as workflow for automatic update via Pull
           uses: cloudposse/github-action-atmos-component-updater@v1
           with:
             github-access-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-            excludes: 'eks/*'
+            max-number-of-prs: 5
+            includes: |
+              aws-*
+              eks/*
+              bastion
+            excludes: aws-sso,aws-saml
 ```
 
 
