@@ -33,10 +33,10 @@ badges:
 related: []
 
 # Short description of this project
-description: This is GitHub Action that can be used as workflow for automatic update via Pull Requests you infra repository according to versions to your components sources.
+description: This is GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources.
 
 introduction: |-
-  This is GitHub Action that can be used as workflow for automatic update via Pull Requests you infra repository according to versions to your components sources.
+  This is GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources.
 
 references:
   - name: "github-actions-workflows"
