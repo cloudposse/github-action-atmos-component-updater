@@ -1,6 +1,7 @@
 import os
 import logging
 import fnmatch
+import re
 from typing import List
 from enum import Enum
 from github.PullRequest import PullRequest
@@ -60,8 +61,8 @@ class ComponentUpdater:
         self.__skip_component_vendoring = skip_component_vendoring
         self.__max_number_of_prs = min(max_number_of_prs, 10)
         self.__skip_component_repo_fetching = skip_component_repo_fetching
-        self.__includes = self.__parse_csv(includes)
-        self.__excludes = self.__parse_csv(excludes)
+        self.__includes = self.__parse_comma_or_new_line_separated_list(includes)
+        self.__excludes = self.__parse_comma_or_new_line_separated_list(excludes)
 
     def update(self) -> List[ComponentUpdaterResponse]:
         infra_components_dir = os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)
@@ -269,8 +270,8 @@ class ComponentUpdater:
     def __component_has_valid_uri(self, component) -> bool:
         return bool(component.uri_repo and component.uri_path)
 
-    def __parse_csv(self, csv_list: str) -> List[str]:
-        return [x.strip() for x in csv_list.split(',')] if csv_list else []
+    def __parse_comma_or_new_line_separated_list(self, components: str) -> List[str]:
+        return [x.strip() for x in re.split(',|\n', components)] if components else []
 
     def __should_component_be_processed(self, component_name: str) -> bool:
         if len(self.__includes) == 0 and len(self.__excludes) == 0:
