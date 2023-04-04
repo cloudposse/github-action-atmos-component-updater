@@ -27,7 +27,6 @@ jobs:
       - name: Install Python Dependencies
         shell: bash
         run: |
-          cd ${{ github.action_path }}
           pip install -r src/requirements.txt
 
       - name: Run Tests
