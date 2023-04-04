@@ -80,6 +80,7 @@ This is GitHub Action that can be used as workflow for automatic update via Pull
       - cron:  '0 8 * * 1'         # Execute every week on Monday at 08:00
 
   permissions:
+    contents: write
     pull-requests: write
 
   jobs:
