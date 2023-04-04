@@ -30,7 +30,7 @@
 
 -->
 
-This is GitHub Action that can be used as workflow for automatic update via Pull Requests you infra repository according to versions to your components sources.
+This is GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources.
 
 ---
 
@@ -60,7 +60,7 @@ It's 100% Open Source and licensed under the [APACHE2](LICENSE).
 
 ## Introduction
 
-This is GitHub Action that can be used as workflow for automatic update via Pull Requests you infra repository according to versions to your components sources.
+This is GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources.
 
 
 
@@ -79,6 +79,9 @@ This is GitHub Action that can be used as workflow for automatic update via Pull
     schedule:
       - cron:  '0 8 * * 1'         # Execute every week on Monday at 08:00
 
+  permissions:
+    pull-requests: write
+
   jobs:
     update:
       runs-on: ubuntu-latest
@@ -86,7 +89,7 @@ This is GitHub Action that can be used as workflow for automatic update via Pull
         - name: Update Atmos Components
           uses: cloudposse/github-action-atmos-component-updater@v1
           with:
-            github-access-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+            github-access-token: ${{ secrets.GITHUB_TOKEN }}
             max-number-of-prs: 5
             includes: |
               aws-*

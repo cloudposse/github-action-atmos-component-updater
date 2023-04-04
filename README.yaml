@@ -57,6 +57,9 @@ usage: |-
       schedule:
         - cron:  '0 8 * * 1'         # Execute every week on Monday at 08:00
 
+    permissions:
+      pull-requests: write
+
     jobs:
       update:
         runs-on: ubuntu-latest
@@ -64,7 +67,7 @@ usage: |-
           - name: Update Atmos Components
             uses: cloudposse/github-action-atmos-component-updater@v1
             with:
-              github-access-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+              github-access-token: ${{ secrets.GITHUB_TOKEN }}
               max-number-of-prs: 5
               includes: |
                 aws-*
