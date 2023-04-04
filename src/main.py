@@ -11,6 +11,7 @@ def main(github_api_token: str,
          infra_repo_name: str,
          infra_repo_dir: str,
          infra_terraform_dirs: str,
+         skip_component_vendoring: bool,
          includes: str,
          excludes: str,
          go_getter_tool: str):
@@ -22,7 +23,8 @@ def main(github_api_token: str,
                                              infra_terraform_dir,
                                              includes,
                                              excludes,
-                                             go_getter_tool)
+                                             go_getter_tool,
+                                             skip_component_vendoring)
 
         try:
             component_updater.update()
@@ -46,6 +48,10 @@ def main(github_api_token: str,
               required=True,
               default='components/terraform',
               help="Comma or new line separated list of terraform directories in infra repo. For example 'components/terraform/gcp,components/terraform/aws")
+@click.option('--skip-component-vendoring',
+              required=True,
+              default=False,
+              help="Do not perform 'atmos vendor <component-name>' on components that wasn't vendored")
 @click.option('--includes',
               required=False,
               help="Comma or new line separated list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included")
@@ -59,12 +65,12 @@ def main(github_api_token: str,
               default='INFO',
               required=False,
               help="Log Level: [CRITICAL|ERROR|WARNING|INFO|DEBUG]")
-def cli_main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, includes, excludes, go_getter_tool, log_level):
+def cli_main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, includes, excludes, go_getter_tool, log_level):
     logging.basicConfig(format='[%(asctime)s] %(levelname)-7s %(message)s',
                         datefmt='%d-%m-%Y %H:%M:%S',
                         level=logging.getLevelName(log_level))
 
-    main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, includes, excludes, go_getter_tool)
+    main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, includes, excludes, go_getter_tool)
 
 
 if __name__ == "__main__":

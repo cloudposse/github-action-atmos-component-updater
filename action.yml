@@ -12,6 +12,10 @@ inputs:
     description: "CSV list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform'"
     required: true
     default: 'components/terraform'
+  skip-component-vendoring:
+    description: "Do not perform 'atmos vendor <component-name>' on components that wasn't vendored"
+    required: false
+    default: false
   includes:
     description: "CSV list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included. Default '*'"
     required: false
@@ -69,6 +73,7 @@ runs:
           --infra-repo-name ${{ github.repository }} \
           --infra-repo-dir ${{ github.workspace }} \
           --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
+          --skip-component-vendoring ${{ inputs.skip-component-vendoring }} \
           --includes "${{ inputs.includes }}" \
           --excludes "${{ inputs.excludes }}" \
           --log-level ${{ inputs.log-level }}
