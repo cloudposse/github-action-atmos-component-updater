@@ -13,7 +13,7 @@ inputs:
     required: true
     default: 'components/terraform'
   skip-component-vendoring:
-    description: "Do not perform 'atmos vendor <component-name>' on components that wasn't vendored"
+    description: "Do not perform 'atmos vendor component-name' on components that wasn't vendored"
     required: false
     default: false
   includes:
