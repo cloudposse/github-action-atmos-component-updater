@@ -30,15 +30,19 @@ class GitHubProvider:
     def get_branches(self, repo_dir: str):
         branches = []
 
-        repo = git.repo.Repo(repo_dir)
+        try:
+            repo = git.repo.Repo(repo_dir)
 
-        for branch in repo.heads:
-            branches.append(branch.name)
+            for branch in repo.heads:
+                branches.append(branch.name)
 
-        remote_branches = repo.remote().refs
+            remote_branches = repo.remote().refs
 
-        for branch in remote_branches:
-            branches.append(branch.name)
+            for branch in remote_branches:
+                branches.append(branch.name)
+        finally:
+            # Don't want to fail the whole process if we can't get the branches
+            pass
 
         return set(branches)
 
