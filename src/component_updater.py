@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 import fnmatch
 import re
@@ -10,6 +11,7 @@ from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
 from github_provider import GitHubProvider
 from config import Config
+from tools import ToolExecutionError
 
 
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
@@ -54,7 +56,7 @@ class ComponentUpdater:
         self.__includes = self.__parse_comma_or_new_line_separated_list(config.includes)
         self.__excludes = self.__parse_comma_or_new_line_separated_list(config.excludes)
 
-    def update(self) -> List[ComponentUpdaterResponse]:
+    def update(self):
         infra_components_dir = os.path.join(self.__config.infra_repo_dir, self.__infra_terraform_dir)
 
         logging.debug(f"Looking for components in: {infra_components_dir}")
@@ -63,21 +65,23 @@ class ComponentUpdater:
 
         logging.info(f"Found {len(component_files)} components")
 
-        responses = []
-
         num_pr_created = 0
 
-        for component_file in component_files:
-            response = self.__update_component(component_file)
-            responses.append(response)
+        try:
+            for component_file in component_files:
+                response = self.__update_component(component_file)
 
-            num_pr_created += 1 if isinstance(response.pull_request, PullRequest) else 0
+                if response.state == ComponentUpdaterResponseState.UPDATED:
+                    self.__log_updated_component(response.component.name)
 
-            if num_pr_created >= self.__config.max_number_of_prs:
-                logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping the rest")
-                break
+                num_pr_created += 1 if isinstance(response.pull_request, PullRequest) else 0
 
-        return responses
+                if num_pr_created >= self.__config.max_number_of_prs:
+                    logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping the rest")
+                    break
+        except (ComponentUpdaterError, ToolExecutionError) as error:
+            logging.error(error.message)
+            sys.exit(1)
 
     def __get_components(self, infra_components_dir: str) -> List[str]:
         component_yaml_paths = []
@@ -237,11 +241,11 @@ class ComponentUpdater:
                                                                       component_name=updated_component.name,
                                                                       component_version=updated_component.version))
 
-        logging.info(f"Created branch: {branch_name} in 'origin'")
-
         if self.__config.dry_run:
+            logging.info("Skipping remote branch and pull request creation in dry-run mode")
             return None
 
+        logging.info(f"Created branch: {branch_name} in 'origin'")
         logging.info(f"Opening PR for branch {branch_name}")
 
         pull_request: PullRequest = self.__github_provider.open_pr(branch_name,
@@ -288,3 +292,6 @@ class ComponentUpdater:
                     break
 
         return should_be_processed
+
+    def __log_updated_component(self, component_name: str):
+        io.append_line_to_file(self.__config.affected_components_file, component_name)

@@ -1,10 +1,8 @@
-import sys
 import logging
 import click
 from github import Github
-from component_updater import ComponentUpdater, ComponentUpdaterError
+from component_updater import ComponentUpdater
 from github_provider import GitHubProvider
-from tools import ToolExecutionError
 from config import Config
 
 
@@ -13,12 +11,7 @@ def main(github_api_token: str, config: Config):
 
     for infra_terraform_dir in config.infra_terraform_dirs.split(','):
         component_updater = ComponentUpdater(github_provider, infra_terraform_dir, config)
-
-        try:
-            component_updater.update()
-        except (ComponentUpdaterError, ToolExecutionError) as error:
-            logging.error(error.message)
-            sys.exit(1)
+        component_updater.update()
 
 
 @click.command()
@@ -68,7 +61,6 @@ def main(github_api_token: str, config: Config):
               help="Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in --affected-components-file, Default: false.")
 @click.option('--affected-components-file',
               required=False,
-              show_default=True,
               help="Path to file that will contain list of affected components. One component per line. If not specified temporary file will be created in temp directory")
 def cli_main(github_api_token,
              infra_repo_name,

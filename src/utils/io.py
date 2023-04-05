@@ -50,3 +50,8 @@ def get_filenames_in_dir(dir_path: str, patterns):
 def calc_file_md5_hash(file):
     with open(file, "rb") as file:
         return hashlib.md5(file.read()).hexdigest()
+
+
+def append_line_to_file(file, line):
+    with open(file, "a", encoding="utf-8") as file:
+        print(line, file=file)

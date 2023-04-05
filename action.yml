@@ -36,6 +36,17 @@ inputs:
     description: "Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in 'outputs.affected-components-file'"
     required: false
     default: 'false'
+  affected-components-file:
+    description: "Path to file that will contain list of affected components. One component per line. If not specified temporary file will be created in temp directory"
+    required: false
+    default: 'affected-components.txt'
+outputs:
+  affected:
+    description: The affected components
+    value: ${{ steps.affected.outputs.affected }}
+  has-affected-stacks:
+    description: Whether there are affected components
+    value: ${{ steps.affected.outputs.affected != '[]' }}
 runs:
   using: "composite"
   steps:
@@ -86,4 +97,13 @@ runs:
           --includes "${{ inputs.includes }}" \
           --excludes "${{ inputs.excludes }}" \
           --log-level ${{ inputs.log-level }} \
-          --dry-run ${{ inputs.dry-run }}
+          --dry-run ${{ inputs.dry-run }} \
+          --affected-components-file ${{ inputs.affected-components-file }}
+
+    - name: Affected Components
+      id: affected
+      shell: bash
+      run: |
+        cat ${{ inputs.affected-components-file }}
+        affected=$(cat ${{ inputs.affected-components-file }})
+        echo "affected='$affected'" >> $GITHUB_OUTPUT
