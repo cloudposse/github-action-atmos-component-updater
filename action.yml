@@ -32,6 +32,10 @@ inputs:
     description: "Log level for this action. Default 'INFO'"
     required: false
     default: 'INFO'
+  dry-run:
+    description: "Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in 'outputs.affected-components-file'"
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -81,4 +85,5 @@ runs:
           --max-number-of-prs ${{ inputs.max-number-of-prs }} \
           --includes "${{ inputs.includes }}" \
           --excludes "${{ inputs.excludes }}" \
-          --log-level ${{ inputs.log-level }}
+          --log-level ${{ inputs.log-level }} \
+          --dry-run ${{ inputs.dry-run }}

@@ -62,11 +62,13 @@ def main(github_api_token: str, config: Config):
               required=False,
               help="Log Level: [CRITICAL|ERROR|WARNING|INFO|DEBUG]")
 @click.option('--dry-run',
-              is_flag=True,
+              required=False,
+              show_default=True,
               default=False,
-              help="Do not create remote branches and pull requests. Only print list of affected componented into file that is defined in --affected-components-file")
+              help="Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in --affected-components-file, Default: false.")
 @click.option('--affected-components-file',
               required=False,
+              show_default=True,
               help="Path to file that will contain list of affected components. One component per line. If not specified temporary file will be created in temp directory")
 def cli_main(github_api_token,
              infra_repo_name,
