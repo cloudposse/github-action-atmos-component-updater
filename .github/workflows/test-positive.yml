@@ -30,7 +30,6 @@ jobs:
         id: current
         with:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
-          expected: '["test_component"]'
           dry-run: 'true'
 
     outputs:
@@ -42,7 +41,7 @@ jobs:
     steps:
       - uses: nick-fields/assert-action@v1
         with:
-          expected: 'true'
+          expected: '["test_component"]'
           actual: "${{ needs.test.outputs.affected }}"
 
   teardown:
