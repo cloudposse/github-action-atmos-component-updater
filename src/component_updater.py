@@ -239,22 +239,24 @@ class ComponentUpdater:
 
         logging.info(f"Created branch: {branch_name} in 'origin'")
 
+        if self.__config.dry_run:
+            return None
+
         logging.info(f"Opening PR for branch {branch_name}")
 
-        pull_request: Optional[PullRequest] = self.__github_provider.open_pr(branch_name,
-                                                                             original_component,
-                                                                             updated_component)
+        pull_request: PullRequest = self.__github_provider.open_pr(branch_name,
+                                                                   original_component,
+                                                                   updated_component)
 
-        if not self.__config.dry_run and isinstance(pull_request, PullRequest):
-            logging.info(f"Opened PR #{pull_request.number}")
+        logging.info(f"Opened PR #{pull_request.number}")
 
-            opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
+        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
 
-            for opened_pr in opened_prs:
-                if opened_pr.number != pull_request.number:
-                    closing_message = f"Closing in favor of PR #{pull_request.number}"
-                    self.__github_provider.close_pr(opened_pr, closing_message)
-                    logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
+        for opened_pr in opened_prs:
+            if opened_pr.number != pull_request.number:
+                closing_message = f"Closing in favor of PR #{pull_request.number}"
+                self.__github_provider.close_pr(opened_pr, closing_message)
+                logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
 
         return pull_request
 

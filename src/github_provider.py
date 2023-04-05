@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Tuple
+from typing import Tuple
 import jinja2
 import git.repo
 from github import Github
@@ -60,7 +60,7 @@ class GitHubProvider:
 
         return branch_name in branches or remote_branch_name in branches
 
-    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent) -> Optional[PullRequest]:
+    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent) -> PullRequest:
         branch = self.__repo.get_branch(branch_name)
 
         title = PR_TITLE_TEMPLATE.format(component_name=original_component.name,
@@ -84,9 +84,6 @@ class GitHubProvider:
                                               new_version_link=updated_component_version_link,
                                               old_component_release_link=original_component_release_link,
                                               new_component_release_link=updated_component_release_link)
-
-        if self.__config.dry_run:
-            return None
 
         pull_request: PullRequest = self.__repo.create_pull(title=title,
                                                             body=body,
