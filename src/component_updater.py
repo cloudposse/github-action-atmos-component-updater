@@ -301,7 +301,3 @@ class ComponentUpdater:
                     break
 
         return should_be_processed
-
-    def __log_updated_component(self, component_name: str):
-        logging.debug(f"Added component to affected: {component_name}")
-        io.append_line_to_file(self.__config.affected_components_file, component_name)
