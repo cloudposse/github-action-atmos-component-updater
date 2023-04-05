@@ -1,4 +1,5 @@
 import re
+import logging
 from typing import Tuple
 import jinja2
 import git.repo
@@ -40,9 +41,8 @@ class GitHubProvider:
 
             for branch in remote_branches:
                 branches.append(branch.name)
-        finally:
-            # Don't want to fail the whole process if we can't get the branches
-            pass
+        except Exception as exception:  # pylint: disable=broad-exception-caught
+            logging.error(str(exception))
 
         return set(branches)
 
