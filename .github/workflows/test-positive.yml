@@ -7,6 +7,10 @@ on:
 #  pull_request: {}
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -25,10 +29,12 @@ jobs:
       - uses: ./
         id: current
         with:
-          param1: 'true'
+          github-access-token: ${{ secrets.GITHUB_TOKEN }}
+          expected: "'["test_component"]'"
+          dry-run: true
 
     outputs:
-      result: "${{ steps.current.outputs.result1 }}"
+      affected: "${{ steps.current.outputs.affected }}"
 
   assert:
     runs-on: ubuntu-latest
@@ -37,7 +43,7 @@ jobs:
       - uses: nick-fields/assert-action@v1
         with:
           expected: 'true'
-          actual: "${{ needs.test.outputs.result }}"
+          actual: "${{ needs.test.outputs.affected }}"
 
   teardown:
     runs-on: ubuntu-latest
