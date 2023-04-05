@@ -97,6 +97,8 @@ def cli_main(github_api_token,
                     dry_run,
                     affected_components_file)
 
+    logging.info(f'Using configuration:\n{str(config)}')
+
     main(github_api_token, config)
 
 
