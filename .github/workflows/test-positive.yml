@@ -32,6 +32,7 @@ jobs:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
           components-root: 'test-infra-repo'
           dry-run: 'true'
+          log-level: 'DEBUG'
 
     outputs:
       affected: "${{ steps.current.outputs.affected }}"
