@@ -59,8 +59,9 @@ class AtmosComponent:
     def __str__(self):
         output = []
         for item in self.__dict__:
-            if item == '__content' or item == '__yaml_content':
+            if item.endswith('__content') or item.endswith('__yaml_content'):
                 continue
+
             output.append(f'- {item}: {self.__dict__[item]}')
 
         return '\n'.join(output)

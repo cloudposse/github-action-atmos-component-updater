@@ -148,7 +148,7 @@ class ComponentUpdater:
 
         updated_component = self.__clone_infra_for_component(original_component)
 
-        logging.debug("Updated component:\n" + str(updated_component))
+        logging.debug(f"Updated component:\n{str(updated_component)}")
 
         response.component = updated_component
 
