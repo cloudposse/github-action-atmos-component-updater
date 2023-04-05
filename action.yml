@@ -103,4 +103,4 @@ runs:
         cd ${{ github.action_path }}
         cat affected-components.json
         affected=$(jq -c '.' < affected-components.json)
-        echo "affected='$affected'" >> $GITHUB_OUTPUT
+        echo "affected=$affected" >> $GITHUB_OUTPUT
