@@ -61,7 +61,9 @@ def main(github_api_token: str, config: Config):
               help="Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in --affected-components-file, Default: false.")
 @click.option('--affected-components-file',
               required=False,
-              help="Path to file that will contain list of affected components. One component per line. If not specified temporary file will be created in temp directory")
+              show_default=True,
+              default="affected_components.json",
+              help="Path to output file that will contain list of affected components in json format")
 def cli_main(github_api_token,
              infra_repo_name,
              infra_repo_dir,

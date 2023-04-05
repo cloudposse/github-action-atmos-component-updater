@@ -69,13 +69,15 @@ class ComponentUpdater:
 
         num_pr_created = 0
 
+        affected = []
+
         try:
             for component_file in component_files:
                 response = self.__update_component(component_file)
                 responses.append(response)
 
                 if response.state == ComponentUpdaterResponseState.UPDATED:
-                    self.__log_updated_component(response.component.name)
+                    affected.append(response.component.name)
 
                 num_pr_created += 1 if isinstance(response.pull_request, PullRequest) else 0
 
@@ -85,6 +87,8 @@ class ComponentUpdater:
         except (ComponentUpdaterError, ToolExecutionError) as error:
             logging.error(error.message)
             sys.exit(1)
+        finally:
+            io.serialize_to_json_file(self.__config.affected_components_file, affected)
 
         return responses
 

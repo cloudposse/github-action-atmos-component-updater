@@ -37,9 +37,9 @@ inputs:
     required: false
     default: 'false'
   affected-components-file:
-    description: "Path to file that will contain list of affected components. One component per line. If not specified temporary file will be created in temp directory"
+    description: "Path to output file that will contain list of affected components in json format"
     required: false
-    default: 'affected-components.txt'
+    default: 'affected-components.json'
 outputs:
   affected:
     description: The affected components
