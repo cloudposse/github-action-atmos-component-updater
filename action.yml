@@ -36,10 +36,6 @@ inputs:
     description: "Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in 'outputs.affected-components-file'"
     required: false
     default: 'false'
-  affected-components-file:
-    description: "Path to output file that will contain list of affected components in json format"
-    required: false
-    default: 'affected-components.json'
 outputs:
   affected:
     description: The affected components
@@ -98,13 +94,13 @@ runs:
           --excludes "${{ inputs.excludes }}" \
           --log-level ${{ inputs.log-level }} \
           --dry-run ${{ inputs.dry-run }} \
-          --affected-components-file ${{ inputs.affected-components-file }}
+          --affected-components-file 'affected-components.json'
 
     - name: Affected Components
       id: affected
       shell: bash
       run: |
         cd ${{ github.action_path }}
-        cat ${{ inputs.affected-components-file }}
-        affected=$(cat ${{ inputs.affected-components-file }})
+        cat affected-components.json
+        affected=$(jq -c '.' < affected-components.json)
         echo "affected='$affected'" >> $GITHUB_OUTPUT
