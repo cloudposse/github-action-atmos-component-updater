@@ -28,4 +28,4 @@ prep-fixtures:
     popd
 
 test:
-	pytest -s -v --pyargs src/
+	pytest -s -v --log-level DEBUG -rP --pyargs src/

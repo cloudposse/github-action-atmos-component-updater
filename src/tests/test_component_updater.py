@@ -43,9 +43,9 @@ def create_component(name: str, uri: str, version: str, infra_dir: str, stub_inf
     io.save_string_to_file(os.path.join(component_dir, 'component.yaml'), component_content)
 
 
-def test_no_version_specified(config):
+def test_no_version_specified(config: Config):
     # setup
-    create_component('test_component', 'github.com/cloudposse/terraform-aws-components.git//modules/account-settings?ref={{ .Version }}', '', config.infra_repo_dir)
+    create_component('test_component', 'github.com/cloudposse/terraform-aws-components.git//modules/test_component?ref={{ .Version }}', '', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider(config, fake_github)
@@ -60,7 +60,7 @@ def test_no_version_specified(config):
     assert responses[0].state == ComponentUpdaterResponseState.NO_VERSION_FOUND_IN_SOURCE_YAML
 
 
-def test_not_valid_uri(config):
+def test_not_valid_uri(config: Config):
     # setup
     create_component('test_component', 'github.com/cloudposse/terraform-aws-components.git', '1.107.0', config.infra_repo_dir)
 
@@ -77,9 +77,9 @@ def test_not_valid_uri(config):
     assert responses[0].state == ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
 
 
-def test_components_repo_is_not_a_git_repo(config):
+def test_components_repo_is_not_a_git_repo(config: Config):
     # setup
-    create_component('test_component', 's3://components-bucket/modules/account-settings?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
+    create_component('test_component', 's3://components-bucket/modules/test_component?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider(config, fake_github)
@@ -94,10 +94,10 @@ def test_components_repo_is_not_a_git_repo(config):
     assert responses[0].state == ComponentUpdaterResponseState.URI_IS_NOT_GIT_REPO
 
 
-def test_components_repo_git_no_tags(config):
+def test_components_repo_git_no_tags(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components-02-invalid-no-tags'
-    create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/account-settings?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
+    create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/test_component?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider(config, fake_github)
@@ -112,10 +112,10 @@ def test_components_repo_git_no_tags(config):
     assert responses[0].state == ComponentUpdaterResponseState.NO_LATEST_TAG_FOUND_IN_COMPONENT_REPO
 
 
-def test_components_repo_already_up_to_date(config):
+def test_components_repo_already_up_to_date(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components'
-    create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/account-settings?ref={{ .Version }}', '10.2.1', config.infra_repo_dir)
+    create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/test_component?ref={{ .Version }}', '10.2.1', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider(config, fake_github)
@@ -130,10 +130,10 @@ def test_components_repo_already_up_to_date(config):
     assert responses[0].state == ComponentUpdaterResponseState.ALREADY_UP_TO_DATE
 
 
-def test_components_remote_branch_exists(config):
+def test_components_remote_branch_exists(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components'
-    create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/account-settings?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
+    create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/test_component?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider(config, fake_github)
@@ -149,7 +149,7 @@ def test_components_remote_branch_exists(config):
     assert responses[0].state == ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST
 
 
-def test_not_vendored_component_with_not_skip_vendoring(config):
+def test_not_vendored_component_with_not_skip_vendoring(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components'
     create_component('test_component', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test-component?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
@@ -175,7 +175,7 @@ def test_not_vendored_component_with_not_skip_vendoring(config):
     assert os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'main.tf'))
 
 
-def test_not_vendored_component_with_skip_vendoring(config):
+def test_not_vendored_component_with_skip_vendoring(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components'
     config.skip_component_vendoring = True
@@ -203,7 +203,7 @@ def test_not_vendored_component_with_skip_vendoring(config):
     assert not os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'main.tf'))
 
 
-def test_with_changes_found(config):
+def test_with_changes_found(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components'
     create_component('test_component',
@@ -229,7 +229,7 @@ def test_with_changes_found(config):
     assert os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'main.tf'))
 
 
-def test_no_changes_found(config):
+def test_no_changes_found(config: Config):
     # setup
     config.components_download_dir = 'src/tests/fixtures/terraform-aws-components'
     create_component('test_component', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test-component?ref={{ .Version }}',
