@@ -31,8 +31,8 @@ jobs:
         working-directory: test-infra-repo
         with:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
-          expected: "'["test_component"]'"
-          dry-run: true
+          expected: '["test_component"]'
+          dry-run: 'true'
 
     outputs:
       affected: "${{ steps.current.outputs.affected }}"
