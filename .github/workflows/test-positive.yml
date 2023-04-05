@@ -28,7 +28,6 @@ jobs:
 
       - uses: ./
         id: current
-        working-directory: test-infra-repo
         with:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
           expected: '["test_component"]'
