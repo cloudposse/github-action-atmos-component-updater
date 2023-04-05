@@ -2,7 +2,7 @@ import os
 import logging
 import fnmatch
 import re
-from typing import List
+from typing import List, Optional
 from enum import Enum
 from github.PullRequest import PullRequest
 import tools
@@ -40,7 +40,7 @@ class ComponentUpdaterResponse:
         self.state: ComponentUpdaterResponseState = ComponentUpdaterResponseState.UNDEFINED
         self.component_path: str
         self.branch_name: str
-        self.pull_request: PullRequest
+        self.pull_request: Optional[PullRequest] = None
 
 
 class ComponentUpdater:
@@ -71,7 +71,7 @@ class ComponentUpdater:
             response = self.__update_component(component_file)
             responses.append(response)
 
-            num_pr_created += 1 if hasattr(response, 'pull_request') and response.pull_request else 0
+            num_pr_created += 1 if isinstance(response.pull_request, PullRequest) else 0
 
             if num_pr_created >= self.__config.max_number_of_prs:
                 logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping the rest")
@@ -159,7 +159,10 @@ class ComponentUpdater:
                     logging.error(f"Failed to vendor component: {error}")
                     return response
 
-            pull_request: PullRequest = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
+            pull_request: Optional[PullRequest] = self.__create_branch_and_pr(updated_component.infra_repo_dir,
+                                                                              original_component,
+                                                                              updated_component,
+                                                                              branch_name)
             response.pull_request = pull_request
             response.state = ComponentUpdaterResponseState.UPDATED
             return response
@@ -172,7 +175,7 @@ class ComponentUpdater:
             return response
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            pull_request: PullRequest = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
+            pull_request: Optional[PullRequest] = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
             response.pull_request = pull_request
             response.state = ComponentUpdaterResponseState.UPDATED
             return response
@@ -227,7 +230,7 @@ class ComponentUpdater:
 
         return needs_update
 
-    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequest:
+    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> Optional[PullRequest]:
         self.__github_provider.create_branch_and_push_all_changes(repo_dir,
                                                                   branch_name,
                                                                   COMMIT_MESSAGE_TEMPLATE.format(
@@ -238,19 +241,20 @@ class ComponentUpdater:
 
         logging.info(f"Opening PR for branch {branch_name}")
 
-        pull_request: PullRequest = self.__github_provider.open_pr(branch_name,
-                                                                   original_component,
-                                                                   updated_component)
+        pull_request: Optional[PullRequest] = self.__github_provider.open_pr(branch_name,
+                                                                             original_component,
+                                                                             updated_component)
 
-        logging.info(f"Opened PR #{pull_request.number}")
+        if not self.__config.dry_run and isinstance(pull_request, PullRequest):
+            logging.info(f"Opened PR #{pull_request.number}")
 
-        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
+            opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
 
-        for opened_pr in opened_prs:
-            if opened_pr.number != pull_request.number:
-                closing_message = f"Closing in favor of PR #{pull_request.number}"
-                self.__github_provider.close_pr(opened_pr, closing_message)
-                logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
+            for opened_pr in opened_prs:
+                if opened_pr.number != pull_request.number:
+                    closing_message = f"Closing in favor of PR #{pull_request.number}"
+                    self.__github_provider.close_pr(opened_pr, closing_message)
+                    logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
 
         return pull_request
 

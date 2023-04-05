@@ -1,11 +1,13 @@
 import re
-from typing import Tuple
+from typing import Optional, Tuple
 import jinja2
 import git.repo
 from github import Github
 from github.PullRequest import PullRequest
 from jinja2 import FileSystemLoader
 from atmos_component import AtmosComponent
+from config import Config
+
 
 BRANCH_PREFIX = 'component-update'
 TEMPLATES_DIR = 'src/templates'
@@ -14,9 +16,10 @@ PR_TITLE_TEMPLATE = "Component `{component_name}` update from {old_version} → 
 
 
 class GitHubProvider:
-    def __init__(self, repo_name: str, github: Github):
+    def __init__(self, config: Config, github: Github):
+        self.__config = config
         self.__github = github
-        self.__repo = self.__github.get_repo(repo_name)
+        self.__repo = self.__github.get_repo(config.infra_repo_name)
         self.__pull_requests = None
         jenv = jinja2.Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         self.__pr_body_template = jenv.get_template('pr_body.j2.md')
@@ -47,7 +50,9 @@ class GitHubProvider:
         repo.git.checkout(new_branch)
         repo.git.add("-A")
         repo.index.commit(commit_message)
-        repo.git.push("--set-upstream", "origin", branch_name)
+
+        if not self.__config.dry_run:
+            repo.git.push("--set-upstream", "origin", branch_name)
 
     def branch_exists(self, repo_dir: str, branch_name: str):
         branches = self.get_branches(repo_dir)
@@ -55,7 +60,7 @@ class GitHubProvider:
 
         return branch_name in branches or remote_branch_name in branches
 
-    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent) -> PullRequest:
+    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent) -> Optional[PullRequest]:
         branch = self.__repo.get_branch(branch_name)
 
         title = PR_TITLE_TEMPLATE.format(component_name=original_component.name,
@@ -79,6 +84,9 @@ class GitHubProvider:
                                               new_version_link=updated_component_version_link,
                                               old_component_release_link=original_component_release_link,
                                               new_component_release_link=updated_component_release_link)
+
+        if self.__config.dry_run:
+            return None
 
         pull_request: PullRequest = self.__repo.create_pull(title=title,
                                                             body=body,

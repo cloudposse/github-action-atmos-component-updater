@@ -48,7 +48,7 @@ def test_no_version_specified(config):
     create_component('test_component', 'github.com/cloudposse/terraform-aws-components.git//modules/account-settings?ref={{ .Version }}', '', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
 
     component_updater = ComponentUpdater(fake_github_provider, TERRAFORM_DIR, config)
 
@@ -65,7 +65,7 @@ def test_not_valid_uri(config):
     create_component('test_component', 'github.com/cloudposse/terraform-aws-components.git', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
 
     component_updater = ComponentUpdater(fake_github_provider, TERRAFORM_DIR, config)
 
@@ -82,7 +82,7 @@ def test_components_repo_is_not_a_git_repo(config):
     create_component('test_component', 's3://components-bucket/modules/account-settings?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
 
     component_updater = ComponentUpdater(fake_github_provider, TERRAFORM_DIR, config)
 
@@ -100,7 +100,7 @@ def test_components_repo_git_no_tags(config):
     create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/account-settings?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
 
     component_updater = ComponentUpdater(fake_github_provider, TERRAFORM_DIR, config)
 
@@ -118,7 +118,7 @@ def test_components_repo_already_up_to_date(config):
     create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/account-settings?ref={{ .Version }}', '10.2.1', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
 
     component_updater = ComponentUpdater(fake_github_provider, TERRAFORM_DIR, config)
 
@@ -136,7 +136,7 @@ def test_components_remote_branch_exists(config):
     create_component('test_component', 'github.com/cloudposse/terraform-aws-components//modules/account-settings?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=True)
 
     component_updater = ComponentUpdater(fake_github_provider, TERRAFORM_DIR, config)
@@ -155,7 +155,7 @@ def test_not_vendored_component_with_not_skip_vendoring(config):
     create_component('test_component', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test-component?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=False)
     fake_github_provider.create_branch_and_push_all_changes = mock.MagicMock()
 
@@ -183,7 +183,7 @@ def test_not_vendored_component_with_skip_vendoring(config):
     create_component('test_component', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test-component?ref={{ .Version }}', '1.107.0', config.infra_repo_dir)
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=False)
     fake_github_provider.create_branch_and_push_all_changes = mock.MagicMock()
 
@@ -211,7 +211,7 @@ def test_with_changes_found(config):
                      '1.107.0', config.infra_repo_dir, 'infra-repo-02-vendored')
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=False)
     fake_github_provider.create_branch_and_push_all_changes = mock.MagicMock()
 
@@ -236,7 +236,7 @@ def test_no_changes_found(config):
                      '1.107.0', config.infra_repo_dir, 'infra-repo-03-vendored-no-changes')
 
     fake_github = mock.MagicMock()
-    fake_github_provider = GitHubProvider(config.infra_repo_name, fake_github)
+    fake_github_provider = GitHubProvider(config, fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=False)
     fake_github_provider.create_branch_and_push_all_changes = mock.MagicMock()
 

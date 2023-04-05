@@ -9,7 +9,7 @@ from config import Config
 
 
 def main(github_api_token: str, config: Config):
-    github_provider = GitHubProvider(config.infra_repo_name, Github(github_api_token))
+    github_provider = GitHubProvider(config, Github(github_api_token))
 
     for infra_terraform_dir in config.infra_terraform_dirs.split(','):
         component_updater = ComponentUpdater(github_provider, infra_terraform_dir, config)
