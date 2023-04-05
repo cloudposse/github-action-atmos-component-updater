@@ -55,6 +55,16 @@ class AtmosComponent:
     def component_dir(self) -> str:
         return os.path.dirname(self.__component_file)
 
+    # pylint: disable=consider-using-dict-items
+    def __str__(self):
+        output = []
+        for item in self.__dict__:
+            if item == '__content' or item == '__yaml_content':
+                continue
+            output.append(f'- {item}: {self.__dict__[item]}')
+
+        return '\n'.join(output)
+
     def __initialize(self):
         self.__relative_path: str = os.path.relpath(self.__component_file, self.__infra_repo_dir)
         self.__name: str = self.__fetch_name()

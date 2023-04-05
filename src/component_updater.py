@@ -148,6 +148,8 @@ class ComponentUpdater:
 
         updated_component = self.__clone_infra_for_component(original_component)
 
+        logging.debug("Updated component:\n" + str(updated_component))
+
         response.component = updated_component
 
         branch_name = self.__github_provider.build_component_branch_name(updated_component.normalized_name, latest_tag)
