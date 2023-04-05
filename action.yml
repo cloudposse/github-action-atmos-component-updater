@@ -99,14 +99,12 @@ runs:
           --log-level ${{ inputs.log-level }} \
           --dry-run ${{ inputs.dry-run }} \
           --affected-components-file ${{ inputs.affected-components-file }}
-        pwd
-        ls -l
-        cat ${{ inputs.affected-components-file }}
 
     - name: Affected Components
       id: affected
       shell: bash
       run: |
+        cd ${{ github.action_path }}
         cat ${{ inputs.affected-components-file }}
         affected=$(cat ${{ inputs.affected-components-file }})
         echo "affected='$affected'" >> $GITHUB_OUTPUT
