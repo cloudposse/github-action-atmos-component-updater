@@ -5,28 +5,14 @@ from github import Github
 from component_updater import ComponentUpdater, ComponentUpdaterError
 from github_provider import GitHubProvider
 from tools import ToolExecutionError
+from config import Config
 
 
-def main(github_api_token: str,
-         infra_repo_name: str,
-         infra_repo_dir: str,
-         infra_terraform_dirs: str,
-         skip_component_vendoring: bool,
-         max_number_of_prs: int,
-         includes: str,
-         excludes: str,
-         go_getter_tool: str):
-    github_provider = GitHubProvider(infra_repo_name, Github(github_api_token))
+def main(github_api_token: str, config: Config):
+    github_provider = GitHubProvider(config.infra_repo_name, Github(github_api_token))
 
-    for infra_terraform_dir in infra_terraform_dirs.split(','):
-        component_updater = ComponentUpdater(github_provider,
-                                             infra_repo_dir,
-                                             infra_terraform_dir,
-                                             includes,
-                                             excludes,
-                                             go_getter_tool,
-                                             skip_component_vendoring,
-                                             max_number_of_prs)
+    for infra_terraform_dir in config.infra_terraform_dirs.split(','):
+        component_updater = ComponentUpdater(github_provider, infra_terraform_dir, config)
 
         try:
             component_updater.update()
@@ -75,12 +61,41 @@ def main(github_api_token: str,
               show_default=True,
               required=False,
               help="Log Level: [CRITICAL|ERROR|WARNING|INFO|DEBUG]")
-def cli_main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, max_number_of_prs, includes, excludes, go_getter_tool, log_level):
+@click.option('--dry-run',
+              is_flag=True,
+              default=False,
+              help="Do not create remote branches and pull requests. Only print list of affected componented into file that is defined in --affected-components-file")
+@click.option('--affected-components-file',
+              required=False,
+              help="Path to file that will contain list of affected components. One component per line. If not specified temporary file will be created in temp directory")
+def cli_main(github_api_token,
+             infra_repo_name,
+             infra_repo_dir,
+             infra_terraform_dirs,
+             skip_component_vendoring,
+             max_number_of_prs,
+             includes,
+             excludes,
+             go_getter_tool,
+             log_level,
+             dry_run,
+             affected_components_file):
     logging.basicConfig(format='[%(asctime)s] %(levelname)-7s %(message)s',
                         datefmt='%d-%m-%Y %H:%M:%S',
                         level=logging.getLevelName(log_level))
 
-    main(github_api_token, infra_repo_name, infra_repo_dir, infra_terraform_dirs, skip_component_vendoring, max_number_of_prs, includes, excludes, go_getter_tool)
+    config = Config(infra_repo_name,
+                    infra_repo_dir,
+                    infra_terraform_dirs,
+                    skip_component_vendoring,
+                    max_number_of_prs,
+                    includes,
+                    excludes,
+                    go_getter_tool,
+                    dry_run,
+                    affected_components_file)
+
+    main(github_api_token, config)
 
 
 if __name__ == "__main__":

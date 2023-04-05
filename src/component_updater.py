@@ -9,6 +9,8 @@ import tools
 from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
 from github_provider import GitHubProvider
+from config import Config
+
 
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
 MAX_NUMBER_OF_DIFF_TO_SHOW = 2
@@ -44,28 +46,16 @@ class ComponentUpdaterResponse:
 class ComponentUpdater:
     def __init__(self,
                  github_provider: GitHubProvider,
-                 infra_repo_dir: str,
                  infra_terraform_dir: str,
-                 includes: str,
-                 excludes: str,
-                 go_getter_tool: str,
-                 skip_component_vendoring: bool,
-                 max_number_of_prs: int,
-                 components_download_dir: str = io.create_tmp_dir(),
-                 skip_component_repo_fetching: bool = False):
+                 config: Config):
         self.__github_provider = github_provider
-        self.__infra_repo_dir = infra_repo_dir
         self.__infra_terraform_dir = infra_terraform_dir
-        self.__download_dir = components_download_dir
-        self.__go_getter_tool = go_getter_tool
-        self.__skip_component_vendoring = skip_component_vendoring
-        self.__max_number_of_prs = min(max_number_of_prs, 10)
-        self.__skip_component_repo_fetching = skip_component_repo_fetching
-        self.__includes = self.__parse_comma_or_new_line_separated_list(includes)
-        self.__excludes = self.__parse_comma_or_new_line_separated_list(excludes)
+        self.__config = config
+        self.__includes = self.__parse_comma_or_new_line_separated_list(config.includes)
+        self.__excludes = self.__parse_comma_or_new_line_separated_list(config.excludes)
 
     def update(self) -> List[ComponentUpdaterResponse]:
-        infra_components_dir = os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)
+        infra_components_dir = os.path.join(self.__config.infra_repo_dir, self.__infra_terraform_dir)
 
         logging.debug(f"Looking for components in: {infra_components_dir}")
 
@@ -83,8 +73,8 @@ class ComponentUpdater:
 
             num_pr_created += 1 if hasattr(response, 'pull_request') and response.pull_request else 0
 
-            if num_pr_created >= self.__max_number_of_prs:
-                logging.info(f"Max number of PRs ({self.__max_number_of_prs}) reached. Skipping the rest")
+            if num_pr_created >= self.__config.max_number_of_prs:
+                logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping the rest")
                 break
 
         return responses
@@ -109,7 +99,7 @@ class ComponentUpdater:
         return component_yaml_paths
 
     def __update_component(self, component_file: str) -> ComponentUpdaterResponse:
-        original_component = AtmosComponent(self.__infra_repo_dir, self.__infra_terraform_dir, component_file)
+        original_component = AtmosComponent(self.__config.infra_repo_dir, self.__infra_terraform_dir, component_file)
         response = ComponentUpdaterResponse(original_component)
 
         logging.info(f"Processing component: {original_component.name}")
@@ -124,7 +114,7 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
             return response
 
-        repo_dir = self.__fetch_component_repo(original_component) if not self.__skip_component_repo_fetching else self.__download_dir
+        repo_dir = self.__fetch_component_repo(original_component) if not self.__config.skip_component_repo_fetching else self.__config.components_download_dir
 
         if not self.__is_git_repo(repo_dir):
             logging.warning("Component repository is not git repo. Can't figure out latest version. Skipping")
@@ -162,7 +152,7 @@ class ComponentUpdater:
         if not self.__is_vendored(updated_component):
             logging.info(f"Component was not vendored. Updating to version {latest_tag} and do vendoring ...")
 
-            if not self.__skip_component_vendoring:
+            if not self.__config.skip_component_vendoring:
                 try:
                     tools.atmos_vendor_component(updated_component)
                 except tools.ToolExecutionError as error:
@@ -193,8 +183,8 @@ class ComponentUpdater:
 
     def __fetch_component_repo(self, component: AtmosComponent):
         normalized_repo_path = component.uri_repo.replace('/', '-') if component.uri_repo else ''
-        tools.go_getter_pull_component_repo(self.__go_getter_tool, component, normalized_repo_path, self.__download_dir)
-        return os.path.join(self.__download_dir, normalized_repo_path)
+        tools.go_getter_pull_component_repo(self.__config.go_getter_tool, component, normalized_repo_path, self.__config.components_download_dir)
+        return os.path.join(self.__config.components_download_dir, normalized_repo_path)
 
     def __is_git_repo(self, repo_dir: str) -> bool:
         return os.path.exists(os.path.join(repo_dir, '.git'))
@@ -205,7 +195,7 @@ class ComponentUpdater:
 
     def __clone_infra_for_component(self, component: AtmosComponent):
         update_infra_repo_dir = io.create_tmp_dir()
-        io.copy_dirs(self.__infra_repo_dir, update_infra_repo_dir)
+        io.copy_dirs(self.__config.infra_repo_dir, update_infra_repo_dir)
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
         return AtmosComponent(update_infra_repo_dir, self.__infra_terraform_dir, component_file)
 
