@@ -57,6 +57,8 @@ class ComponentUpdater:
         self.__excludes = self.__parse_comma_or_new_line_separated_list(config.excludes)
 
     def update(self):
+        responses = []
+
         infra_components_dir = os.path.join(self.__config.infra_repo_dir, self.__infra_terraform_dir)
 
         logging.debug(f"Looking for components in: {infra_components_dir}")
@@ -70,6 +72,7 @@ class ComponentUpdater:
         try:
             for component_file in component_files:
                 response = self.__update_component(component_file)
+                responses.append(response)
 
                 if response.state == ComponentUpdaterResponseState.UPDATED:
                     self.__log_updated_component(response.component.name)
@@ -82,6 +85,8 @@ class ComponentUpdater:
         except (ComponentUpdaterError, ToolExecutionError) as error:
             logging.error(error.message)
             sys.exit(1)
+
+        return responses
 
     def __get_components(self, infra_components_dir: str) -> List[str]:
         component_yaml_paths = []
