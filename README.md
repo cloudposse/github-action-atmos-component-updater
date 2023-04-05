@@ -70,6 +70,28 @@ This is GitHub Action that can be used as workflow for automatic update via Pull
 
 
 
+### Prerequisites
+
+This GitHub Action once used in workflow needs permissions to create/update branches and open/close pull requests so the access token needs to be passed.
+
+It can be done in two ways:
+- create a dedicated Personal Access Token (PAT)
+- use [`GITHUB_TOKEN`](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret)
+
+If you would like to use `GITHUB_TOKEN` make sure to set permissions in the workflow as follow:
+
+```yaml
+permissions:
+- contents: write
+- pull-requests: write
+```
+
+Also, make sure that you set to `Allow GitHub Actions to create and approve pull requests` on both organization and repository levels:
+- `https://github.com/organizations/YOUR-ORG/settings/actions`
+- `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions`
+
+### Workflow example
+
 ```yaml
   name: "atmos-components"
 
