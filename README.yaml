@@ -4,39 +4,31 @@
 # Run `make readme` to rebuild the `README.md`
 #
 
-# Name of this project
-name: example-github-action-composite
+name: github-action-atmos-component-updater
 
-# Tags of this project
 tags:
   - github-action
-
-# Logo for this project
-#logo: docs/logo.png
+  - atmos
 
 # License of this project
 license: "APACHE2"
 
-# Canonical GitHub repo
-github_repo: cloudposse/example-github-action-composite
+github_repo: cloudposse/github-action-atmos-component-updater
 
-# Badges to display
 badges:
   - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/example-github-action-composite.svg"
-    url: "https://github.com/cloudposse/example-github-action-composite/releases/latest"
+    image: "https://img.shields.io/github/release/cloudposse/github-action-atmos-component-updater.svg"
+    url: "https://github.com/cloudposse/github-action-atmos-component-updater/releases/latest"
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
 
 related: []
 
-# Short description of this project
-description: Template repository of composite GitHub Action
+description: This is GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources.
 
 introduction: |-
-  This is template repository to create composite GitHub Actions. 
-  Feel free to use it as reference and starting point.
+  This is GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources.
 
 references:
   - name: "github-actions-workflows"
@@ -46,27 +38,56 @@ references:
     description: "Example application with complicated release workflow"
     url: "https://github.com/cloudposse/example-github-action-release-workflow"
 
-# How to use this project
 usage: |-
+  ### Prerequisites
+
+  This GitHub Action once used in workflow needs permissions to create/update branches and open/close pull requests so the access token needs to be passed.
+
+  It can be done in two ways:
+  - create a dedicated Personal Access Token (PAT)
+  - use [`GITHUB_TOKEN`](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret)
+
+  If you would like to use `GITHUB_TOKEN` make sure to set permissions in the workflow as follow:
+  
   ```yaml
-    name: Pull Request
+  permissions:
+  - contents: write
+  - pull-requests: write
+  ```
+
+  Also, make sure that you set to `Allow GitHub Actions to create and approve pull requests` on both organization and repository levels:
+  - `https://github.com/organizations/YOUR-ORG/settings/actions`
+  - `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions`
+
+  ### Workflow example
+
+  ```yaml
+    name: "atmos-components"
+
     on:
-      pull_request:
-        branches: [ 'main' ]
-        types: [opened, synchronize, reopened, closed, labeled, unlabeled]
+      workflow_dispatch: {}
+
+      schedule:
+        - cron:  '0 8 * * 1'         # Execute every week on Monday at 08:00
+
+    permissions:
+      contents: write
+      pull-requests: write
 
     jobs:
-      context:
+      update:
         runs-on: ubuntu-latest
         steps:
-          - name: Example action
-            uses: cloudposse/example-github-action-composite@main
-            id: example
+          - name: Update Atmos Components
+            uses: cloudposse/github-action-atmos-component-updater@v1
             with:
-              param1: true
-  
-        outputs:
-          result: ${{ steps.example.outputs.result1 }}
+              github-access-token: ${{ secrets.GITHUB_TOKEN }}
+              max-number-of-prs: 5
+              includes: |
+                aws-*
+                eks/*
+                bastion
+              excludes: aws-sso,aws-saml
   ```
 
 include:
@@ -74,5 +95,7 @@ include:
 
 # Contributors to this project
 contributors:
-  - name: "Igor Rodionov"
-    github: "goruha"
+  - name: "Zinovii Dmytriv"
+    github: "zdmytriv"
+  - name: "Erik Osterman"
+    github: "osterman"
