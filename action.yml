@@ -20,11 +20,11 @@ inputs:
     description: "Number of PRs to create. Maximum is 10."
     required: false
     default: '10'
-  includes:
+  include:
     description: "Comma or new line separated list of component names to include. For example: 'vpc,eks/*,rds'. By default all components are included. Default '*'"
     required: false
     default: '*'
-  excludes:
+  exclude:
     description: "Comma or new line separated list of component names to exclude. For example: 'vpc,eks/*,rds'. By default no components are excluded. Default ''"
     required: false
     default: ''
@@ -90,8 +90,8 @@ runs:
           --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
           --skip-component-vendoring ${{ inputs.skip-component-vendoring }} \
           --max-number-of-prs ${{ inputs.max-number-of-prs }} \
-          --includes "${{ inputs.includes }}" \
-          --excludes "${{ inputs.excludes }}" \
+          --include "${{ inputs.include }}" \
+          --exclude "${{ inputs.exclude }}" \
           --log-level ${{ inputs.log-level }} \
           --dry-run ${{ inputs.dry-run }} \
           --affected-components-file 'affected-components.json'

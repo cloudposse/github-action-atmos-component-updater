@@ -54,8 +54,8 @@ class ComponentUpdater:
         self.__github_provider = github_provider
         self.__infra_terraform_dir = infra_terraform_dir
         self.__config = config
-        self.__includes = self.__parse_comma_or_new_line_separated_list(config.includes)
-        self.__excludes = self.__parse_comma_or_new_line_separated_list(config.excludes)
+        self.__include = self.__parse_comma_or_new_line_separated_list(config.include)
+        self.__exclude = self.__parse_comma_or_new_line_separated_list(config.exclude)
 
     def update(self) -> List[ComponentUpdaterResponse]:
         responses = []
@@ -292,19 +292,19 @@ class ComponentUpdater:
         return [x.strip() for x in re.split(',|\n', components)] if components else []
 
     def __should_component_be_processed(self, component_name: str) -> bool:
-        if len(self.__includes) == 0 and len(self.__excludes) == 0:
+        if len(self.__include) == 0 and len(self.__exclude) == 0:
             return True
 
         should_be_processed = False
 
-        if self.__includes:
-            for include_pattern in self.__includes:
+        if self.__include:
+            for include_pattern in self.__include:
                 if fnmatch.fnmatch(component_name, include_pattern):
                     should_be_processed = True
                     break
 
-        if self.__excludes:
-            for exclude_pattern in self.__excludes:
+        if self.__exclude:
+            for exclude_pattern in self.__exclude:
                 if fnmatch.fnmatch(component_name, exclude_pattern):
                     should_be_processed = False
                     break

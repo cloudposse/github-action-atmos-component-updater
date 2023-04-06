@@ -275,7 +275,7 @@ def test_missing_component(config: Config):
     assert responses[0].state == ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
 
 
-@pytest.mark.parametrize("includes, excludes, expected_updated_components", [
+@pytest.mark.parametrize("include, exclude, expected_updated_components", [
     ('', '', ['test_component_01', 'test_component_02', 'test_component_03']),
     ('*', '', ['test_component_01', 'test_component_02', 'test_component_03']),
     ('test_component_*', '', ['test_component_01', 'test_component_02', 'test_component_03']),
@@ -285,10 +285,10 @@ def test_missing_component(config: Config):
     ('test_component_*', '*02*', ['test_component_01', 'test_component_03']),
     ('', 'test*', []),
 ])
-def test_includes(config: Config, includes: str, excludes: str, expected_updated_components: List[str]):
+def test_include_and_exclude(config: Config, include: str, exclude: str, expected_updated_components: List[str]):
     # setup
-    config.includes = includes
-    config.excludes = excludes
+    config.include = include
+    config.exclude = exclude
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', '1.107.0', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test_component?ref={{ .Version }}')
     create_component(config.infra_repo_dir, 'test_component_02', '1.107.0', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test_component?ref={{ .Version }}')
