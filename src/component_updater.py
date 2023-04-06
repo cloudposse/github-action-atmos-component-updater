@@ -34,6 +34,7 @@ class ComponentUpdaterResponseState(Enum):
     ALREADY_UP_TO_DATE = 7
     REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST = 8
     NO_CHANGES_FOUND = 9
+    FAILED_TO_VENDOR_COMPONENT = 10
 
 
 class ComponentUpdaterResponse:
@@ -53,10 +54,10 @@ class ComponentUpdater:
         self.__github_provider = github_provider
         self.__infra_terraform_dir = infra_terraform_dir
         self.__config = config
-        self.__includes = self.__parse_comma_or_new_line_separated_list(config.includes)
-        self.__excludes = self.__parse_comma_or_new_line_separated_list(config.excludes)
+        self.__include = self.__parse_comma_or_new_line_separated_list(config.include)
+        self.__exclude = self.__parse_comma_or_new_line_separated_list(config.exclude)
 
-    def update(self):
+    def update(self) -> List[ComponentUpdaterResponse]:
         responses = []
 
         infra_components_dir = os.path.join(self.__config.infra_repo_dir, self.__infra_terraform_dir)
@@ -74,6 +75,7 @@ class ComponentUpdater:
         try:
             for component_file in component_files:
                 response = self.__update_component(component_file)
+                logging.debug(f"Response state after component update: {response.state.name}")
                 responses.append(response)
 
                 if response.state == ComponentUpdaterResponseState.UPDATED:
@@ -113,36 +115,39 @@ class ComponentUpdater:
 
     def __update_component(self, component_file: str) -> ComponentUpdaterResponse:
         original_component = AtmosComponent(self.__config.infra_repo_dir, self.__infra_terraform_dir, component_file)
+
+        logging.debug(f"Original component:\n{str(original_component)}")
+
         response = ComponentUpdaterResponse(original_component)
 
         logging.info(f"Processing component: {original_component.name}")
 
         if not self.__component_has_version(original_component):
-            logging.warning("Component doesn't have 'version' specified. Skipping")
+            logging.error(f"Component '{original_component.name}' doesn't have 'version' specified. Skipping")
             response.state = ComponentUpdaterResponseState.NO_VERSION_FOUND_IN_SOURCE_YAML
             return response
 
         if not self.__component_has_valid_uri(original_component):
-            logging.warning("Component doesn't have valid 'uri' specified. Skipping")
+            logging.error(f"Component '{original_component.name}' doesn't have valid 'uri' specified. Skipping")
             response.state = ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
             return response
 
         repo_dir = self.__fetch_component_repo(original_component) if not self.__config.skip_component_repo_fetching else self.__config.components_download_dir
 
         if not self.__is_git_repo(repo_dir):
-            logging.warning("Component repository is not git repo. Can't figure out latest version. Skipping")
+            logging.error(f"Component '{original_component.name}' uri is not git repo. Can't figure out latest version. Skipping")
             response.state = ComponentUpdaterResponseState.URI_IS_NOT_GIT_REPO
             return response
 
         latest_tag = tools.git_get_latest_tag(repo_dir)
 
         if not latest_tag:
-            logging.warning("Unable to figure out latest tag. Skipping")
+            logging.error(f"Unable to figure out latest tag for component '{original_component.name}' source uri. Skipping")
             response.state = ComponentUpdaterResponseState.NO_LATEST_TAG_FOUND_IN_COMPONENT_REPO
             return response
 
         if original_component.version == latest_tag:
-            logging.info("Component already updated. Skipping")
+            logging.info(f"Component '{original_component.name}' already updated. Skipping")
             response.state = ComponentUpdaterResponseState.ALREADY_UP_TO_DATE
             return response
 
@@ -157,7 +162,7 @@ class ComponentUpdater:
         response.branch_name = branch_name
 
         if self.__github_provider.branch_exists(updated_component.infra_repo_dir, branch_name):
-            logging.info(f"Branch '{branch_name}' already exists. Skipping")
+            logging.warning(f"Branch '{branch_name}' already exists. Skipping")
             response.state = ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST
             return response
 
@@ -172,6 +177,7 @@ class ComponentUpdater:
                     tools.atmos_vendor_component(updated_component)
                 except tools.ToolExecutionError as error:
                     logging.error(f"Failed to vendor component: {error}")
+                    response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
                     return response
 
             pull_request: Optional[PullRequest] = self.__create_branch_and_pr(updated_component.infra_repo_dir,
@@ -187,6 +193,7 @@ class ComponentUpdater:
             tools.atmos_vendor_component(updated_component)
         except tools.ToolExecutionError as error:
             logging.error(f"Failed to vendor component: {error}")
+            response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
             return response
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
@@ -285,19 +292,19 @@ class ComponentUpdater:
         return [x.strip() for x in re.split(',|\n', components)] if components else []
 
     def __should_component_be_processed(self, component_name: str) -> bool:
-        if len(self.__includes) == 0 and len(self.__excludes) == 0:
+        if len(self.__include) == 0 and len(self.__exclude) == 0:
             return True
 
         should_be_processed = False
 
-        if self.__includes:
-            for include_pattern in self.__includes:
+        if self.__include:
+            for include_pattern in self.__include:
                 if fnmatch.fnmatch(component_name, include_pattern):
                     should_be_processed = True
                     break
 
-        if self.__excludes:
-            for exclude_pattern in self.__excludes:
+        if self.__exclude:
+            for exclude_pattern in self.__exclude:
                 if fnmatch.fnmatch(component_name, exclude_pattern):
                     should_be_processed = False
                     break

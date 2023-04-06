@@ -10,8 +10,8 @@ class Config:
                  infra_terraform_dirs: str,
                  skip_component_vendoring: bool,
                  max_number_of_prs: int,
-                 includes: str,
-                 excludes: str,
+                 include: str,
+                 exclude: str,
                  go_getter_tool: str,
                  dry_run: bool,
                  affected_components_file: str):
@@ -20,8 +20,8 @@ class Config:
         self.infra_terraform_dirs = infra_terraform_dirs
         self.skip_component_vendoring = skip_component_vendoring
         self.max_number_of_prs = max_number_of_prs
-        self.includes = includes
-        self.excludes = excludes
+        self.include = include
+        self.exclude = exclude
         self.go_getter_tool = go_getter_tool
         self.dry_run = dry_run
         self.components_download_dir: str = io.create_tmp_dir()
