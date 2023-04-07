@@ -81,6 +81,15 @@ runs:
     - name: Run Atmos Component Updater
       shell: bash
       run: |
+        echo "pwd=$(pwd)"
+        echo "github.action_path=${{ github.action_path }}"
+        echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE}"
+        echo "ATMOS_BASE_PATH=${ATMOS_BASE_PATH}"
+        echo "ATMOS_CLI_CONFIG_PATH=${ATMOS_CLI_CONFIG_PATH}"
+        ls -l
+        ls -l ${{ github.action_path }}
+        ls -l ${GITHUB_WORKSPACE}
+        ls -l ${ATMOS_BASE_PATH}
         cd ${{ github.action_path }}
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
