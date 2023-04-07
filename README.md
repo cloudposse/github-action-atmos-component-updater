@@ -129,6 +129,21 @@ Also, make sure that you set to `Allow GitHub Actions to create and approve pull
             exclude: aws-sso,aws-saml
 ```
 
+### atmos.yaml location
+
+If your `atmos.yaml` file is not located in the root of the infrastructure repository, you can specify the path to it using `ATMOS_CLI_CONFIG_PATH` env variable.
+
+```yaml
+  # ...
+  - name: Update Atmos Components
+    uses: cloudposse/github-action-atmos-component-updater@v1
+    env:
+      ATMOS_CLI_CONFIG_PATH: ${{ github.workspace }}/path/to/my/atmos.yaml
+    with:
+      github-access-token: ${{ secrets.GITHUB_TOKEN }}
+      max-number-of-prs: 5
+```
+
 
 
 
