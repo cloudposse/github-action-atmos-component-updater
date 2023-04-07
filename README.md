@@ -138,7 +138,8 @@ If your `atmos.yaml` file is not located in the root of the infrastructure repos
   - name: Update Atmos Components
     uses: cloudposse/github-action-atmos-component-updater@v1
     env:
-      ATMOS_CLI_CONFIG_PATH: ${{ github.workspace }}/path/to/my/atmos.yaml
+      # Directory containing the `atmos.yaml` file
+      ATMOS_CLI_CONFIG_PATH: ${{ github.workspace }}/rootfs/usr/local/etc/atmos/
     with:
       github-access-token: ${{ secrets.GITHUB_TOKEN }}
       max-number-of-prs: 5
