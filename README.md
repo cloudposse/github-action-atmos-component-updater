@@ -131,7 +131,7 @@ Also, make sure that you set to `Allow GitHub Actions to create and approve pull
 
 ### Using a Custom Atmos CLI Config Path (`atmos.yaml`)
 
-If your `atmos.yaml` file is not located in the root of the infrastructure repository, you can specify the path to it using `ATMOS_CLI_CONFIG_PATH` env variable.
+If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not located in the root of the infrastructure repository, you can specify the path to it using [`ATMOS_CLI_CONFIG_PATH` env variable](https://atmos.tools/cli/configuration/#environment-variables).
 
 ```yaml
   # ...
