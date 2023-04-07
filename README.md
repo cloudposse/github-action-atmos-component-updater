@@ -129,7 +129,7 @@ Also, make sure that you set to `Allow GitHub Actions to create and approve pull
             exclude: aws-sso,aws-saml
 ```
 
-### atmos.yaml location
+### Using a Custom Atmos CLI Config Path (`atmos.yaml`)
 
 If your `atmos.yaml` file is not located in the root of the infrastructure repository, you can specify the path to it using `ATMOS_CLI_CONFIG_PATH` env variable.
 
