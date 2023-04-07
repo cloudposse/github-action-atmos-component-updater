@@ -81,21 +81,26 @@ runs:
     - name: Run Atmos Component Updater
       shell: bash
       run: |
-        echo "pwd=$(pwd)"
-        echo "github.action_path=${{ github.action_path }}"
         echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE}"
         echo "ATMOS_BASE_PATH=${ATMOS_BASE_PATH}"
         echo "ATMOS_CLI_CONFIG_PATH=${ATMOS_CLI_CONFIG_PATH}"
-        ls -l
+
+        export ATMOS_BASE_PATH=${ATMOS_BASE_PATH:-${GITHUB_WORKSPACE}}
+        export ATMOS_CLI_CONFIG_PATH=${ATMOS_CLI_CONFIG_PATH:-${GITHUB_WORKSPACE}}
+
+        echo "ATMOS_BASE_PATH=${ATMOS_BASE_PATH}"
+        echo "ATMOS_CLI_CONFIG_PATH=${ATMOS_CLI_CONFIG_PATH}"
         ls -l ${{ github.action_path }}
-        ls -l ${GITHUB_WORKSPACE}
         ls -l ${ATMOS_BASE_PATH}
+        ls -l ${ATMOS_CLI_CONFIG_PATH}
+        ls -l ${GITHUB_WORKSPACE}
+
         cd ${{ github.action_path }}
         python src/main.py \
           --github-api-token ${{ inputs.github-access-token }} \
           --go-getter-tool ${{ env.GO_GETTER_TOOL }} \
           --infra-repo-name ${{ github.repository }} \
-          --infra-repo-dir ${{ github.workspace }} \
+          --infra-repo-dir ${ATMOS_BASE_PATH} \
           --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
           --skip-component-vendoring ${{ inputs.skip-component-vendoring }} \
           --max-number-of-prs ${{ inputs.max-number-of-prs }} \
