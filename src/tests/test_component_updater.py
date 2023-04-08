@@ -12,10 +12,10 @@ from jinja2 import FileSystemLoader
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from component_updater import ComponentUpdater, ComponentUpdaterResponseState  # noqa: E402
-from github_provider import GitHubProvider                                     # noqa: E402
-from utils import io                                                           # noqa: E402
-from config import Config                                                      # noqa: E402
+from component_updater import ComponentUpdater, ComponentUpdaterResponse, ComponentUpdaterResponseState  # noqa: E402
+from github_provider import GitHubProvider                                                               # noqa: E402
+from utils import io                                                                                     # noqa: E402
+from config import Config                                                                                # noqa: E402
 
 
 TEMPLATES_DIR = 'src/tests/templates'
@@ -303,3 +303,52 @@ def test_include_and_exclude(config: Config, include: List[str], exclude: List[s
     assert len(responses) == len(expected_updated_components)
     names = [response.component.name for response in responses]
     assert sorted(names) == sorted(expected_updated_components)
+
+
+def test_default_title_body_and_labels(config: Config):
+    # setup
+    prepare_infra_repo(config.infra_repo_dir)
+    create_component(config.infra_repo_dir, 'test_component', '1.107.0', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test_component?ref={{ .Version }}')
+
+    component_updater = ComponentUpdater(prep_github_provider(config), TERRAFORM_DIR, config)
+
+    # test
+    responses: List[ComponentUpdaterResponse] = component_updater.update()
+
+    # validate
+    assert len(responses) == 1
+
+    response = responses[0]
+
+    assert response.state == ComponentUpdaterResponseState.UPDATED
+    assert response.pull_request_creation_response is not None
+    assert response.pull_request_creation_response.title == "Component `test_component` update from 1.107.0 → 10.2.1"
+    assert 'This is an auto-generated PR that updates component `test_component` to version `10.2.1`.' in response.pull_request_creation_response.body
+    assert '| **Component**      | `test_component`                 |' in response.pull_request_creation_response.body
+    assert response.pull_request_creation_response.labels == ['component-update']
+
+
+def test_updated_title_body_and_labels(config: Config):
+    # setup
+    config.pr_title_template = "Updated `{{ component_name }}` to version {{ new_version }}"
+    config.pr_body_template = "Updated `{{ component_name }}` to version {{ new_version }}"
+    config.pr_labels = ['component-update', 'auto-update', 'infra']
+
+    prepare_infra_repo(config.infra_repo_dir)
+    create_component(config.infra_repo_dir, 'test_component', '1.107.0', os.getcwd() + '/src/tests/fixtures/terraform-aws-components//modules/test_component?ref={{ .Version }}')
+
+    component_updater = ComponentUpdater(prep_github_provider(config), TERRAFORM_DIR, config)
+
+    # test
+    responses: List[ComponentUpdaterResponse] = component_updater.update()
+
+    # validate
+    assert len(responses) == 1
+
+    response = responses[0]
+
+    assert response.state == ComponentUpdaterResponseState.UPDATED
+    assert response.pull_request_creation_response is not None
+    assert response.pull_request_creation_response.title == "Updated `test_component` to version 10.2.1"
+    assert response.pull_request_creation_response.body == 'Updated `test_component` to version 10.2.1'
+    assert response.pull_request_creation_response.labels == ['component-update', 'auto-update', 'infra']
