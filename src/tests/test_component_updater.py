@@ -30,7 +30,7 @@ EXISTING_TAG = '10.2.1'
 
 @pytest.fixture
 def config():
-    conf = Config('test/repo', io.create_tmp_dir(), TERRAFORM_DIR, False, 10, '*', '', '', True, '')
+    conf = Config('test/repo', io.create_tmp_dir(), TERRAFORM_DIR, False, 10, '*', '', '', True)
     conf.components_download_dir = TERRAFORM_COMPONENTS_REPO_PATH
     conf.skip_component_repo_fetching = True
     return conf
@@ -276,16 +276,16 @@ def test_missing_component(config: Config):
 
 
 @pytest.mark.parametrize("include, exclude, expected_updated_components", [
-    ('', '', ['test_component_01', 'test_component_02', 'test_component_03']),
-    ('*', '', ['test_component_01', 'test_component_02', 'test_component_03']),
-    ('test_component_*', '', ['test_component_01', 'test_component_02', 'test_component_03']),
-    ('*component_*', '', ['test_component_01', 'test_component_02', 'test_component_03']),
-    ('component_', '', []),
-    ('test_component_*', '*04*', ['test_component_01', 'test_component_02', 'test_component_03']),
-    ('test_component_*', '*02*', ['test_component_01', 'test_component_03']),
-    ('', 'test*', []),
+    ([''], [''], []),
+    (['*'], [''], ['test_component_01', 'test_component_02', 'test_component_03']),
+    (['test_component_*'], [''], ['test_component_01', 'test_component_02', 'test_component_03']),
+    (['*component_*'], [''], ['test_component_01', 'test_component_02', 'test_component_03']),
+    (['component_'], [''], []),
+    (['test_component_*'], ['*04*'], ['test_component_01', 'test_component_02', 'test_component_03']),
+    (['test_component_*'], ['*02*'], ['test_component_01', 'test_component_03']),
+    ([''], ['test*'], []),
 ])
-def test_include_and_exclude(config: Config, include: str, exclude: str, expected_updated_components: List[str]):
+def test_include_and_exclude(config: Config, include: List[str], exclude: List[str], expected_updated_components: List[str]):
     # setup
     config.include = include
     config.exclude = exclude

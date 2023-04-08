@@ -36,6 +36,18 @@ inputs:
     description: "Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in 'outputs.affected-components-file'"
     required: false
     default: 'false'
+  pr-labels:
+    description: "Comma or new line separated list of labels that will added on PR creation. Default: component-update"
+    required: false
+    default: ''
+  pr-title-template:
+    description: "Template in Python's Jinja2 format to use for PR title. If not set template from `src/templates/pr_title.j2.md` will be used"
+    required: false
+    default: ''
+  pr-body-template:
+    description: "Template in Python's Jinja2 format to use for PR body. If not set template from `src/templates/pr_body.j2.md` will be used"
+    required: false
+    default: ''
 outputs:
   affected:
     description: The affected components
@@ -94,6 +106,9 @@ runs:
           --exclude "${{ inputs.exclude }}" \
           --log-level ${{ inputs.log-level }} \
           --dry-run ${{ inputs.dry-run }} \
+          --pr-labels "${{ inputs.pr-labels }}" \
+          --pr-title-template "${{ inputs.pr-title-template }}" \
+          --pr-body-template "${{ inputs.pr-body-template }}" \
           --affected-components-file 'affected-components.json'
 
     - name: Affected Components

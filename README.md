@@ -145,6 +145,28 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
       max-number-of-prs: 5
 ```
 
+### Customize Pull Request labels, title and body
+
+```yaml
+  # ...
+  - name: Update Atmos Components
+    uses: cloudposse/github-action-atmos-component-updater@v1
+    with:
+      github-access-token: ${{ secrets.GITHUB_TOKEN }}
+      max-number-of-prs: 5
+      pr-title: "Update Atmos Component `{{ component_name }}` to {{ new_version }}"
+      pr-body: |
+        ## what
+        {{ component_name }} was updated [`{{ old_version }}`]({{ old_version_link }} → [`{{ old_version }}`]({{ old_version_link }}.
+
+        ## references
+        - [{{ source_name }}]({{ source_link }})
+      pr-labels: |
+        component-update
+        automated
+        atmos
+```
+
 
 
 
@@ -163,6 +185,9 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 | infra-terraform-dirs | CSV list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform' | components/terraform | false |
 | log-level | Log level for this action. Default 'INFO' | INFO | false |
 | max-number-of-prs | Number of PRs to create. Maximum is 10. | 10 | false |
+| pr-body-template | Template in Python's Jinja2 format to use for PR body. If not set template from `src/templates/pr\_body.j2.md` will be used |  | false |
+| pr-labels | Comma or new line separated list of labels that will added on PR creation. Default: component-update |  | false |
+| pr-title-template | Template in Python's Jinja2 format to use for PR title. If not set template from `src/templates/pr\_title.j2.md` will be used |  | false |
 | skip-component-vendoring | Do not perform 'atmos vendor component-name' on components that wasn't vendored | false | false |
 
 

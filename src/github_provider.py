@@ -1,19 +1,37 @@
 import re
 import logging
-from typing import Tuple
+from typing import Optional, Tuple, List
 import jinja2
 import git.repo
 from github import Github
 from github.PullRequest import PullRequest
-from jinja2 import FileSystemLoader
+from jinja2 import FileSystemLoader, Template
 from atmos_component import AtmosComponent
 from config import Config
 
 
 BRANCH_PREFIX = 'component-update'
 TEMPLATES_DIR = 'src/templates'
-GITHUB_PULL_REQUEST_LABEL = 'component-update'
-PR_TITLE_TEMPLATE = "Component `{component_name}` update from {old_version} → {new_version}"
+DEFAULT_PR_TITLE_TEMPLATE = 'pr_title.j2.md'
+DEFAULT_PR_BODY_TEMPLATE = 'pr_body.j2.md'
+
+
+class PullRequestCreationResponse:
+    def __init__(self,
+                 branch: str,
+                 title: str,
+                 body: str,
+                 labels: List[str],
+                 pull_request: Optional[PullRequest] = None):
+        self.branch: str = branch
+        self.title: str = title
+        self.body: str = body
+        self.labels: List[str] = labels
+        self.pull_request: Optional[PullRequest] = pull_request
+
+    def __repr__(self):
+        attributes = "\n".join(f"- {key}={value!r}" for key, value in vars(self).items())
+        return f"{self.__class__.__name__}({attributes})"
 
 
 class GitHubProvider:
@@ -22,8 +40,8 @@ class GitHubProvider:
         self.__github = github
         self.__repo = self.__github.get_repo(config.infra_repo_name)
         self.__pull_requests = None
-        jenv = jinja2.Environment(loader=FileSystemLoader(TEMPLATES_DIR))
-        self.__pr_body_template = jenv.get_template('pr_body.j2.md')
+        self.__pr_title_template = self.__load_template(self.__config.pr_title_template, DEFAULT_PR_TITLE_TEMPLATE)
+        self.__pr_body_template = self.__load_template(self.__config.pr_body_template, DEFAULT_PR_BODY_TEMPLATE)
 
     def build_component_branch_name(self, component_name: str, tag: str):
         return f'{BRANCH_PREFIX}/{component_name}/{tag}'
@@ -64,12 +82,11 @@ class GitHubProvider:
 
         return branch_name in branches or remote_branch_name in branches
 
-    def open_pr(self, branch_name: str, original_component: AtmosComponent, updated_component: AtmosComponent) -> PullRequest:
+    def open_pr(self,
+                branch_name: str,
+                original_component: AtmosComponent,
+                updated_component: AtmosComponent) -> PullRequestCreationResponse:
         branch = self.__repo.get_branch(branch_name)
-
-        title = PR_TITLE_TEMPLATE.format(component_name=original_component.name,
-                                         old_version=original_component.version,
-                                         new_version=updated_component.version)
 
         original_component_version_link = self.__build_component_version_link(original_component)
         updated_component_version_link = self.__build_component_version_link(updated_component)
@@ -78,6 +95,11 @@ class GitHubProvider:
         updated_component_release_link = self.__build_component_release_tag_link(updated_component)
 
         source_name, source_link = self.__build_get_source(original_component)
+
+        title = self.__pr_title_template.render(component_name=original_component.name,
+                                                source_name=source_name,
+                                                old_version=original_component.version,
+                                                new_version=updated_component.version)
 
         body = self.__pr_body_template.render(component_name=original_component.name,
                                               source_name=source_name,
@@ -89,14 +111,22 @@ class GitHubProvider:
                                               old_component_release_link=original_component_release_link,
                                               new_component_release_link=updated_component_release_link)
 
+        response = PullRequestCreationResponse(branch_name, title, body, self.__config.pr_labels)
+
+        if self.__config.dry_run:
+            logging.info("Skipping pull request creation in dry-run mode")
+            return response
+
         pull_request: PullRequest = self.__repo.create_pull(title=title,
                                                             body=body,
                                                             base=self.__repo.default_branch,
                                                             head=branch.name)
 
-        pull_request.add_to_labels(GITHUB_PULL_REQUEST_LABEL)
+        pull_request.add_to_labels(*self.__config.pr_labels)
 
-        return pull_request
+        response.pull_request = pull_request
+
+        return response
 
     def get_open_prs_for_component(self, component_name: str):
         open_prs = []
@@ -159,3 +189,12 @@ class GitHubProvider:
             repo_uri = repo_uri[:-4]
 
         return repo_uri
+
+    def __load_template(self, explicit_template: str, default_template_file: str):
+        if explicit_template:
+            template = Template(explicit_template)
+        else:
+            jenv = jinja2.Environment(loader=FileSystemLoader(TEMPLATES_DIR))
+            template = jenv.get_template(default_template_file)
+
+        return template

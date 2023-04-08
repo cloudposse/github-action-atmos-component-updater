@@ -114,6 +114,28 @@ usage: |-
         max-number-of-prs: 5
   ```
 
+  ### Customize Pull Request labels, title and body
+
+  ```yaml
+    # ...
+    - name: Update Atmos Components
+      uses: cloudposse/github-action-atmos-component-updater@v1
+      with:
+        github-access-token: ${{ secrets.GITHUB_TOKEN }}
+        max-number-of-prs: 5
+        pr-title: "Update Atmos Component `{{ component_name }}` to {{ new_version }}"
+        pr-body: |
+          ## what
+          {{ component_name }} was updated [`{{ old_version }}`]({{ old_version_link }} → [`{{ old_version }}`]({{ old_version_link }}.
+
+          ## references
+          - [{{ source_name }}]({{ source_link }})
+        pr-labels: |
+          component-update
+          automated
+          atmos
+  ```
+
 include:
   - "docs/github-action.md"
 

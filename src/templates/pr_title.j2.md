@@ -1,0 +1,1 @@
+Component `{{ component_name }}` update from {{ old_version }} → {{ new_version }}
