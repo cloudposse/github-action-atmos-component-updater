@@ -231,6 +231,10 @@ class ComponentUpdater:
             if updated_file.endswith(COMPONENT_YAML):
                 continue
 
+            # skip folders
+            if not os.path.isfile(updated_file):
+                continue
+
             relative_path = os.path.relpath(updated_file, updated_component.infra_repo_dir)
             original_file = os.path.join(original_component.infra_repo_dir, relative_path)
 
