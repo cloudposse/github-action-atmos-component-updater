@@ -154,10 +154,10 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
     with:
       github-access-token: ${{ secrets.GITHUB_TOKEN }}
       max-number-of-prs: 5
-      pr-title: "Update Atmos Component `{{ component_name }}` to {{ new_version }}"
+      pr-title: 'Update Atmos Component \`{{ component_name }}\` to {{ new_version }}'
       pr-body: |
         ## what
-        {{ component_name }} was updated [`{{ old_version }}`]({{ old_version_link }} → [`{{ old_version }}`]({{ old_version_link }}.
+        Component \`{{ component_name }}\` was updated [{{ old_version }}]({{ old_version_link }}) → [{{ old_version }}]({{ old_version_link }}).
 
         ## references
         - [{{ source_name }}]({{ source_link }})
@@ -166,6 +166,8 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
         automated
         atmos
 ```
+
+**Note** that backtick ` symbols are escaped.
 
 #### For `title` template these placeholders can be used:
 - `component_name`
