@@ -5,6 +5,7 @@ import jinja2
 import git.repo
 from github import Github
 from github.PullRequest import PullRequest
+from github.Label import Label
 from jinja2 import FileSystemLoader, Template
 from atmos_component import AtmosComponent
 from config import Config
