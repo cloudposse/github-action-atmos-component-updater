@@ -86,8 +86,6 @@ class GitHubProvider:
                 branch_name: str,
                 original_component: AtmosComponent,
                 updated_component: AtmosComponent) -> PullRequestCreationResponse:
-        branch = self.__repo.get_branch(branch_name)
-
         original_component_version_link = self.__build_component_version_link(original_component)
         updated_component_version_link = self.__build_component_version_link(updated_component)
 
@@ -116,6 +114,8 @@ class GitHubProvider:
         if self.__config.dry_run:
             logging.info("Skipping pull request creation in dry-run mode")
             return response
+
+        branch = self.__repo.get_branch(branch_name)
 
         pull_request: PullRequest = self.__repo.create_pull(title=title,
                                                             body=body,
