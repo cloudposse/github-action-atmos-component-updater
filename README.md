@@ -167,6 +167,23 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
         atmos
 ```
 
+#### For `title` template these placeholders can be used:
+- `component_name`
+- `source_name`
+- `old_version`
+- `new_version`
+
+#### For `body` template these placeholders can be used:
+- `component_name`
+- `source_name`
+- `source_link`
+- `old_version`
+- `new_version`
+- `old_version_link`
+- `new_version_link`
+- `old_component_release_link`
+- `new_component_release_link`
+
 
 
 
