@@ -144,7 +144,7 @@ usage: |-
   - `old_version`
   - `new_version`
 
-  #### For `body` template these placeholders can be used:
+  #### For `body` template these placeholders are available:
   - `component_name`
   - `source_name`
   - `source_link`
