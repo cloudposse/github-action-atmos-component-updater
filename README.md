@@ -169,7 +169,7 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 
 **IMPORTANT:** The backtick symbols must be escaped in the GitHub Action parameters. This is because GitHub evaluates whatever is in the backticks and it will render as an empty string.
 
-#### For `title` template these placeholders can be used:
+#### For the `title` template, these placeholders can be used:
 - `component_name`
 - `source_name`
 - `old_version`
