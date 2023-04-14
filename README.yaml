@@ -136,7 +136,7 @@ usage: |-
           atmos
   ```
   
-  **Note** that backtick ` symbols are escaped.
+ **IMPORTANT:** The backtick symbols must be escaped in the GitHub Action parameters. This is because GitHub evaluates whatever is in the backticks and it will render as an empty string.
 
   #### For `title` template these placeholders are available:
   - `component_name`
