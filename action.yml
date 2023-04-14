@@ -37,7 +37,7 @@ inputs:
     required: false
     default: 'false'
   pr-labels:
-    description: "Comma or new line separated list of labels that will added on PR creation. Default: component-update"
+    description: "Comma or new line separated list of labels that will added on PR creation. Default: `component-update`"
     required: false
     default: 'component-update'
   pr-title-template:
