@@ -175,7 +175,7 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 - `old_version`
 - `new_version`
 
-#### For `body` template these placeholders can be used:
+#### For the `body` template, these placeholders can be used:
 - `component_name`
 - `source_name`
 - `source_link`
