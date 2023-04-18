@@ -2,20 +2,18 @@ import os
 import sys
 import logging
 import fnmatch
-import re
 from typing import List, Optional
 from enum import Enum
-from github.PullRequest import PullRequest
 import tools
 from utils import io
 from atmos_component import AtmosComponent, COMPONENT_YAML
-from github_provider import GitHubProvider
+from github_provider import GitHubProvider, PullRequestCreationResponse
 from config import Config
 from tools import ToolExecutionError
 
 
 COMMIT_MESSAGE_TEMPLATE = "Updated component '{component_name}' to version '{component_version}'"
-MAX_NUMBER_OF_DIFF_TO_SHOW = 2
+MAX_NUMBER_OF_DIFF_TO_SHOW = 3
 
 
 class ComponentUpdaterError(Exception):
@@ -43,7 +41,7 @@ class ComponentUpdaterResponse:
         self.state: ComponentUpdaterResponseState = ComponentUpdaterResponseState.UNDEFINED
         self.component_path: str
         self.branch_name: str
-        self.pull_request: Optional[PullRequest] = None
+        self.pull_request_creation_response: Optional[PullRequestCreationResponse] = None
 
 
 class ComponentUpdater:
@@ -54,8 +52,6 @@ class ComponentUpdater:
         self.__github_provider = github_provider
         self.__infra_terraform_dir = infra_terraform_dir
         self.__config = config
-        self.__include = self.__parse_comma_or_new_line_separated_list(config.include)
-        self.__exclude = self.__parse_comma_or_new_line_separated_list(config.exclude)
 
     def update(self) -> List[ComponentUpdaterResponse]:
         responses = []
@@ -81,7 +77,7 @@ class ComponentUpdater:
                 if response.state == ComponentUpdaterResponseState.UPDATED:
                     affected.append(response.component.name)
 
-                num_pr_created += 1 if isinstance(response.pull_request, PullRequest) else 0
+                num_pr_created += 1 if response.pull_request_creation_response and response.pull_request_creation_response.pull_request else 0
 
                 if num_pr_created >= self.__config.max_number_of_prs:
                     logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping the rest")
@@ -180,11 +176,11 @@ class ComponentUpdater:
                     response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
                     return response
 
-            pull_request: Optional[PullRequest] = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                              original_component,
-                                                                              updated_component,
-                                                                              branch_name)
-            response.pull_request = pull_request
+            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
+                                                                                                      original_component,
+                                                                                                      updated_component,
+                                                                                                      branch_name)
+            response.pull_request_creation_response = pull_request_creation_response
             response.state = ComponentUpdaterResponseState.UPDATED
             return response
 
@@ -197,8 +193,8 @@ class ComponentUpdater:
             return response
 
         if self.__does_component_needs_to_be_updated(original_component, updated_component):
-            pull_request: Optional[PullRequest] = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
-            response.pull_request = pull_request
+            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir, original_component, updated_component, branch_name)
+            response.pull_request_creation_response = pull_request_creation_response
             response.state = ComponentUpdaterResponseState.UPDATED
             return response
 
@@ -235,6 +231,10 @@ class ComponentUpdater:
             if updated_file.endswith(COMPONENT_YAML):
                 continue
 
+            # skip folders
+            if not os.path.isfile(updated_file):
+                continue
+
             relative_path = os.path.relpath(updated_file, updated_component.infra_repo_dir)
             original_file = os.path.join(original_component.infra_repo_dir, relative_path)
 
@@ -252,35 +252,33 @@ class ComponentUpdater:
 
         return needs_update
 
-    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> Optional[PullRequest]:
+    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
         self.__github_provider.create_branch_and_push_all_changes(repo_dir,
                                                                   branch_name,
                                                                   COMMIT_MESSAGE_TEMPLATE.format(
                                                                       component_name=updated_component.name,
                                                                       component_version=updated_component.version))
 
-        if self.__config.dry_run:
-            logging.info("Skipping remote branch and pull request creation in dry-run mode")
-            return None
-
         logging.info(f"Created branch: {branch_name} in 'origin'")
         logging.info(f"Opening PR for branch {branch_name}")
 
-        pull_request: PullRequest = self.__github_provider.open_pr(branch_name,
-                                                                   original_component,
-                                                                   updated_component)
+        pull_request_creation_response: PullRequestCreationResponse = self.__github_provider.open_pr(branch_name,
+                                                                                                     original_component,
+                                                                                                     updated_component)
+        if not self.__config.dry_run and pull_request_creation_response.pull_request:
+            pull_request = pull_request_creation_response.pull_request
 
-        logging.info(f"Opened PR #{pull_request.number}")
+            logging.info(f"Opened PR #{pull_request.number}")
 
-        opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
+            opened_prs = self.__github_provider.get_open_prs_for_component(updated_component.normalized_name)
 
-        for opened_pr in opened_prs:
-            if opened_pr.number != pull_request.number:
-                closing_message = f"Closing in favor of PR #{pull_request.number}"
-                self.__github_provider.close_pr(opened_pr, closing_message)
-                logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
+            for opened_pr in opened_prs:
+                if opened_pr.number != pull_request.number:
+                    closing_message = f"Closing in favor of PR #{pull_request.number}"
+                    self.__github_provider.close_pr(opened_pr, closing_message)
+                    logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
 
-        return pull_request
+        return pull_request_creation_response
 
     def __component_has_version(self, component) -> bool:
         return bool(component.version)
@@ -288,23 +286,20 @@ class ComponentUpdater:
     def __component_has_valid_uri(self, component) -> bool:
         return bool(component.uri_repo and component.uri_path)
 
-    def __parse_comma_or_new_line_separated_list(self, components: str) -> List[str]:
-        return [x.strip() for x in re.split(',|\n', components)] if components else []
-
     def __should_component_be_processed(self, component_name: str) -> bool:
-        if len(self.__include) == 0 and len(self.__exclude) == 0:
+        if len(self.__config.include) == 0 and len(self.__config.exclude) == 0:
             return True
 
         should_be_processed = False
 
-        if self.__include:
-            for include_pattern in self.__include:
+        if self.__config.include:
+            for include_pattern in self.__config.include:
                 if fnmatch.fnmatch(component_name, include_pattern):
                     should_be_processed = True
                     break
 
-        if self.__exclude:
-            for exclude_pattern in self.__exclude:
+        if self.__config.exclude:
+            for exclude_pattern in self.__config.exclude:
                 if fnmatch.fnmatch(component_name, exclude_pattern):
                     should_be_processed = False
                     break
