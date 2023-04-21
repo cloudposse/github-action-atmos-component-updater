@@ -11,9 +11,9 @@
 | infra-terraform-dirs | CSV list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform' | components/terraform | false |
 | log-level | Log level for this action. Default 'INFO' | INFO | false |
 | max-number-of-prs | Number of PRs to create. Maximum is 10. | 10 | false |
-| pr-body-template | A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) body.  If not set template from `src/templates/pr\_body.j2.md` will be used |  | false |
-| pr-labels | Comma or new line separated list of labels that will added on PR creation. Default: component-update | component-update | false |
-| pr-title-template | Template in Python's Jinja2 format to use for PR title. If not set template from `src/templates/pr\_title.j2.md` will be used |  | false |
+| pr-body-template | A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) body. If not set template from `src/templates/pr\_body.j2.md` will be used |  | false |
+| pr-labels | Comma or new line separated list of labels that will added on PR creation. Default: `component-update` | component-update | false |
+| pr-title-template | A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) title. If not, set template from `src/templates/pr\_title.j2.md` will be used |  | false |
 | skip-component-vendoring | Do not perform 'atmos vendor component-name' on components that wasn't vendored | false | false |
 
 

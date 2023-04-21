@@ -169,22 +169,22 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 
 **IMPORTANT:** The backtick symbols must be escaped in the GitHub Action parameters. This is because GitHub evaluates whatever is in the backticks and it will render as an empty string.
 
-#### For the `title` template, these placeholders can be used:
-- `component_name`
-- `source_name`
-- `old_version`
-- `new_version`
+  #### For `title` template these placeholders are available:
+  - `component_name`
+  - `source_name`
+  - `old_version`
+  - `new_version`
 
-#### For the `body` template, these placeholders can be used:
-- `component_name`
-- `source_name`
-- `source_link`
-- `old_version`
-- `new_version`
-- `old_version_link`
-- `new_version_link`
-- `old_component_release_link`
-- `new_component_release_link`
+  #### For `body` template these placeholders are available:
+  - `component_name`
+  - `source_name`
+  - `source_link`
+  - `old_version`
+  - `new_version`
+  - `old_version_link`
+  - `new_version_link`
+  - `old_component_release_link`
+  - `new_component_release_link`
 
 
 
@@ -204,9 +204,9 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 | infra-terraform-dirs | CSV list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform' | components/terraform | false |
 | log-level | Log level for this action. Default 'INFO' | INFO | false |
 | max-number-of-prs | Number of PRs to create. Maximum is 10. | 10 | false |
-| pr-body-template | Template in Python's Jinja2 format to use for PR body. If not set template from `src/templates/pr\_body.j2.md` will be used |  | false |
-| pr-labels | Comma or new line separated list of labels that will added on PR creation. Default: component-update | component-update | false |
-| pr-title-template | Template in Python's Jinja2 format to use for PR title. If not set template from `src/templates/pr\_title.j2.md` will be used |  | false |
+| pr-body-template | A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) body. If not set template from `src/templates/pr\_body.j2.md` will be used |  | false |
+| pr-labels | Comma or new line separated list of labels that will added on PR creation. Default: `component-update` | component-update | false |
+| pr-title-template | A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) title. If not, set template from `src/templates/pr\_title.j2.md` will be used |  | false |
 | skip-component-vendoring | Do not perform 'atmos vendor component-name' on components that wasn't vendored | false | false |
 
 
