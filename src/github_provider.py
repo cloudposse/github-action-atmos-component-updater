@@ -45,7 +45,7 @@ class GitHubProvider:
         self.__pr_body_template = self.__load_template(self.__config.pr_body_template, DEFAULT_PR_BODY_TEMPLATE)
 
     def build_component_branch_name(self, component_name: str, tag: str):
-        normalized_component_name: str = re.sub(r'\W+', '', component_name)
+        normalized_component_name: str = re.sub(r'[^a-zA-Z0-9-]+', '', component_name)
         return f'{BRANCH_PREFIX}/{normalized_component_name}/{tag}'
 
     def get_branches(self, repo_dir: str):
