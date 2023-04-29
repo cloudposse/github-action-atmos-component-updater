@@ -3,14 +3,16 @@ import click
 from github import Github
 from component_updater import ComponentUpdater
 from github_provider import GitHubProvider
+from tools_manager import ToolsManager
 from config import Config
 
 
 def main(github_api_token: str, config: Config):
     github_provider = GitHubProvider(config, Github(github_api_token))
+    tools_manager = ToolsManager(config.go_getter_tool)
 
     for infra_terraform_dir in config.infra_terraform_dirs:
-        component_updater = ComponentUpdater(github_provider, infra_terraform_dir, config)
+        component_updater = ComponentUpdater(github_provider, tools_manager, infra_terraform_dir, config)
         component_updater.update()
 
 

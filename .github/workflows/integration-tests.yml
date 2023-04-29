@@ -15,9 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Atmos
-        uses: cloudposse/github-action-setup-atmos@v1.0.0
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -27,11 +24,6 @@ jobs:
         shell: bash
         run: |
           make install-deps
-
-      - name: Prep Test Fixtures
-        shell: bash
-        run: |
-          make prep-fixtures
 
       - name: Run Tests
         shell: bash
