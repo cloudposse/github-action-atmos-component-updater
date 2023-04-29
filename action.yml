@@ -65,6 +65,8 @@ runs:
 
     - name: Setup Atmos
       uses: cloudposse/github-action-setup-atmos@v1.0.0
+      with:
+        atmos-version: v1.32.5
 
     - name: Set up Go
       uses: actions/setup-go@v3
