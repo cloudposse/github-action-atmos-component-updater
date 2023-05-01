@@ -28,6 +28,10 @@ inputs:
     description: "Comma or new line separated list of component names to exclude. For example: 'vpc,eks/*,rds'. By default no components are excluded. Default ''"
     required: false
     default: ''
+  atmos-version:
+    description: "Atmos version to use for vendoring. Default 'latest'"
+    required: false
+    default: 'latest'
   log-level:
     description: "Log level for this action. Default 'INFO'"
     required: false
@@ -65,11 +69,18 @@ runs:
 
     - name: Setup Atmos
       uses: cloudposse/github-action-setup-atmos@v1.0.0
+      with:
+        atmos-version: ${{ inputs.atmos-version }}
 
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
         go-version: "1.20"
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
 
     - name: Install Go Dependencies
       shell: bash
