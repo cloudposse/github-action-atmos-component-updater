@@ -122,7 +122,7 @@ class ComponentUpdater:
         response = ComponentUpdaterResponse(original_component)
 
         if self.__num_pr_created >= self.__config.max_number_of_prs:
-            logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping component update for '{original_component.name}' ...")
+            logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping component update for '{original_component.name}'")
             response.state = ComponentUpdaterResponseState.MAX_PRS_REACHED
             return ComponentUpdaterResponse(original_component)
 
