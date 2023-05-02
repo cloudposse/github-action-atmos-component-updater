@@ -183,8 +183,8 @@ class ComponentUpdater:
         logging.debug(f"Updated re-vendored component:\n{str(updated_vendored_component)}")
 
         try:
-            self.__tools_manager.atmos_vendor_component(original_vendored_component, self.__config.dry_run)
-            self.__tools_manager.atmos_vendor_component(updated_vendored_component, self.__config.dry_run)
+            self.__tools_manager.atmos_vendor_component(original_vendored_component)
+            self.__tools_manager.atmos_vendor_component(updated_vendored_component)
         except ToolExecutionError as error:
             logging.error(f"Failed to vendor component: {error}")
             response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
@@ -192,16 +192,19 @@ class ComponentUpdater:
 
         if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
             if not self.__config.skip_component_vendoring or self.__is_vendored(updated_component):
-                self.__tools_manager.atmos_vendor_component(updated_component, self.__config.dry_run)
+                self.__tools_manager.atmos_vendor_component(updated_component)
 
-            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                                                      original_component,
-                                                                                                      updated_component,
-                                                                                                      branch_name)
-            response.pull_request_creation_response = pull_request_creation_response
+            if not self.__config.dry_run:
+                pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
+                                                                                                          original_component,
+                                                                                                          updated_component,
+                                                                                                          branch_name)
+                response.pull_request_creation_response = pull_request_creation_response
+
             response.state = ComponentUpdaterResponseState.UPDATED
 
-            self.__num_pr_created += 1 if response.pull_request_creation_response and response.pull_request_creation_response.pull_request else 0
+            if self.__config.dry_run or (response.pull_request_creation_response and response.pull_request_creation_response.pull_request):
+                self.__num_pr_created += 1
 
             return response
         else:
