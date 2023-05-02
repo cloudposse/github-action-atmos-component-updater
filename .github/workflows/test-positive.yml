@@ -30,8 +30,8 @@ jobs:
         id: current
         with:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: 'true'
-          log-level: 'DEBUG'
+          dry-run: true
+          log-level: DEBUG
 
     outputs:
       affected: "${{ steps.current.outputs.affected }}"
