@@ -28,14 +28,10 @@ jobs:
 
       - uses: ./
         id: current
-        env:
-          ATMOS_CLI_CONFIG_PATH: ${{ github.workspace }}/atmos/
-          ATMOS_STACKS_BASE_PATH: ${{ github.workspace }}/atmos/stacks/
         with:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
           log-level: DEBUG
-          infra-terraform-dirs: ${{ github.workspace }}/atmos/components/terraform
 
     outputs:
       affected: "${{ steps.current.outputs.affected }}"
