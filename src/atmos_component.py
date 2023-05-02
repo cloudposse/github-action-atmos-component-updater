@@ -48,6 +48,10 @@ class AtmosComponent:
         return self.__infra_repo_dir
 
     @property
+    def infra_terraform_dir(self) -> str:
+        return self.__infra_terraform_dir
+
+    @property
     def component_file(self) -> str:
         return self.__component_file
 
@@ -95,6 +99,12 @@ class AtmosComponent:
 
     def __load_yaml_content(self):
         return yaml.load(self.__content, Loader=yaml.FullLoader)
+
+    def has_version(self) -> bool:
+        return bool(self.version)
+
+    def has_valid_uri(self) -> bool:
+        return bool(self.uri_repo and self.uri_path)
 
     def update_version(self, new_version: str):
         self.__content = re.sub(VERSION_PATTERN, f"version: {new_version}", self.__content)

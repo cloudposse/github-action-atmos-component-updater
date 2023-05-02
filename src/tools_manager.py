@@ -15,9 +15,10 @@ class ToolsManager:
         self.__go_getter_tool = go_getter_tool
 
     def atmos_vendor_component(self, component: AtmosComponent):
+        os.environ['ATMOS_COMPONENTS_TERRAFORM_BASE_PATH'] = component.infra_terraform_dir
         command = ["atmos", "vendor", "pull", "-c", component.name]
 
-        logging.debug(f"Executing: '{' '.join(command)}' ... ")
+        logging.info(f"Executing '{' '.join(command)}' for component version '{component.version}' ... ")
 
         response = subprocess.run(command, capture_output=True, cwd=component.infra_repo_dir, check=False)
 
@@ -27,7 +28,7 @@ class ToolsManager:
             logging.error(error_message)
             raise ToolExecutionError(error_message)
 
-        logging.debug(f"Successfully vendored component: {component.name}")
+        logging.info(f"Successfully vendored component: {component.name}")
 
     def diff(self, file1: str, file2: str):
         command = ["diff", file1, file2]

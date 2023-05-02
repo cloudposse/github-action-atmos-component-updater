@@ -32,6 +32,7 @@ class ComponentUpdaterResponseState(Enum):
     REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST = 8
     NO_CHANGES_FOUND = 9
     FAILED_TO_VENDOR_COMPONENT = 10
+    MAX_PRS_REACHED = 11
 
 
 class ComponentUpdaterResponse:
@@ -47,17 +48,26 @@ class ComponentUpdater:
     def __init__(self,
                  github_provider: GitHubProvider,
                  tools_manager: ToolsManager,
-                 infra_terraform_dir: str,
+                 infra_terraform_dirs: List[str],
                  config: Config):
         self.__github_provider = github_provider
-        self.__infra_terraform_dir = infra_terraform_dir
+        self.__infra_terraform_dirs = infra_terraform_dirs
         self.__config = config
         self.__tools_manager = tools_manager
+        self.__num_pr_created = 0
 
     def update(self) -> List[ComponentUpdaterResponse]:
         responses = []
 
-        infra_components_dir = os.path.join(self.__config.infra_repo_dir, self.__infra_terraform_dir)
+        for infra_terraform_dir in self.__infra_terraform_dirs:
+            responses.extend(self.__update_terraform_dir(infra_terraform_dir))
+
+        return responses
+
+    def __update_terraform_dir(self, infra_terraform_dir) -> List[ComponentUpdaterResponse]:
+        responses = []
+
+        infra_components_dir = os.path.join(self.__config.infra_repo_dir, infra_terraform_dir)
 
         logging.debug(f"Looking for components in: {infra_components_dir}")
 
@@ -65,24 +75,16 @@ class ComponentUpdater:
 
         logging.info(f"Found {len(component_files)} components")
 
-        num_pr_created = 0
-
         affected = []
 
         try:
             for component_file in component_files:
-                response = self.__update_component(component_file)
+                response = self.__update_component(infra_terraform_dir, component_file)
                 logging.debug(f"Response state after component update: {response.state.name}")
                 responses.append(response)
 
                 if response.state == ComponentUpdaterResponseState.UPDATED:
                     affected.append(response.component.name)
-
-                num_pr_created += 1 if response.pull_request_creation_response and response.pull_request_creation_response.pull_request else 0
-
-                if num_pr_created >= self.__config.max_number_of_prs:
-                    logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping the rest")
-                    break
         except (ComponentUpdaterError, ToolExecutionError) as error:
             logging.error(error.message)
             sys.exit(1)
@@ -110,21 +112,29 @@ class ComponentUpdater:
 
         return component_yaml_paths
 
-    def __update_component(self, component_file: str) -> ComponentUpdaterResponse:
-        original_component = AtmosComponent(self.__config.infra_repo_dir, self.__infra_terraform_dir, component_file)
+    def __is_vendored(self, component: AtmosComponent) -> bool:
+        component_files = io.get_filenames_in_dir(component.component_dir, ['**/*'])
+        tf_files = list(filter(lambda f: f.lower().endswith('.tf'), component_files))
+        return len(tf_files) > 0
 
-        logging.debug(f"Original component:\n{str(original_component)}")
-
+    def __update_component(self, infra_terraform_dir, component_file: str) -> ComponentUpdaterResponse:
+        original_component = AtmosComponent(self.__config.infra_repo_dir, infra_terraform_dir, component_file)
         response = ComponentUpdaterResponse(original_component)
 
-        logging.info(f"Processing component: {original_component.name}")
+        if self.__num_pr_created >= self.__config.max_number_of_prs:
+            logging.info(f"Max number of PRs ({self.__config.max_number_of_prs}) reached. Skipping component update for '{original_component.name}' ...")
+            response.state = ComponentUpdaterResponseState.MAX_PRS_REACHED
+            return ComponentUpdaterResponse(original_component)
 
-        if not self.__component_has_version(original_component):
+        logging.info(f"Processing component: {original_component.name}")
+        logging.debug(f"Original component:\n{str(original_component)}")
+
+        if not original_component.has_version():
             logging.error(f"Component '{original_component.name}' doesn't have 'version' specified. Skipping")
             response.state = ComponentUpdaterResponseState.NO_VERSION_FOUND_IN_SOURCE_YAML
             return response
 
-        if not self.__component_has_valid_uri(original_component):
+        if not original_component.has_valid_uri():
             logging.error(f"Component '{original_component.name}' doesn't have valid 'uri' specified. Skipping")
             response.state = ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
             return response
@@ -148,7 +158,7 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.ALREADY_UP_TO_DATE
             return response
 
-        updated_component = self.__clone_infra_for_component(original_component)
+        updated_component = self.__clone_infra_for_component(infra_terraform_dir, original_component)
 
         logging.debug(f"Updated component:\n{str(updated_component)}")
 
@@ -166,87 +176,49 @@ class ComponentUpdater:
         updated_component.update_version(latest_tag)
         updated_component.persist()
 
-        if self.__is_vendored(updated_component):
-            logging.info("Component was vendored. Re-vendoring and checking for changes ...")
+        original_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, original_component)
+        updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, updated_component)
 
-            try:
+        logging.debug(f"Original re-vendored component:\n{str(original_vendored_component)}")
+        logging.debug(f"Updated re-vendored component:\n{str(updated_vendored_component)}")
+
+        try:
+            self.__tools_manager.atmos_vendor_component(original_vendored_component)
+            self.__tools_manager.atmos_vendor_component(updated_vendored_component)
+        except ToolExecutionError as error:
+            logging.error(f"Failed to vendor component: {error}")
+            response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
+            return response
+
+        if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
+            if not self.__config.skip_component_vendoring or self.__is_vendored(updated_component):
                 self.__tools_manager.atmos_vendor_component(updated_component)
-            except ToolExecutionError as error:
-                logging.error(f"Failed to vendor component: {error}")
-                response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
-                return response
 
-            if self.__does_component_needs_to_be_updated(original_component, updated_component):
-                pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                                                          original_component,
-                                                                                                          updated_component,
-                                                                                                          branch_name)
-                response.pull_request_creation_response = pull_request_creation_response
-                response.state = ComponentUpdaterResponseState.UPDATED
-                return response
-            else:
-                logging.info("Looking good. No changes found")
-                response.state = ComponentUpdaterResponseState.NO_CHANGES_FOUND
-                return response
+            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
+                                                                                                      original_component,
+                                                                                                      updated_component,
+                                                                                                      branch_name)
+            response.pull_request_creation_response = pull_request_creation_response
+            response.state = ComponentUpdaterResponseState.UPDATED
+
+            self.__num_pr_created += 1 if response.pull_request_creation_response and response.pull_request_creation_response.pull_request else 0
+
+            return response
         else:
-            logging.info("Component was not vendored")
-
-            if self.__config.skip_component_vendoring:
-                logging.debug(f"Doing vendoring in order to figure out changes: '{original_component.name}'")
-
-                original_vendored_component: AtmosComponent = self.__clone_infra_for_component(original_component)
-                updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(updated_component)
-
-                try:
-                    self.__tools_manager.atmos_vendor_component(original_vendored_component)
-                    self.__tools_manager.atmos_vendor_component(updated_vendored_component)
-                except ToolExecutionError as error:
-                    logging.error(f"Failed to vendor component: {error}")
-                    response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
-                    return response
-
-                if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
-                    pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                                                              original_component,
-                                                                                                              updated_component,
-                                                                                                              branch_name)
-                    response.pull_request_creation_response = pull_request_creation_response
-                    response.state = ComponentUpdaterResponseState.UPDATED
-                    return response
-                else:
-                    logging.info("Looking good. No changes found")
-                    response.state = ComponentUpdaterResponseState.NO_CHANGES_FOUND
-                    return response
-            else:
-                try:
-                    self.__tools_manager.atmos_vendor_component(updated_component)
-                except ToolExecutionError as error:
-                    logging.error(f"Failed to vendor component: {error}")
-                    response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
-                    return response
-
-                pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                                                          original_component,
-                                                                                                          updated_component,
-                                                                                                          branch_name)
-                response.pull_request_creation_response = pull_request_creation_response
-                response.state = ComponentUpdaterResponseState.UPDATED
-                return response
+            logging.info("Looking good. No changes found")
+            response.state = ComponentUpdaterResponseState.NO_CHANGES_FOUND
+            return response
 
     def __fetch_component_repo(self, component: AtmosComponent):
         normalized_repo_path = component.uri_repo.replace('/', '-') if component.uri_repo else ''
         self.__tools_manager.go_getter_pull_component_repo(component, normalized_repo_path, self.__config.components_download_dir)
         return os.path.join(self.__config.components_download_dir, normalized_repo_path)
 
-    def __is_vendored(self, component: AtmosComponent) -> bool:
-        updated_component_files = io.get_filenames_in_dir(component.component_dir, ['**/*'])
-        return len(updated_component_files) > 1
-
-    def __clone_infra_for_component(self, component: AtmosComponent):
+    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent):
         update_infra_repo_dir = io.create_tmp_dir()
         io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
-        return AtmosComponent(update_infra_repo_dir, self.__infra_terraform_dir, component_file)
+        return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
     def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> bool:
         updated_files = io.get_filenames_in_dir(updated_component.component_dir, ['**/*'])
@@ -307,12 +279,6 @@ class ComponentUpdater:
                     logging.info(f"Closed pr {opened_pr.number} in favor of #{pull_request.number}")
 
         return pull_request_creation_response
-
-    def __component_has_version(self, component) -> bool:
-        return bool(component.version)
-
-    def __component_has_valid_uri(self, component) -> bool:
-        return bool(component.uri_repo and component.uri_path)
 
     def __should_component_be_processed(self, component_name: str) -> bool:
         if len(self.__config.include) == 0 and len(self.__config.exclude) == 0:
