@@ -194,12 +194,11 @@ class ComponentUpdater:
             if not self.__config.skip_component_vendoring or self.__is_vendored(updated_component):
                 self.__tools_manager.atmos_vendor_component(updated_component)
 
-            if not self.__config.dry_run:
-                pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                                                          original_component,
-                                                                                                          updated_component,
-                                                                                                          branch_name)
-                response.pull_request_creation_response = pull_request_creation_response
+            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
+                                                                                                      original_component,
+                                                                                                      updated_component,
+                                                                                                      branch_name)
+            response.pull_request_creation_response = pull_request_creation_response
 
             response.state = ComponentUpdaterResponseState.UPDATED
 
