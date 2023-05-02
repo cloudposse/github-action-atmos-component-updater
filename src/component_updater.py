@@ -183,8 +183,8 @@ class ComponentUpdater:
         logging.debug(f"Updated re-vendored component:\n{str(updated_vendored_component)}")
 
         try:
-            self.__tools_manager.atmos_vendor_component(original_vendored_component)
-            self.__tools_manager.atmos_vendor_component(updated_vendored_component)
+            self.__tools_manager.atmos_vendor_component(original_vendored_component, self.__config.dry_run)
+            self.__tools_manager.atmos_vendor_component(updated_vendored_component, self.__config.dry_run)
         except ToolExecutionError as error:
             logging.error(f"Failed to vendor component: {error}")
             response.state = ComponentUpdaterResponseState.FAILED_TO_VENDOR_COMPONENT
@@ -192,7 +192,7 @@ class ComponentUpdater:
 
         if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
             if not self.__config.skip_component_vendoring or self.__is_vendored(updated_component):
-                self.__tools_manager.atmos_vendor_component(updated_component)
+                self.__tools_manager.atmos_vendor_component(updated_component, self.__config.dry_run)
 
             pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
                                                                                                       original_component,

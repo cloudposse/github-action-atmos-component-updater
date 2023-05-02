@@ -14,7 +14,7 @@ class FakeToolsManager(ToolsManager):
         self.latest_tag = latest_tag
         self.is_valid_git_repo: bool = is_valid_git_repo
 
-    def atmos_vendor_component(self, component: AtmosComponent):
+    def atmos_vendor_component(self, component: AtmosComponent, is_dry_run: bool = False):
         logging.debug(f"Vendoring component: {component}")
 
         source_file = os.path.join(os.getcwd(), TERRAFORM_COMPONENTS_REPO_PATH, str(component.version), 'modules', component.name)

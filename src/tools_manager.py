@@ -14,9 +14,12 @@ class ToolsManager:
     def __init__(self, go_getter_tool: str):
         self.__go_getter_tool = go_getter_tool
 
-    def atmos_vendor_component(self, component: AtmosComponent):
+    def atmos_vendor_component(self, component: AtmosComponent, is_dry_run: bool = False):
         os.environ['ATMOS_COMPONENTS_TERRAFORM_BASE_PATH'] = component.infra_terraform_dir
         command = ["atmos", "vendor", "pull", "-c", component.name]
+
+        if is_dry_run:
+            command.extend(['--dry-run'])
 
         logging.info(f"Executing '{' '.join(command)}' for component version '{component.version}' ... ")
 
