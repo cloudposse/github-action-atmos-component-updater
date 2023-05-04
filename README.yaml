@@ -67,6 +67,28 @@ usage: |-
   - `https://github.com/organizations/YOUR-ORG/settings/actions`
   - `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions`
 
+
+  ### Requirements
+
+  This GitHub Action requires a few tools to be installed first. Install these in your workflow as given below or however best suits as your requirements.
+
+  ```yaml
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: "1.20"
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+  ```
+
   ### Workflow example
 
   ```yaml
