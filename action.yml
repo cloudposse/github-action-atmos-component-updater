@@ -57,3 +57,15 @@ runs:
   image: 'Dockerfile'
   env:
     GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
+    GITHUB_REPOSITORY: ${{ github.repository }}
+    GITHUB_WORKSPACE: ${{ github.workspace }}
+    INFRA_TERRAFORM_DIRS: ${{ inputs.infra-terraform-dirs }}
+    SKIP_COMPONENT_VENDORING: ${{ inputs.skip-component-vendoring }}
+    MAX_NUMBER_OF_PRS: ${{ inputs.max-number-of-prs }}
+    INCLUDE: ${{ inputs.include }}
+    EXCLUDE: ${{ inputs.exclude }}
+    LOG_LEVEL: ${{ inputs.log-level }}
+    DRY_RUN: ${{ inputs.dry-run }}
+    PR_LABELS: ${{ inputs.pr-labels }}
+    PR_TITLE_TEMPLATE: ${{ inputs.pr-title-template }}
+    PR_BODY_TEMPLATE: ${{ inputs.pr-body-template }}
