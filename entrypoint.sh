@@ -1,20 +1,22 @@
-#!/bin/env/bash
+#!/bin/bash
 
-echo ${GO_GETTER_TOOL}
+set -ex
 
-# python src/main.py \
-#     --github-api-token ${GITHUB_ACCESS_TOKEN} \
-#     --go-getter-tool ${GO_GETTER_TOOL} \
-#     --infra-repo-name ${{ github.repository }} \
-#     --infra-repo-dir ${{ github.workspace }} \
-#     --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
-#     --skip-component-vendoring ${{ inputs.skip-component-vendoring }} \
-#     --max-number-of-prs ${{ inputs.max-number-of-prs }} \
-#     --include "${{ inputs.include }}" \
-#     --exclude "${{ inputs.exclude }}" \
-#     --log-level ${{ inputs.log-level }} \
-#     --dry-run ${{ inputs.dry-run }} \
-#     --pr-labels "${{ inputs.pr-labels }}" \
-#     --pr-title-template "${{ inputs.pr-title-template }}" \
-#     --pr-body-template "${{ inputs.pr-body-template }}" \
-#     --affected-components-file 'affected-components.json'
+export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
+
+python src/main.py \
+    --github-api-token ${GITHUB_ACCESS_TOKEN} \
+    --go-getter-tool ${GO_GETTER_TOOL} \
+    --infra-repo-name ${GITHUB_REPOSITORY} \
+    --infra-repo-dir ${GITHUB_WORKSPACE} \
+    --infra-terraform-dirs ${INFRA_TERRAFORM_DIRS} \
+    --skip-component-vendoring ${SKIP_COMPONENT_VENDORING} \
+    --max-number-of-prs ${MAX_NUMBER_OF_PRS} \
+    --include "${INCLUDE}" \
+    --exclude "${EXCLUDE}" \
+    --log-level ${LOG_LEVEL} \
+    --dry-run ${DRY_RUN} \
+    --pr-labels "${PR_LABELS}" \
+    --pr-title-template "${PR_TITLE_TEMPLATE}" \
+    --pr-body-template "${PR_BODY_TEMPLATE}" \
+    --affected-components-file 'affected-components.json'

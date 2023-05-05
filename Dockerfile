@@ -1,11 +1,12 @@
 FROM ubuntu:latest
 
-ARG ATMOS_VERSION=latest
+ARG ATMOS_VERSION=1.34.2
 
 RUN apt-get update
 
 # Install Python 3.10
-RUN apt-get install -y python3.10
+RUN apt-get install -y python3.10 && \
+    apt-get install -y python3-pip
 
 # Install Go 1.20
 RUN apt-get install -y wget && \
@@ -21,19 +22,25 @@ RUN apt-get install -y curl && \
 
 # Install Atmos
 RUN apt-get install -y apt-utils curl && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/cloudposse/packages/cfg/setup/bash.deb.sh' │ bash && \
-    apt-get install atmos@="${ATMOS_VERSION}"
+    curl -1sLf 'https://dl.cloudsmith.io/public/cloudposse/packages/cfg/setup/bash.deb.sh' > /tmp/cloudsmith.sh && \
+    bash /tmp/cloudsmith.sh && \
+    rm /tmp/cloudsmith.sh && \
+    apt-get install atmos
 
-WORKDIR /app
+WORKDIR /
 
-ADD . .
+ADD go.mod go.mod
+ADD go.sum go.sum
 
 # Install Go Getter
 RUN go mod download && \
-    go install github.com/hashicorp/go-getter/cmd/go-getter && \
-    export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
+    go install github.com/hashicorp/go-getter/cmd/go-getter
+
+ADD src/requirements.txt requirements.txt
 
 # Install Python Dependencies
-RUN pip install -r src/requirements.txt
+RUN pip3 install -r requirements.txt
 
-ENTRYPOINT ["./entrypoint.sh"]
+VOLUME /app
+
+ENTRYPOINT ["/app/entrypoint.sh"]
