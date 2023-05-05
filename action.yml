@@ -52,81 +52,8 @@ inputs:
     description: "A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) body. If not set template from `src/templates/pr_body.j2.md` will be used"
     required: false
     default: ''
-outputs:
-  affected:
-    description: The affected components
-    value: ${{ steps.affected.outputs.affected }}
-  has-affected-stacks:
-    description: Whether there are affected components
-    value: ${{ steps.affected.outputs.affected != '[]' }}
 runs:
-  using: "composite"
-  steps:
-    - name: Checkout Infra Repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: Setup Atmos
-      uses: cloudposse/github-action-setup-atmos@v1.0.0
-      with:
-        atmos-version: ${{ inputs.atmos-version }}
-
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: "1.20"
-
-    - name: Setup Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-
-    - name: Install Go Dependencies
-      shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        go mod download
-        go install github.com/hashicorp/go-getter/cmd/go-getter
-        echo "GO_GETTER_TOOL=$(go env GOPATH)/bin/go-getter" >> "$GITHUB_ENV"
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install Python Dependencies
-      shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        pip install -r src/requirements.txt
-
-    - name: Run Atmos Component Updater
-      shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        python src/main.py \
-          --github-api-token ${{ inputs.github-access-token }} \
-          --go-getter-tool ${{ env.GO_GETTER_TOOL }} \
-          --infra-repo-name ${{ github.repository }} \
-          --infra-repo-dir ${{ github.workspace }} \
-          --infra-terraform-dirs ${{ inputs.infra-terraform-dirs }} \
-          --skip-component-vendoring ${{ inputs.skip-component-vendoring }} \
-          --max-number-of-prs ${{ inputs.max-number-of-prs }} \
-          --include "${{ inputs.include }}" \
-          --exclude "${{ inputs.exclude }}" \
-          --log-level ${{ inputs.log-level }} \
-          --dry-run ${{ inputs.dry-run }} \
-          --pr-labels "${{ inputs.pr-labels }}" \
-          --pr-title-template "${{ inputs.pr-title-template }}" \
-          --pr-body-template "${{ inputs.pr-body-template }}" \
-          --affected-components-file 'affected-components.json'
-
-    - name: Affected Components
-      id: affected
-      shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        cat affected-components.json
-        affected=$(jq -c '.' < affected-components.json)
-        echo "affected=$affected" >> $GITHUB_OUTPUT
+  using: "docker"
+  image: 'Dockerfile'
+  env:
+    GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
