@@ -57,8 +57,8 @@ runs:
   image: 'Dockerfile'
   env:
     GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
-    GITHUB_REPOSITORY: ${{ GITHUB_REPOSITORY }}
-    GITHUB_WORKSPACE: ${{ GITHUB_WORKSPACE }}
+    GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
+    GITHUB_WORKSPACE: ${{ env.GITHUB_WORKSPACE }}
     INFRA_TERRAFORM_DIRS: ${{ inputs.infra-terraform-dirs }}
     SKIP_COMPONENT_VENDORING: ${{ inputs.skip-component-vendoring }}
     MAX_NUMBER_OF_PRS: ${{ inputs.max-number-of-prs }}
