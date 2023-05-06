@@ -52,16 +52,11 @@ inputs:
     description: "A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) body. If not set template from `src/templates/pr_body.j2.md` will be used"
     required: false
     default: ''
-  github-repository:
-    description: "Infra repo full name"
-    required: false
-    default: ${{ github.repository }}
 runs:
   using: "docker"
   image: 'Dockerfile'
   env:
     GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
-    GITHUB_REPOSITORY: ${{ inputs.github-repository }}
     INFRA_TERRAFORM_DIRS: ${{ inputs.infra-terraform-dirs }}
     SKIP_COMPONENT_VENDORING: ${{ inputs.skip-component-vendoring }}
     MAX_NUMBER_OF_PRS: ${{ inputs.max-number-of-prs }}
