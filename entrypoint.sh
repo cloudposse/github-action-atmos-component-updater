@@ -1,18 +1,8 @@
 #!/bin/bash
 
-set -ex
+# set -ex
 
-echo "----------------------"
-echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
-echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE}"
-pwd
-echo "----------------------"
-ls -l /github/
-echo "----------------------"
 ls -l /github/workspace/
-echo "----------------------"
-ls -l /
-echo "----------------------"
 
 # export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
 
