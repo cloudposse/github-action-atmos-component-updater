@@ -42,4 +42,4 @@ WORKDIR /github/action/
 
 # VOLUME /app
 
-ENTRYPOINT [ "/github/action/github-entrypoint.sh" ]
+ENTRYPOINT [ "/github/action/entrypoint.sh" ]
