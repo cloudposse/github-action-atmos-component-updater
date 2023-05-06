@@ -35,6 +35,6 @@ RUN go mod download && \
     go install github.com/hashicorp/go-getter/cmd/go-getter
 
 # Install Python Dependencies
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r src/requirements.txt
 
 ENTRYPOINT [ "/github/action/entrypoint.sh" ]
