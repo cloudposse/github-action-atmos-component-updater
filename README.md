@@ -216,6 +216,12 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 | skip-component-vendoring | Do not perform 'atmos vendor component-name' on components that wasn't vendored | false | false |
 
 
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| affected | The affected components |
+| has-affected-stacks | Whether there are affected components |
 <!-- markdownlint-restore -->
 
 
