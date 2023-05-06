@@ -52,6 +52,11 @@ inputs:
     description: "A string representing a Jinja2 formatted template to be used as the content of a Pull Request (PR) body. If not set template from `src/templates/pr_body.j2.md` will be used"
     required: false
     default: ''
+outputs:
+  affected:
+    description: The affected components
+  has-affected-stacks:
+    description: Whether there are affected components
 runs:
   using: "docker"
   image: 'Dockerfile'

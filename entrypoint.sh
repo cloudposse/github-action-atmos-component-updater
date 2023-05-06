@@ -26,3 +26,6 @@ python3 src/main.py \
 cat affected-components.json
 affected=$(jq -c '.' < affected-components.json)
 echo "affected=$affected" >> $GITHUB_OUTPUT
+
+[[ "$affected" == "[]" ]] && has_affected_stacks=true || has_affected_stacks=false
+echo "has-affected-stacks=$has_affected_stacks" >> $GITHUB_OUTPUT
