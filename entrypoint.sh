@@ -3,9 +3,10 @@
 set -ex
 
 echo "----------------------"
-
 echo "GITHUB_ACTION_PATH=${GITHUB_ACTION_PATH}"
-echo "pwd=$(pwd)"
+echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
+echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE}"
+pwd
 echo "----------------------"
 ls -l /github/
 echo "----------------------"
@@ -15,7 +16,6 @@ ls -l /
 echo "----------------------"
 ls -l ${GITHUB_ACTION_PATH}
 echo "----------------------"
-
 
 # export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
 
