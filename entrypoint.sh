@@ -22,3 +22,7 @@ python3 src/main.py \
     --pr-title-template "${PR_TITLE_TEMPLATE}" \
     --pr-body-template "${PR_BODY_TEMPLATE}" \
     --affected-components-file 'affected-components.json'
+
+cat affected-components.json
+affected=$(jq -c '.' < affected-components.json)
+echo "affected=$affected" >> $GITHUB_OUTPUT
