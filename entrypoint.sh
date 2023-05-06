@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 export GO_GETTER_TOOL="/root/go/bin/go-getter"
 
