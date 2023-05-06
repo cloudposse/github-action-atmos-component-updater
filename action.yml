@@ -56,17 +56,12 @@ inputs:
     description: "Infra repo full name"
     required: false
     default: ${{ github.repository }}
-  github-workspace:
-    description: "Infra repo path"
-    required: false
-    default: ${{ github.workspace }}
 runs:
   using: "docker"
   image: 'Dockerfile'
   env:
     GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
     GITHUB_REPOSITORY: ${{ inputs.github-repository }}
-    GITHUB_WORKSPACE: ${{ inputs.github-workspace }}
     INFRA_TERRAFORM_DIRS: ${{ inputs.infra-terraform-dirs }}
     SKIP_COMPONENT_VENDORING: ${{ inputs.skip-component-vendoring }}
     MAX_NUMBER_OF_PRS: ${{ inputs.max-number-of-prs }}

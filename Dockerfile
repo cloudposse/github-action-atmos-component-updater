@@ -28,18 +28,13 @@ ARG ATMOS_VERSION=1.34.2
 #     apt-get install atmos
 
 ADD . /github/action/
-
 WORKDIR /github/action/
 
 # # Install Go Getter
 # RUN go mod download && \
 #     go install github.com/hashicorp/go-getter/cmd/go-getter
 
-# ADD src/requirements.txt requirements.txt
-
 # # Install Python Dependencies
 # RUN pip3 install -r requirements.txt
-
-# VOLUME /app
 
 ENTRYPOINT [ "/github/action/entrypoint.sh" ]
