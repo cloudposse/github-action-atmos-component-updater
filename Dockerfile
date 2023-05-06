@@ -27,11 +27,9 @@ ARG ATMOS_VERSION=1.34.2
 #     rm /tmp/cloudsmith.sh && \
 #     apt-get install atmos
 
-WORKDIR /app/
+ADD . /github/action/
 
-# ADD go.mod go.mod
-# ADD go.sum go.sum
-ADD entrypoint.sh entrypoint.sh
+WORKDIR /github/action/
 
 # # Install Go Getter
 # RUN go mod download && \
@@ -44,4 +42,4 @@ ADD entrypoint.sh entrypoint.sh
 
 # VOLUME /app
 
-ENTRYPOINT [ "./entrypoint.sh" ]
+ENTRYPOINT [ "/github/action/github-entrypoint.sh" ]
