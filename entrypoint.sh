@@ -6,7 +6,7 @@ export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
 
 cd /github/action/
 
-python src/main.py \
+python3 src/main.py \
     --github-api-token ${GITHUB_ACCESS_TOKEN} \
     --go-getter-tool ${GO_GETTER_TOOL} \
     --infra-repo-name ${GITHUB_REPOSITORY} \
