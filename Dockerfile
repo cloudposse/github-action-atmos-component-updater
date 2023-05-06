@@ -33,6 +33,7 @@ WORKDIR /github/action/
 
 # Install Go Getter
 RUN go mod download && \
+    go mod download github.com/hashicorp/go-getter && \
     go install github.com/hashicorp/go-getter/cmd/go-getter
 
 # Install Python Dependencies

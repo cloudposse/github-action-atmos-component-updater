@@ -2,7 +2,7 @@
 
 set -ex
 
-export GO_GETTER_TOOL="/usr/local/go/bin/go-getter"
+export GO_GETTER_TOOL="$HOME/go/bin/go-getter"
 
 cd /github/action/
 
