@@ -2,17 +2,7 @@
 
 set -ex
 
-export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
-
-echo $(go env GOPATH)
-echo $GOPATH
-echo $GOBIN
-
-ls -l $(go env GOPATH)/
-ls -l $(go env GOPATH)/bin/
-ls -l $GOPATH/
-ls -l $GOPATH/bin/
-ls -l $GOPATH/bin/go-getter
+export GO_GETTER_TOOL="/usr/local/go/bin/go-getter"
 
 cd /github/action/
 
