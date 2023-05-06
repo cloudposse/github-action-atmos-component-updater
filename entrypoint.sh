@@ -4,13 +4,18 @@ set -ex
 
 echo "----------------------"
 
-pwd
-ls -l
-ls -l /
-ls -l ${GITHUB_ACTION_PATH}
-ls -l ${GITHUB_ACTION_PATH}/*
-
+echo "GITHUB_ACTION_PATH=${GITHUB_ACTION_PATH}"
+echo "pwd=$(pwd)"
 echo "----------------------"
+ls -l /github/
+echo "----------------------"
+ls -l /github/workspace/
+echo "----------------------"
+ls -l /
+echo "----------------------"
+ls -l ${GITHUB_ACTION_PATH}
+echo "----------------------"
+
 
 # export GO_GETTER_TOOL="$(go env GOPATH)/bin/go-getter"
 
