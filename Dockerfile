@@ -1,32 +1,28 @@
 FROM ubuntu:latest
 
 ARG ATMOS_VERSION=1.34.2
+ARG GO_VERSION=1.20
+ARG PYTHON_VERSION=3.10
+ARG NODE_VERSION=16
 
-RUN apt-get update && \
-    apt-get install -y git jq
+# Install the Cloud Posse Debian repository
+RUN apt-get update && apt-get install -y apt-utils curl
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/cloudposse/packages/cfg/setup/bash.deb.sh' | bash
 
-# Install Python 3.10
-RUN apt-get install -y python3.10 && \
-    apt-get install -y python3-pip
+# Install Python
+RUN apt-get install -y python${PYTHON_VERSION} python3-pip
 
-# Install Go 1.20
-RUN apt-get install -y wget && \
-    wget https://golang.org/dl/go1.20.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.20.linux-amd64.tar.gz && \
-    rm go1.20.linux-amd64.tar.gz
-ENV PATH="/usr/local/go/bin:${PATH}"
+# Install Go
+RUN curl -O -L "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm go${GO_VERSION}.linux-amd64.tar.gz
 
-# Install Node.js 16.x
-RUN apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
     apt-get install -y nodejs
 
 # Install Atmos
-RUN apt-get install -y apt-utils curl && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/cloudposse/packages/cfg/setup/bash.deb.sh' > /tmp/cloudsmith.sh && \
-    bash /tmp/cloudsmith.sh && \
-    rm /tmp/cloudsmith.sh && \
-    apt-get install atmos
+RUN apt-get install -y atmos="${ATMOS_VERSION}-*"
 
 ADD . /github/action/
 WORKDIR /github/action/
