@@ -25,6 +25,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
 # Install Atmos
 RUN apt-get install -y atmos="${ATMOS_VERSION}-*"
 
+# Install Misc
+RUN apt-get install -y git
+
 ADD . /github/action/
 WORKDIR /github/action/
 
