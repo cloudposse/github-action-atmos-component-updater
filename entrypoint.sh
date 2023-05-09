@@ -12,7 +12,7 @@ python3 src/main.py \
     --infra-repo-name ${GITHUB_REPOSITORY} \
     --infra-repo-dir /github/workspace/ \
     --infra-terraform-dirs ${INFRA_TERRAFORM_DIRS} \
-    --skip-component-vendoring ${SKIP_COMPONENT_VENDORING} \
+    --vendoring-enabled ${VENDORING_ENABLED} \
     --max-number-of-prs ${MAX_NUMBER_OF_PRS} \
     --include "${INCLUDE}" \
     --exclude "${EXCLUDE}" \

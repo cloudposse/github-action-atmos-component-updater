@@ -9,7 +9,7 @@ class Config:
                  infra_repo_name: str,
                  infra_repo_dir: str,
                  infra_terraform_dirs: str,
-                 skip_component_vendoring: bool,
+                 vendoring_enabled: bool,
                  max_number_of_prs: int,
                  include: str,
                  exclude: str,
@@ -22,7 +22,7 @@ class Config:
         self.infra_repo_name: str = infra_repo_name
         self.infra_repo_dir: str = infra_repo_dir
         self.infra_terraform_dirs: List[str] = utils.parse_comma_or_new_line_separated_list(infra_terraform_dirs)
-        self.skip_component_vendoring: bool = skip_component_vendoring
+        self.vendoring_enabled: bool = vendoring_enabled
         self.max_number_of_prs: int = max_number_of_prs
         self.include: List[str] = utils.parse_comma_or_new_line_separated_list(include)
         self.exclude: List[str] = utils.parse_comma_or_new_line_separated_list(exclude)
