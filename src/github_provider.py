@@ -52,7 +52,7 @@ class GitHubProvider:
     def build_branch_to_pr_map(self):
         branch_to_pr_map = {}
 
-        for pull_request in self.__repo.get_pulls():
+        for pull_request in self.__repo.get_pulls(state='all'):
             logging.info(f"Found PR: {pull_request.title} for branch {pull_request.head.ref}")
             branch_to_pr_map[pull_request.head] = pull_request
 
