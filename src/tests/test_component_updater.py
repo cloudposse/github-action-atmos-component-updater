@@ -60,6 +60,7 @@ def prep_github_provider(config: Config):
     fake_github = mock.MagicMock()
     fake_github_provider = GitHubProvider(config, fake_github)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=False)
+    fake_github_provider.pr_for_branch_exists = mock.MagicMock(return_value=False)
     fake_github_provider.create_branch_and_push_all_changes = mock.MagicMock()
     return fake_github_provider
 
@@ -153,7 +154,24 @@ def test_components_remote_branch_exists(config: Config):
 
     # validate
     assert len(responses) == 1
-    assert responses[0].state == ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST
+    assert responses[0].state == ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXISTS
+
+
+def test_components_pr_exists(config: Config):
+    # setup
+    prepare_infra_repo(config.infra_repo_dir)
+    create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
+
+    fake_github_provider = prep_github_provider(config)
+    fake_github_provider.pr_for_branch_exists = mock.MagicMock(return_value=True)
+    component_updater = ComponentUpdater(fake_github_provider, FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
+
+    # test
+    responses = component_updater.update()
+
+    # validate
+    assert len(responses) == 1
+    assert responses[0].state == ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
 
 
 def test_not_vendored_component_with_not_skip_vendoring(config: Config):
@@ -195,7 +213,7 @@ def test_not_vendored_component_with_skip_vendoring(config: Config):
 
     response = responses[0]
 
-    assert response.state == ComponentUpdaterResponseState.UPDATED
+    assert response.state == ComponentUpdaterResponseState.COMPONENT_NOT_VENDORED
 
     # checking that component was vendored
     assert not os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'main.tf'))
@@ -261,7 +279,6 @@ def test_multiple_components_updated(config: Config):
 
 def test_some_components_updated(config: Config):
     # setup
-    config.skip_component_vendoring = True
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
     create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
@@ -275,6 +292,26 @@ def test_some_components_updated(config: Config):
     assert len(responses) == 2
     assert responses[0].state == ComponentUpdaterResponseState.NO_CHANGES_FOUND
     assert responses[1].state == ComponentUpdaterResponseState.UPDATED
+
+
+def test_some_vendored_and_some_not(config: Config):
+    # setup
+    config.skip_component_vendoring = True
+    prepare_infra_repo(config.infra_repo_dir)
+    create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
+    create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
+    shutil.copyfile(os.path.join(os.getcwd(), 'src/tests/fixtures/terraform-aws-components/', TAG_1, 'modules/test_component_01/main.tf'),
+                    os.path.join(config.infra_repo_dir, TERRAFORM_DIR, 'test_component_01', 'main.tf'))
+
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_2), config.infra_terraform_dirs, config)
+
+    # test
+    responses = component_updater.update()
+
+    # validate
+    assert len(responses) == 2
+    assert responses[0].state == ComponentUpdaterResponseState.NO_CHANGES_FOUND
+    assert responses[1].state == ComponentUpdaterResponseState.COMPONENT_NOT_VENDORED
 
 
 def test_missing_component(config: Config):
