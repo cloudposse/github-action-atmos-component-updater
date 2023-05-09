@@ -69,7 +69,7 @@ def test_no_version_specified(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', '')
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -84,7 +84,7 @@ def test_not_valid_uri(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1, 'github.com/cloudposse/terraform-aws-components.git')  # no path specified
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -99,7 +99,7 @@ def test_components_repo_is_not_a_git_repo(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3, is_valid_git_repo=False), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3, is_valid_git_repo=False), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -114,7 +114,7 @@ def test_components_repo_git_no_tags(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(latest_tag=None), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(latest_tag=None), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -129,7 +129,7 @@ def test_components_repo_already_up_to_date(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_3)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -146,7 +146,7 @@ def test_components_remote_branch_exists(config: Config):
 
     fake_github_provider = prep_github_provider(config)
     fake_github_provider.branch_exists = mock.MagicMock(return_value=True)
-    component_updater = ComponentUpdater(fake_github_provider, FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(fake_github_provider, FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -161,7 +161,7 @@ def test_not_vendored_component_with_not_skip_vendoring(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -185,7 +185,7 @@ def test_not_vendored_component_with_skip_vendoring(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -207,7 +207,7 @@ def test_with_changes_found(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -228,7 +228,7 @@ def test_no_changes_found(config: Config):
     shutil.copyfile(os.path.join(os.getcwd(), 'src/tests/fixtures/terraform-aws-components/', TAG_1, 'modules/test_component_01/main.tf'),
                     os.path.join(config.infra_repo_dir, TERRAFORM_DIR, 'test_component_01', 'main.tf'))
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_2), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_2), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -248,7 +248,7 @@ def test_multiple_components_updated(config: Config):
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
     create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -266,7 +266,7 @@ def test_some_components_updated(config: Config):
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
     create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_2), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_2), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -282,7 +282,7 @@ def test_missing_component(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'missing_component', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -311,7 +311,7 @@ def test_include_and_exclude(config: Config, include: List[str], exclude: List[s
     create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
     create_component(config.infra_repo_dir, 'test_component_03', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses = component_updater.update()
@@ -327,7 +327,7 @@ def test_default_title_body_and_labels(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses: List[ComponentUpdaterResponse] = component_updater.update()
@@ -354,7 +354,7 @@ def test_updated_title_body_and_labels(config: Config):
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
 
-    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), TERRAFORM_DIR, config)
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
 
     # test
     responses: List[ComponentUpdaterResponse] = component_updater.update()
