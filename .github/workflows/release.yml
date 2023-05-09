@@ -1,4 +1,4 @@
-name: Major Release Tagger
+name: Release
 
 on:
   release:
@@ -10,3 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: cloudposse/github-action-major-release-tagger@v1
+      - uses: cloudposse/github-action-release-branch-manager@v1

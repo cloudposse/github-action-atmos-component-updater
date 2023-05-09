@@ -53,7 +53,7 @@ class GitHubProvider:
         branch_to_pr_map = {}
 
         for pull_request in self.__repo.get_pulls(state='all'):
-            logging.info(f"Found PR: '{pull_request.title}' for branch '{pull_request.head.ref}'")
+            logging.debug(f"Found PR: '{pull_request.title}' for branch '{pull_request.head.ref}'")
             branch_to_pr_map[pull_request.head.ref] = pull_request
 
         return branch_to_pr_map
@@ -69,13 +69,13 @@ class GitHubProvider:
             repo = git.repo.Repo(repo_dir)
 
             for branch in repo.heads:
-                logging.info(f"Found local branch: {branch.name}")
+                logging.debug(f"Found branch: {branch.name}")
                 branches.append(branch.name)
 
             remote_branches = repo.remote().refs
 
             for branch in remote_branches:
-                logging.info(f"Found remote branch: {branch.name}")
+                logging.debug(f"Found branch: {branch.name}")
                 branches.append(branch.name)
         except Exception as exception:  # pylint: disable=broad-exception-caught
             logging.error(str(exception))
