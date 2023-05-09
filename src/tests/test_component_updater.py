@@ -154,7 +154,7 @@ def test_components_remote_branch_exists(config: Config):
 
     # validate
     assert len(responses) == 1
-    assert responses[0].state == ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST
+    assert responses[0].state == ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXISTS
 
 
 def test_components_pr_exists(config: Config):
