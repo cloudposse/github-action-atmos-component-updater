@@ -5,7 +5,6 @@ import jinja2
 import git.repo
 from github import Github
 from github.PullRequest import PullRequest
-from github.Label import Label
 from jinja2 import FileSystemLoader, Template
 from atmos_component import AtmosComponent
 from config import Config
@@ -40,6 +39,8 @@ class GitHubProvider:
         self.__config = config
         self.__github = github
         self.__repo = self.__github.get_repo(config.infra_repo_name)
+        self.__branches = self.get_branches(config.infra_repo_dir)
+        self.__branch_to_pr_map = self.build_branch_to_pr_map()
         self.__pull_requests = None
         self.__pr_title_template = self.__load_template(self.__config.pr_title_template, DEFAULT_PR_TITLE_TEMPLATE)
         self.__pr_body_template = self.__load_template(self.__config.pr_body_template, DEFAULT_PR_BODY_TEMPLATE)
@@ -48,6 +49,19 @@ class GitHubProvider:
         normalized_component_name: str = re.sub(r'[^a-zA-Z0-9-_]+', '', component_name)
         return f'{BRANCH_PREFIX}/{normalized_component_name}/{tag}'
 
+    def build_branch_to_pr_map(self):
+        branch_to_pr_map = {}
+
+        for pull_request in self.__repo.get_pulls():
+            logging.info(f"Found PR: {pull_request.title} for branch {pull_request.head}")
+            branch_to_pr_map[pull_request.head] = pull_request
+
+        return branch_to_pr_map
+
+    def pr_for_branch_exists(self, branch_name: str):
+        logging.info(f"Looking for PR with branch: {branch_name}")
+        return branch_name in self.__branch_to_pr_map
+
     def get_branches(self, repo_dir: str):
         branches = []
 
@@ -55,11 +69,13 @@ class GitHubProvider:
             repo = git.repo.Repo(repo_dir)
 
             for branch in repo.heads:
+                logging.info(f"Found local branch: {branch.name}")
                 branches.append(branch.name)
 
             remote_branches = repo.remote().refs
 
             for branch in remote_branches:
+                logging.info(f"Found remote branch: {branch.name}")
                 branches.append(branch.name)
         except Exception as exception:  # pylint: disable=broad-exception-caught
             logging.error(str(exception))
@@ -78,11 +94,10 @@ class GitHubProvider:
         if not self.__config.dry_run:
             repo.git.push("--set-upstream", "origin", branch_name)
 
-    def branch_exists(self, repo_dir: str, branch_name: str):
-        branches = self.get_branches(repo_dir)
+    def branch_exists(self, branch_name: str):
         remote_branch_name = f'origin/{branch_name}'
 
-        return branch_name in branches or remote_branch_name in branches
+        return branch_name in self.__branches or remote_branch_name in self.__branches
 
     def open_pr(self,
                 branch_name: str,

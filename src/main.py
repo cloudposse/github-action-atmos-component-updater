@@ -8,7 +8,7 @@ from config import Config
 
 
 def main(github_api_token: str, config: Config):
-    github_provider = GitHubProvider(config, Github(github_api_token))
+    github_provider = GitHubProvider(config, Github(github_api_token, per_page=100, retry=3))
     tools_manager = ToolsManager(config.go_getter_tool)
 
     component_updater = ComponentUpdater(github_provider, tools_manager, config.infra_terraform_dirs, config)

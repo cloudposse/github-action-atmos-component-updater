@@ -33,6 +33,7 @@ class ComponentUpdaterResponseState(Enum):
     NO_CHANGES_FOUND = 9
     FAILED_TO_VENDOR_COMPONENT = 10
     MAX_PRS_REACHED = 11
+    PR_FOR_BRANCH_ALREADY_EXISTS = 12
 
 
 class ComponentUpdaterResponse:
@@ -168,9 +169,14 @@ class ComponentUpdater:
 
         response.branch_name = branch_name
 
-        if self.__github_provider.branch_exists(updated_component.infra_repo_dir, branch_name):
+        if self.__github_provider.branch_exists(branch_name):
             logging.warning(f"Branch '{branch_name}' already exists. Skipping")
             response.state = ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXIST
+            return response
+
+        if self.__github_provider.pr_for_branch_exists(branch_name):
+            logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
+            response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
             return response
 
         updated_component.update_version(latest_tag)
