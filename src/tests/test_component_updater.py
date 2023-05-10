@@ -31,7 +31,7 @@ TAG_3 = '10.2.1'
 
 @pytest.fixture
 def config():
-    conf = Config('test/repo', io.create_tmp_dir(), TERRAFORM_DIR, False, 10, '*', '', '', True)
+    conf = Config('test/repo', io.create_tmp_dir(), TERRAFORM_DIR, True, 10, '*', '', '', True)
     conf.skip_component_repo_fetching = True
     return conf
 
@@ -174,7 +174,7 @@ def test_components_pr_exists(config: Config):
     assert responses[0].state == ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
 
 
-def test_not_vendored_component_with_not_skip_vendoring(config: Config):
+def test_not_vendored_component_with_vendoring_enabled(config: Config):
     # setup
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
@@ -196,9 +196,9 @@ def test_not_vendored_component_with_not_skip_vendoring(config: Config):
     assert os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'output.tf'))
 
 
-def test_not_vendored_component_with_skip_vendoring(config: Config):
+def test_not_vendored_component_with_vendoring_disabled(config: Config):
     # setup
-    config.skip_component_vendoring = True
+    config.vendoring_enabled = False
 
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
@@ -296,7 +296,7 @@ def test_some_components_updated(config: Config):
 
 def test_some_vendored_and_some_not(config: Config):
     # setup
-    config.skip_component_vendoring = True
+    config.vendoring_enabled = False
     prepare_infra_repo(config.infra_repo_dir)
     create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
     create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
