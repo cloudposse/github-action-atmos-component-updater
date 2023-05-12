@@ -213,11 +213,33 @@ def test_not_vendored_component_with_vendoring_disabled(config: Config):
 
     response = responses[0]
 
-    assert response.state == ComponentUpdaterResponseState.COMPONENT_NOT_VENDORED
+    assert response.state == ComponentUpdaterResponseState.UPDATED
 
     # checking that component was vendored
     assert not os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'main.tf'))
     assert not os.path.exists(os.path.join(response.component.infra_repo_dir, TERRAFORM_DIR, response.component.name, 'output.tf'))
+
+
+def test_vendored_component_with_vendoring_disabled(config: Config):
+    # setup
+    config.vendoring_enabled = False
+
+    prepare_infra_repo(config.infra_repo_dir)
+    create_component(config.infra_repo_dir, 'test_component_01', TAG_1)
+    shutil.copyfile(os.path.join(os.getcwd(), 'src/tests/fixtures/terraform-aws-components/', TAG_1, 'modules/test_component_01/main.tf'),
+                    os.path.join(config.infra_repo_dir, TERRAFORM_DIR, 'test_component_01', 'main.tf'))
+
+    component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_3), config.infra_terraform_dirs, config)
+
+    # test
+    responses = component_updater.update()
+
+    # validate
+    assert len(responses) == 1
+
+    response = responses[0]
+
+    assert response.state == ComponentUpdaterResponseState.COMPONENT_VENDORED_BUT_VENDORING_DISABLED
 
 
 def test_with_changes_found(config: Config):
@@ -302,6 +324,8 @@ def test_some_vendored_and_some_not(config: Config):
     create_component(config.infra_repo_dir, 'test_component_02', TAG_1)
     shutil.copyfile(os.path.join(os.getcwd(), 'src/tests/fixtures/terraform-aws-components/', TAG_1, 'modules/test_component_01/main.tf'),
                     os.path.join(config.infra_repo_dir, TERRAFORM_DIR, 'test_component_01', 'main.tf'))
+    shutil.copyfile(os.path.join(os.getcwd(), 'src/tests/fixtures/terraform-aws-components/', TAG_1, 'modules/test_component_02/main.tf'),
+                    os.path.join(config.infra_repo_dir, TERRAFORM_DIR, 'test_component_02', 'main.tf'))
 
     component_updater = ComponentUpdater(prep_github_provider(config), FakeToolsManager(TAG_2), config.infra_terraform_dirs, config)
 
@@ -311,7 +335,7 @@ def test_some_vendored_and_some_not(config: Config):
     # validate
     assert len(responses) == 2
     assert responses[0].state == ComponentUpdaterResponseState.NO_CHANGES_FOUND
-    assert responses[1].state == ComponentUpdaterResponseState.COMPONENT_NOT_VENDORED
+    assert responses[1].state == ComponentUpdaterResponseState.COMPONENT_VENDORED_BUT_VENDORING_DISABLED
 
 
 def test_missing_component(config: Config):
