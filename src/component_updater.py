@@ -100,7 +100,7 @@ class ComponentUpdater:
 
         try:
             for root, _, files in os.walk(infra_components_dir):
-                for file in files:
+                for file in sorted(files):
                     if file == COMPONENT_YAML:
                         component_name = os.path.relpath(root, infra_components_dir)
 
