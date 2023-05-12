@@ -310,9 +310,6 @@ def test_some_components_updated(config: Config):
     # test
     responses = component_updater.update()
 
-    print(responses[0])
-    print(responses[1])
-
     # validate
     assert len(responses) == 2
     assert responses[0].state == ComponentUpdaterResponseState.NO_CHANGES_FOUND
