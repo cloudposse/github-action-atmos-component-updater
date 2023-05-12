@@ -63,7 +63,7 @@ runs:
   image: 'Dockerfile'
   env:
     GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
-    INFRA_TERRAFORM_DIRS: ${{ inputs.infra-terraform-dirs }}
+    INFRA_TERRAFORM_DIRS: "${{ inputs.infra-terraform-dirs }}"
     VENDORING_ENABLED: ${{ inputs.vendoring-enabled }}
     MAX_NUMBER_OF_PRS: ${{ inputs.max-number-of-prs }}
     INCLUDE: ${{ inputs.include }}

@@ -11,7 +11,7 @@ python3 src/main.py \
     --go-getter-tool ${GO_GETTER_TOOL} \
     --infra-repo-name ${GITHUB_REPOSITORY} \
     --infra-repo-dir /github/workspace/ \
-    --infra-terraform-dirs "${INFRA_TERRAFORM_DIRS}" \
+    --infra-terraform-dirs ${INFRA_TERRAFORM_DIRS} \
     --vendoring-enabled ${VENDORING_ENABLED} \
     --max-number-of-prs ${MAX_NUMBER_OF_PRS} \
     --include "${INCLUDE}" \
