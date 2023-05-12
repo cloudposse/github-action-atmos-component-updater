@@ -123,7 +123,7 @@ Also, make sure that you set to `Allow GitHub Actions to create and approve pull
             fetch-depth: 0
 
         - name: Update Atmos Components
-          uses: cloudposse/github-action-atmos-component-updater@v1
+          uses: cloudposse/github-action-atmos-component-updater@v2
           with:
             github-access-token: ${{ secrets.GITHUB_TOKEN }}
             max-number-of-prs: 5
@@ -141,7 +141,7 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 ```yaml
   # ...
   - name: Update Atmos Components
-    uses: cloudposse/github-action-atmos-component-updater@v1
+    uses: cloudposse/github-action-atmos-component-updater@v2
     env:
       # Directory containing the `atmos.yaml` file
       ATMOS_CLI_CONFIG_PATH: ${{ github.workspace }}/rootfs/usr/local/etc/atmos/
@@ -155,7 +155,7 @@ If your [`atmos.yaml` file](https://atmos.tools/cli/configuration) is not locate
 ```yaml
   # ...
   - name: Update Atmos Components
-    uses: cloudposse/github-action-atmos-component-updater@v1
+    uses: cloudposse/github-action-atmos-component-updater@v2
     with:
       github-access-token: ${{ secrets.GITHUB_TOKEN }}
       max-number-of-prs: 5
