@@ -205,14 +205,14 @@ class ComponentUpdater:
         #   - component vendored     => skip component
         #   - component not vendored => do not vendor
 
-        if not self.__config.vendoring_enabled and self.__is_vendored(original_component, original_vendored_component):
-            logging.error(f"Component '{original_component.name}' is vendored but vendoring disabled. Skipping")
-            response.state = ComponentUpdaterResponseState.COMPONENT_VENDORED_BUT_VENDORING_DISABLED
-            return response
-
         if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
             if self.__config.vendoring_enabled:
                 self.__tools_manager.atmos_vendor_component(updated_component)
+            else:
+                if self.__is_vendored(original_component, original_vendored_component):
+                    logging.error(f"Component '{original_component.name}' is vendored but vendoring disabled. Skipping")
+                    response.state = ComponentUpdaterResponseState.COMPONENT_VENDORED_BUT_VENDORING_DISABLED
+                    return response
 
             pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
                                                                                                       original_component,
