@@ -31,12 +31,12 @@ RUN apt-get install -y git jq
 ADD . /github/action/
 WORKDIR /github/action/
 
-# Install Go Getter
-RUN go mod download && \
-    go mod download github.com/hashicorp/go-getter && \
-    go install github.com/hashicorp/go-getter/cmd/go-getter
+# # Install Go Getter
+# RUN go mod download && \
+#     go mod download github.com/hashicorp/go-getter && \
+#     go install github.com/hashicorp/go-getter/cmd/go-getter
 
-# Install Python Dependencies
-RUN pip3 install -r src/requirements.txt
+# # Install Python Dependencies
+# RUN pip3 install -r src/requirements.txt
 
 ENTRYPOINT [ "/github/action/entrypoint.sh" ]
