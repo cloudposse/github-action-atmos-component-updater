@@ -100,7 +100,7 @@ class ComponentUpdater:
 
         try:
             for root, _, files in os.walk(infra_components_dir):
-                for file in sorted(files):
+                for file in files:
                     if file == COMPONENT_YAML:
                         component_name = os.path.relpath(root, infra_components_dir)
 
@@ -112,7 +112,7 @@ class ComponentUpdater:
             logging.error(f"Could not get components from '{infra_components_dir}': {error}")
             raise ComponentUpdaterError(f"Could not get components from '{infra_components_dir}'")
 
-        return component_yaml_paths
+        return sorted(component_yaml_paths)
 
     def __is_vendored(self, component: AtmosComponent, vendored_component: AtmosComponent) -> bool:
         """Checks if component has subset of files that vendored component does. This way we will be able to detect if component was pulled or not"""
