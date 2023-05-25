@@ -75,7 +75,7 @@ class ToolsManager:
         return tag.strip().decode("utf-8") if tag else None
 
     def git_log_between_versions(self, git_dir:str, component_path: str, previous_ref: str, future_ref: str = 'main'):
-        command = ["git", "log", "--pretty=format:%s", f"{previous_ref}..{future_ref}", component_path]
+        command = ["git", "log", f"{previous_ref}..{future_ref}", component_path]
 
         logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
