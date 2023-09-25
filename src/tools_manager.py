@@ -26,6 +26,12 @@ class ToolsManager:
             # atmos doesn't report error to stderr
             error_message = response.stderr.decode("utf-8") if response.stderr else response.stdout.decode("utf-8")
             logging.error(error_message)
+            logging.debug(f"Component: {component}")
+            # log to debug the file at infra_terraform_dir/component.name/component.yaml
+            component_path = os.path.join(component.infra_terraform_dir, component.name, 'component.yaml')
+            logging.debug(f"Content for {component_path}:")
+            with open(component_path, 'r') as f:
+                logging.debug(f.read())
             raise ToolExecutionError(error_message)
 
         logging.info(f"Successfully vendored component: {component.name}")
