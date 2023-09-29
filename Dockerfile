@@ -3,7 +3,6 @@ FROM ubuntu:latest
 ARG ATMOS_VERSION=1.34.2
 ARG GO_VERSION=1.20
 ARG PYTHON_VERSION=3.10
-ARG NODE_VERSION=16
 
 # Install the Cloud Posse Debian repository
 RUN apt-get update && apt-get install -y apt-utils curl
@@ -17,10 +16,6 @@ RUN curl -O -L "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
     rm go${GO_VERSION}.linux-amd64.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
-
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
-    apt-get install -y nodejs
 
 # Install Atmos
 RUN apt-get install -y atmos="${ATMOS_VERSION}-*"
