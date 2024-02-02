@@ -3,8 +3,9 @@ import logging
 from typing import Optional, Tuple, List
 import jinja2
 import git.repo
-from github import Github
+from github import Github, GitRef
 from github.PullRequest import PullRequest
+from github.Branch import Branch
 from jinja2 import FileSystemLoader, Template
 from atmos_component import AtmosComponent
 from config import Config
@@ -162,6 +163,8 @@ class GitHubProvider:
     def close_pr(self, pull_request: PullRequest, message: str):
         pull_request.edit(state='closed')
         pull_request.create_issue_comment(message)
+        self.__repo.get_git_ref(f'heads/{pull_request.head.ref}').delete()
+
 
     def __build_component_version_link(self, component: AtmosComponent):
         component_version_link = None
