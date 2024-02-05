@@ -3,9 +3,8 @@ import logging
 from typing import Optional, Tuple, List
 import jinja2
 import git.repo
-from github import Github, GitRef
+from github import Github
 from github.PullRequest import PullRequest
-from github.Branch import Branch
 from jinja2 import FileSystemLoader, Template
 from atmos_component import AtmosComponent
 from config import Config
