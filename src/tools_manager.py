@@ -28,7 +28,7 @@ class ToolsManager:
             logging.error(error_message)
             logging.debug(f"Component: {component}")
             # log to debug the file at infra_terraform_dir/component.name/component.yaml
-            component_path = os.path.join(component.infra_terraform_dir, component.name, 'component.yaml')
+            component_path = os.path.join(component.infra_repo_dir, component.infra_terraform_dir, component.name, 'component.yaml')
             logging.debug(f"Content for {component_path}:")
             with open(component_path, 'r') as f:
                 logging.debug(f.read())
