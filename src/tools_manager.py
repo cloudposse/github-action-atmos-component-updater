@@ -29,9 +29,9 @@ class ToolsManager:
             logging.debug(f"Component: {component}")
             # log to debug the file at infra_terraform_dir/component.name/component.yaml
             component_path = os.path.join(component.infra_repo_dir, component.infra_terraform_dir, component.name, 'component.yaml')
-            logging.debug(f"Content for {component_path}:")
+            logging.info(f"Content for {component_path}:")
             with open(component_path, 'r') as f:
-                logging.debug(f.read())
+                logging.info(f.read())
             raise ToolExecutionError(error_message)
 
         logging.info(f"Successfully vendored component: {component.name}")
