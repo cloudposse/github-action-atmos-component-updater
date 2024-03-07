@@ -175,12 +175,12 @@ usage: |-
 
   ```yaml
   - name: Checkout
-    uses: actions/checkout@v3
+    uses: actions/checkout@v4
   ```
 
-  ### The action cannot find the component.yaml file
+  ### The action cannot find the `component.yaml` file
   
-  You may see the action fail to find the component.yaml file for a given component as such:
+  You may see the action fail to find the `component.yaml` file for a given component as such:
   
   ```console
   FileNotFoundError: [Errno 2] No such file or directory: 'components/terraform/account-map/component.yaml'
@@ -211,8 +211,8 @@ usage: |-
 
   _And_ you need to allow GitHub Actions to create and approve pulls requests in both the GitHub Organization and Repository:
 
-  1. https://github.com/organizations/YOUR-ORG/settings/actions > `Allow GitHub Actions to create and approve pull requests`
-  2. https://github.com/YOUR-ORG/YOUR-REPO/settings/actions > `Allow GitHub Actions to create and approve pull requests`
+  1. `https://github.com/organizations/YOUR-ORG/settings/actions` > `Allow GitHub Actions to create and approve pull requests`
+  2. `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions` > `Allow GitHub Actions to create and approve pull requests`
 
 include:
   - "docs/github-action.md"
