@@ -59,8 +59,8 @@ usage: |-
   
   ```yaml
   permissions:
-  - contents: write
-  - pull-requests: write
+    contents: write
+    pull-requests: write
   ```
 
   Also, make sure that you set to `Allow GitHub Actions to create and approve pull requests` on both organization and repository levels:
@@ -160,12 +160,62 @@ usage: |-
     - `old_component_release_link`
     - `new_component_release_link`
 
+  ## FAQ
+
+  ### The action cannot find any components
+
+  You may see that the action returns zero components:
+
+  ```console
+  [06-03-2024 17:53:47] INFO    Found 0 components
+  []
+  ```
+
+  This is a common error when the workflow has not checked out the repository before calling this action. Add the following before calling this action.
+
+  ```yaml
+  - name: Checkout
+    uses: actions/checkout@v4
+  ```
+
+  ### The action cannot find the `component.yaml` file
+  
+  You may see the action fail to find the `component.yaml` file for a given component as such:
+  
+  ```console
+  FileNotFoundError: [Errno 2] No such file or directory: 'components/terraform/account-map/component.yaml'
+  ```
+
+  This is likely related to a missing or invalid `atmos.yaml` configuration file. Set `ATMOS_CLI_CONFIG_PATH` to the path to your Atmos configuration file.
+
+  ```yaml
+  env:
+    ATMOS_CLI_CONFIG_PATH: ${{ github.workspace }}/rootfs/usr/local/etc/atmos/
+  ```
+
+  ### The action does not have permission to create Pull Requests
+
+  Your action may fail with the following message:
+
+  ```console
+  github.GithubException.GithubException: 403 {"message": "GitHub Actions is not permitted to create or approve pull requests.", "documentation_url": "https://docs.github.com/rest/pulls/pulls#create-a-pull-request"}
+  ```
+  
+  In order to create Pull Requests in your repository, we need to set the permissions for the workflow:
+
+  ```yaml
+  permissions:
+    contents: write
+    pull-requests: write
+  ```
+
+  _And_ you need to allow GitHub Actions to create and approve pulls requests in both the GitHub Organization and Repository:
+
+  1. `https://github.com/organizations/YOUR-ORG/settings/actions` > `Allow GitHub Actions to create and approve pull requests`
+  2. `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions` > `Allow GitHub Actions to create and approve pull requests`
+
 include:
   - "docs/github-action.md"
 
 # Contributors to this project
-contributors:
-  - name: "Zinovii Dmytriv"
-    github: "zdmytriv"
-  - name: "Erik Osterman"
-    github: "osterman"
+contributors: []

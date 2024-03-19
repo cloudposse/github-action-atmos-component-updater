@@ -164,6 +164,8 @@ class GitHubProvider:
     def close_pr(self, pull_request: PullRequest, message: str):
         pull_request.edit(state='closed')
         pull_request.create_issue_comment(message)
+        self.__repo.get_git_ref(f'heads/{pull_request.head.ref}').delete()
+
 
     def __build_component_version_link(self, component: AtmosComponent):
         component_version_link = None
