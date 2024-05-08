@@ -1,0 +1,7 @@
+# Upstream changes from _extends are only recognized when modifications are made to this file in the default branch.
+_extends: .github
+repository:
+  name: github-action-atmos-component-updater
+  description: GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources
+  homepage: https://cloudposse.com/accelerate
+  topics: ""
