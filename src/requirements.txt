@@ -10,7 +10,7 @@ Deprecated==1.2.13
 dill==0.3.6
 flake8==6.0.0
 gitdb==4.0.10
-GitPython==3.1.31
+GitPython==3.1.41
 idna==3.4
 iniconfig==2.0.0
 isort==5.12.0
