@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:jammy
 
 ARG ATMOS_VERSION=1.34.2
 ARG GO_VERSION=1.20
