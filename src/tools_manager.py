@@ -80,5 +80,21 @@ class ToolsManager:
 
         return tag.strip().decode("utf-8") if tag else None
 
+    def git_log_between_versions(self, git_dir:str, component_path: str, previous_ref: str, future_ref: str = 'main'):
+        command = ["git", "log", f"{previous_ref}..{future_ref}", component_path]
+
+        logging.debug(f"Executing: '{' '.join(command)}' ... ")
+
+        response = subprocess.run(command, capture_output=True, cwd=git_dir, check=False)
+
+        if response.returncode != 0:
+            error_message = response.stderr.decode("utf-8")
+            logging.error(error_message)
+            return None
+
+        log = response.stdout
+
+        return log.strip().decode("utf-8") if log else None
+
     def is_git_repo(self, repo_dir: str) -> bool:
         return os.path.exists(os.path.join(repo_dir, '.git'))
