@@ -69,6 +69,11 @@ def main(github_api_token: str, config: Config):
               show_default=True,
               default="affected_components.json",
               help="Path to output file that will contain list of affected components in json format")
+@click.option('--gpg-key-id',
+              required=False,
+              show_default=True,
+              default="",
+              help="GPG key ID to sign commits")
 @click.option('--pr-title-template',
               required=False,
               show_default=True,
@@ -96,6 +101,7 @@ def cli_main(github_api_token,
              log_level,
              dry_run,
              affected_components_file,
+             gpg_key_id,
              pr_title_template,
              pr_body_template,
              pr_labels):
@@ -113,6 +119,7 @@ def cli_main(github_api_token,
                     go_getter_tool,
                     dry_run,
                     affected_components_file,
+                    gpg_key_id,
                     pr_title_template,
                     pr_body_template,
                     pr_labels)
