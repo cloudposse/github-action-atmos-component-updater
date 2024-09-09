@@ -89,7 +89,11 @@ class GitHubProvider:
 
         repo.git.checkout(new_branch)
         repo.git.add("-A")
-        repo.index.commit(commit_message)
+
+        if self.__config.gpg_key_id:
+            repo.index.commit(commit_message, gpg_sign=True, gpg_signing_key=self.__config.gpg_key_id)
+        else:
+            repo.index.commit(commit_message)
 
         if not self.__config.dry_run:
             repo.git.push("--set-upstream", "origin", branch_name)
