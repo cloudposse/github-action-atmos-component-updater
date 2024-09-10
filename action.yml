@@ -74,7 +74,7 @@ runs:
     EXCLUDE: ${{ inputs.exclude }}
     LOG_LEVEL: ${{ inputs.log-level }}
     DRY_RUN: ${{ inputs.dry-run }}
-    GPG_KEY_ID: ${{ inputs.GPG_KEY_ID }}
+    GPG_KEY_ID: ${{ inputs.gpg-key-id }}
     PR_LABELS: ${{ inputs.pr-labels }}
     PR_TITLE_TEMPLATE: ${{ inputs.pr-title-template }}
     PR_BODY_TEMPLATE: ${{ inputs.pr-body-template }}
