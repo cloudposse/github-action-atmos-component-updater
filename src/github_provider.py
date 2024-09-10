@@ -91,7 +91,7 @@ class GitHubProvider:
         repo.git.add("-A")
 
         if self.__config.gpg_key_id:
-            repo.index.commit(commit_message, gpg_sign=True, gpg_signing_key=self.__config.gpg_key_id)
+            repo.index.commit('-S', f'--gpg-sign={self.__config.gpg_key_id}', '-m', commit_message)
         else:
             repo.index.commit(commit_message)
 
