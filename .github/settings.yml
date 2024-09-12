@@ -5,3 +5,4 @@ repository:
   description: GitHub Action that can be used as workflow for automatic update via Pull Requests infrastructure repository according to versions to components sources
   homepage: https://cloudposse.com/accelerate
   topics: ""
+
