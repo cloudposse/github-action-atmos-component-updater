@@ -9,6 +9,12 @@ This is an auto-generated PR that updates component `{{ component_name }}` to ve
 | **Old Version**    | {% if old_version_link is defined %}[`{{ old_version }}`]({{ old_version_link }}){% else %}`{{ old_version }}`{% endif %}{% if old_component_release_link is defined %}, [Release notes]({{ old_component_release_link }}){% endif %} |
 | **New Version**    | {% if new_version_link is defined %}[`{{ new_version }}`]({{ new_version_link }}){% else %}`{{ new_version }}`{% endif %}{% if new_component_release_link is defined %}, [Release notes]({{ new_component_release_link }}){% endif %} |
 
+### Git Logs
+
+```
+{{ git_log_summary }}
+```
+
 ## why
 
 [Cloud Posse](https://cloudposse.com) recommends upgrading Terraform components regularly to maintain a secure, efficient, and well-supported infrastructure. In doing so, you'll benefit from the latest features, improved compatibility, easier upgrades, and ongoing support while mitigating potential risks and meeting compliance requirements.

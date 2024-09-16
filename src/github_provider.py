@@ -106,7 +106,8 @@ class GitHubProvider:
     def open_pr(self,
                 branch_name: str,
                 original_component: AtmosComponent,
-                updated_component: AtmosComponent) -> PullRequestCreationResponse:
+                updated_component: AtmosComponent,
+                git_log_summary: str) -> PullRequestCreationResponse:
         original_component_version_link = self.__build_component_version_link(original_component)
         updated_component_version_link = self.__build_component_version_link(updated_component)
 
@@ -128,7 +129,8 @@ class GitHubProvider:
                                               old_version_link=original_component_version_link,
                                               new_version_link=updated_component_version_link,
                                               old_component_release_link=original_component_release_link,
-                                              new_component_release_link=updated_component_release_link)
+                                              new_component_release_link=updated_component_release_link,
+                                              git_log_summary=git_log_summary)
 
         response = PullRequestCreationResponse(branch_name, title, body, self.__config.pr_labels)
 
