@@ -18,7 +18,6 @@ python3 src/main.py \
     --exclude "${EXCLUDE}" \
     --log-level ${LOG_LEVEL} \
     --dry-run ${DRY_RUN} \
-    --gpg-key-id "${GPG_KEY_ID}" \
     --pr-labels "${PR_LABELS}" \
     --pr-title-template "${PR_TITLE_TEMPLATE}" \
     --pr-body-template "${PR_BODY_TEMPLATE}" \
