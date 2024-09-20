@@ -16,7 +16,6 @@ class Config:
                  go_getter_tool: str,
                  dry_run: bool,
                  affected_components_file: str = '',
-                 gpg_key_id: str = '',
                  pr_title_template: str = '',
                  pr_body_template: str = '',
                  pr_labels: str = 'component-update'):
@@ -31,7 +30,6 @@ class Config:
         self.dry_run: bool = dry_run
         self.components_download_dir: str = io.create_tmp_dir()
         self.skip_component_repo_fetching: bool = False
-        self.gpg_key_id: str = gpg_key_id
         self.pr_title_template: str = pr_title_template
         self.pr_body_template: str = pr_body_template
         self.pr_labels: List[str] = utils.parse_comma_or_new_line_separated_list(pr_labels)

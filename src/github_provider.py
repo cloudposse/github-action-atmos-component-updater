@@ -82,21 +82,23 @@ class GitHubProvider:
 
         return set(branches)
 
-    def create_branch_and_push_all_changes(self, repo_dir: str, branch_name: str, commit_message: str):
-        repo = git.repo.Repo(repo_dir)
+    def create_branch_and_push_all_changes(self, branch_name: str, commit_message: str):
+        base_branch = self.__repo.get_branch(self.__repo.default_branch)
+        base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
-        new_branch = repo.create_head(branch_name)
+        self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
 
-        repo.git.checkout(new_branch)
-        repo.git.add("-A")
+        new_tree = self.__repo.create_git_tree([], base_tree.sha)
+        commit = self.__repo.create_git_commit(
+            message=commit_message,
+            tree=new_tree.sha,
+            parents=[base_branch.commit.sha]
+        )
 
-        if self.__config.gpg_key_id:
-            repo.git.commit('-S', f'--gpg-sign={self.__config.gpg_key_id}', '-m', commit_message)
-        else:
-            repo.index.commit(commit_message)
+        self.__repo.update_git_ref(ref=f"heads/{branch_name}", sha=commit.sha)
 
         if not self.__config.dry_run:
-            repo.git.push("--set-upstream", "origin", branch_name)
+            logging.info(f"Changes pushed to branch {branch_name}")
 
     def branch_exists(self, branch_name: str):
         remote_branch_name = f'origin/{branch_name}'
