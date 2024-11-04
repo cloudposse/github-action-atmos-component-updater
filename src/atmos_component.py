@@ -81,7 +81,8 @@ class AtmosComponent:
         if (self.has_version() and
                 self.has_valid_uri() and
                 self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git'):
-            self.__uri_repo = 'test'
+            pass
+            # self.__uri_repo = 'test'
         return
 
     def __fetch_name(self) -> str:
