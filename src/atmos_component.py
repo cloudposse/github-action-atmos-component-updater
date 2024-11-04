@@ -79,7 +79,8 @@ class AtmosComponent:
     def __migrate_new_org(self):
         if (self.has_version() and
                 self.has_valid_uri() and
-                self.uri_repo == 'cloudposse/terraform-aws-components'):
+                self.__uri_repo == 'cloudposse/terraform-aws-components'):
+            self.__uri_repo = 'test'
             return
 
     def __fetch_name(self) -> str:
