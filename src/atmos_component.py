@@ -1,3 +1,4 @@
+import logging
 import re
 import os
 from typing import Tuple
@@ -77,12 +78,11 @@ class AtmosComponent:
         self.__migrate_new_org()
 
     def __migrate_new_org(self):
-        self.__uri_repo = 'test'
         if (self.has_version() and
-                self.has_valid_uri() and
-                self.__uri_repo == 'cloudposse/terraform-aws-components'):
-
-            return
+                self.has_valid_uri()):
+                logging.info(self.__uri_repo)
+                self.__uri_repo = 'test'
+        return
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
