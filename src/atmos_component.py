@@ -79,9 +79,9 @@ class AtmosComponent:
 
     def __migrate_new_org(self):
         if (self.has_version() and
-                self.has_valid_uri()):
-                logging.info(self.__uri_repo)
-                self.__uri_repo = 'test'
+                self.has_valid_uri() and
+                self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git'):
+            self.__uri_repo = 'test'
         return
 
     def __fetch_name(self) -> str:
