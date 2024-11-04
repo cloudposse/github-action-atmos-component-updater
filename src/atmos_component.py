@@ -74,6 +74,13 @@ class AtmosComponent:
         self.__content: str = self.__load_file()
         self.__yaml_content = self.__load_yaml_content()
         (self.__uri_repo, self.__uri_path) = self.__parse_uri()
+        self.__migrate_new_org()
+
+    def __migrate_new_org(self):
+        if (self.has_version() and
+                self.has_valid_uri() and
+                self.uri_repo == 'cloudposse/terraform-aws-components'):
+            return
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
