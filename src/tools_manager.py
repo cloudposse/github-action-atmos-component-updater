@@ -82,7 +82,7 @@ class ToolsManager:
         tags = response.stdout.strip().decode("utf-8").split("\n")
         for tag in tags:
             try:
-                normalized_tag = tag.encode("ascii")
+                normalized_tag = tag.encode("ascii").decode("ascii")
                 logging.info(f"{normalized_tag}")
                 logging.info(type(normalized_tag))
                 logging.info(normalized_tag.strip('v'))
