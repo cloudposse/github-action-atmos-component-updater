@@ -3,11 +3,13 @@ import re
 import os
 from typing import Tuple
 import yaml
+import semver
 
 from utils import io
 
 VERSION_PATTERN = r"version:\s*\d+\.\d+\.\d+"
 COMPONENT_YAML = 'component.yaml'
+MONOREPO_MAXIMUM_VERSION = '1.523.0'
 
 
 class AtmosComponent:
@@ -80,10 +82,15 @@ class AtmosComponent:
     def __migrate_new_org(self):
         if (self.has_version() and
                 self.has_valid_uri() and
-                self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git'):
-            pass
-            # self.__uri_repo = 'test'
-        return
+                self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git' and
+                semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1):
+            component_name = self.__uri_path.split('/')[1:].join('/')
+            migration_config = yaml.load(io.read_file_to_string("./assets/config.yaml"), Loader=yaml.FullLoader)
+            prefix = migration_config.get('repo_settings').get('prefix')
+            destination = migration_config.get('component_map').get(component_name).replace('/', '-')
+            self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
+            logging.info(self.__uri_repo)
+            logging.info(migration_config.get('component_map').values())
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
