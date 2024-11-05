@@ -82,7 +82,7 @@ class ToolsManager:
         tags = response.stdout.decode("utf-8").split("\n")
         for tag in tags:
             try:
-                semver.parse_version_info(tag.strip().lstrip("v"))
+                semver.parse_version_info(tag.strip().strip("v"))
                 return tag if tag else None
             except Exception as e:
                 logging.error(f"{e}")
