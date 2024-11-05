@@ -85,7 +85,7 @@ class AtmosComponent:
                 self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git' and
                 semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1):
             component_name = '/'.join(self.__uri_path.split('/')[1:])
-            config_path = os.path.join(os.environ['GITHUB_ACTION_PATH'], "src", "assets", "config.yaml")
+            config_path = os.path.join(os.path.dirname(__file__), "assets", "config.yaml")
             migration_config = yaml.load(io.read_file_to_string(config_path), Loader=yaml.FullLoader)
             prefix = migration_config.get('repo_settings').get('prefix')
             destination = migration_config.get('component_map').get(component_name).replace('/', '-')
