@@ -83,7 +83,7 @@ class ToolsManager:
         logging.info(tags)
         for tag in tags:
             try:
-                normalized_tag = tag.strip('v')
+                normalized_tag = tag.strip("'").strip('v')
                 semver.parse(normalized_tag)
                 return normalized_tag
             except Exception as e:
