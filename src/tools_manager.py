@@ -79,7 +79,8 @@ class ToolsManager:
             logging.error(error_message)
             return None
 
-        tags = response.stdout.strip().decode().split("\n")
+        tags = response.stdout.decode().split("\n")
+        logging.info(tags)
         for tag in tags:
             try:
                 normalized_tag = tag.strip('v')
