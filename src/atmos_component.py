@@ -9,6 +9,7 @@ from utils import io
 
 VERSION_PATTERN = r"version:\s*\d+\.\d+\.\d+"
 COMPONENT_YAML = 'component.yaml'
+README_EXTENTION = '.md'
 MONOREPO_MAXIMUM_VERSION = '1.523.0'
 
 

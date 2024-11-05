@@ -6,7 +6,7 @@ from typing import List, Optional
 from enum import Enum
 from tools_manager import ToolsManager, ToolExecutionError
 from utils import io
-from atmos_component import AtmosComponent, COMPONENT_YAML
+from atmos_component import AtmosComponent, COMPONENT_YAML, README_EXTENTION
 from github_provider import GitHubProvider, PullRequestCreationResponse
 from config import Config
 
@@ -251,6 +251,9 @@ class ComponentUpdater:
         for updated_file in updated_files:
             # skip "component.yaml"
             if updated_file.endswith(COMPONENT_YAML):
+                continue
+
+            if updated_file.endswith(README_EXTENTION):
                 continue
 
             # skip folders
