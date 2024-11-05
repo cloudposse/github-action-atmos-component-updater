@@ -82,6 +82,8 @@ class ToolsManager:
         tags = response.stdout.strip().decode("utf-8").split("\n")
         for tag in tags:
             try:
+                logging.info(f"Checking tag: " + tag.strip("v"))
+                logging.info(f"Checking tag length" + str(len(tag.strip("v"))))
                 semver.parse(tag.strip("v"))
                 return tag
             except Exception as e:
