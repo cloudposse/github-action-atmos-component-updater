@@ -79,7 +79,7 @@ class ToolsManager:
             logging.error(error_message)
             return None
 
-        tags = response.stdout.decode("utf-8").split("\n")
+        tags = response.stdout.strip().decode("utf-8").split("\n")
         for tag in tags:
             try:
                 semver.parse(tag.strip("v"))
