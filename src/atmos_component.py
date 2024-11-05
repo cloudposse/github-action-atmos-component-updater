@@ -25,8 +25,8 @@ class AtmosComponent:
 
     @property
     def version(self):
-        version = self.__yaml_content.get('spec', {}).get('source', {}).get('version').lstrip("v")
-        return version.strip() if version else None
+        version = self.__yaml_content.get('spec', {}).get('source', {}).get('version')
+        return version.strip().lstrip("v") if version else None
 
     @property
     def uri_repo(self) -> str:
@@ -82,7 +82,7 @@ class AtmosComponent:
         self.__migrate_new_org()
 
     def __migrate_new_org(self):
-        if semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1:
+        if self.has_version() and semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1:
             self.migrate()
 
     def migrate(self):
