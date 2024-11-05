@@ -78,6 +78,10 @@ class ToolsManager:
 
         tag = response.stdout
 
+        logging.info("===================================================")
+        logging.info(response.stdout)
+        logging.info("===================================================")
+
         return tag.strip().decode("utf-8") if tag else None
 
     def is_git_repo(self, repo_dir: str) -> bool:
