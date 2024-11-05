@@ -8,6 +8,7 @@ import semver
 from utils import io
 
 VERSION_PATTERN = r"version:\s*\d+\.\d+\.\d+"
+URI_PATTERN = r"uri:\s*.*"
 COMPONENT_YAML = 'component.yaml'
 README_EXTENTION = '.md'
 MONOREPO_MAXIMUM_VERSION = '1.523.0'
@@ -97,6 +98,9 @@ class AtmosComponent:
             is_monorepo = len(
                 [item for item in migration_config.get('component_map').values() if item == component_name]) > 1
             self.__uri_path = "src/" if is_monorepo else "src/" + component_name
+            template = f"uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
+            self.__content = re.sub(URI_PATTERN, template, self.__content)
+            self.__yaml_content = self.__load_yaml_content()
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))

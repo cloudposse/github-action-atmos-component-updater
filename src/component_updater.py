@@ -192,7 +192,6 @@ class ComponentUpdater:
 
         original_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, original_component)
         updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, updated_component)
-        original_vendored_component.migrate()
 
         logging.debug(f"Original re-vendored component:\n{str(original_vendored_component)}")
         logging.debug(f"Updated re-vendored component:\n{str(updated_vendored_component)}")
