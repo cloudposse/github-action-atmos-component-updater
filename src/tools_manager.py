@@ -79,11 +79,11 @@ class ToolsManager:
             logging.error(error_message)
             return None
 
-        tags = response.stdout.split("\n")
+        tags = response.stdout.strip().decode("utf-8").split("\n")
         for tag in tags:
             try:
                 semver.parse_version_info("tag")
-                return tag.strip().decode("utf-8") if tag else None
+                return tag if tag else None
             except Exception as e:
                 logging.error(f"Error parsing tag: {tag} - {e}")
                 continue
