@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 import logging
@@ -142,7 +143,9 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
             return response
 
-        repo_dir = self.__fetch_component_repo(original_component) if not self.__config.skip_component_repo_fetching else self.__config.components_download_dir
+        fetch_component = copy.deepcopy(original_component)
+        fetch_component.migrate()
+        repo_dir = self.__fetch_component_repo(fetch_component) if not self.__config.skip_component_repo_fetching else self.__config.components_download_dir
 
         if not self.__tools_manager.is_git_repo(repo_dir):
             logging.error(f"Component '{original_component.name}' uri is not git repo. Can't figure out latest version. Skipping")
