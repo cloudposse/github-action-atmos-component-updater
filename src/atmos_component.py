@@ -90,8 +90,8 @@ class AtmosComponent:
             prefix = migration_config.get('repo_settings').get('prefix')
             destination = migration_config.get('component_map').get(component_name).replace('/', '-')
             self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
-            logging.info(self.__uri_repo)
-            logging.info(migration_config.get('component_map').values())
+            is_monorepo = len([item for item in migration_config.get('component_map').values() if item == component_name]) > 1
+            self.__uri_path = "src/" if is_monorepo else "src/" + component_name
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
