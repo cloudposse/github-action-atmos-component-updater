@@ -84,7 +84,7 @@ class ToolsManager:
             try:
                 normalized_tag = tag.strip("'").strip('v')
                 semver.parse(normalized_tag)
-                return normalized_tag
+                return tag.strip("'")
             except Exception as e:
                 logging.error(f"{e}")
                 continue
