@@ -79,10 +79,10 @@ class ToolsManager:
             logging.error(error_message)
             return None
 
-        tags = response.stdout.strip().decode("utf-8").split("\n")
+        tags = response.stdout.strip().decode().split("\n")
         for tag in tags:
             try:
-                normalized_tag = tag.encode("ascii").decode("ascii").strip('v')
+                normalized_tag = tag.strip('v')
                 semver.parse(normalized_tag)
                 return normalized_tag
             except Exception as e:
