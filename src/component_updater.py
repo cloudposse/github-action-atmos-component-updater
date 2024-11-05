@@ -154,6 +154,7 @@ class ComponentUpdater:
             return response
 
         latest_tag = self.__tools_manager.git_get_latest_tag(repo_dir)
+        logging.info(f"Latest tag for component '{original_component.name}' is '{latest_tag}'")
 
         if not latest_tag:
             logging.error(f"Unable to figure out latest tag for component '{original_component.name}' source uri. Skipping")
