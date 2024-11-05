@@ -25,7 +25,7 @@ class AtmosComponent:
 
     @property
     def version(self):
-        version = self.__yaml_content.get('spec', {}).get('source', {}).get('version')
+        version = self.__yaml_content.get('spec', {}).get('source', {}).get('version').lstrip("v")
         return version.strip() if version else None
 
     @property
