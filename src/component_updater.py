@@ -167,6 +167,7 @@ class ComponentUpdater:
             return response
 
         updated_component = self.__clone_infra_for_component(infra_terraform_dir, migrated_component)
+        updated_component.migrate()
 
         logging.debug(f"Updated component:\n{str(updated_component)}")
 

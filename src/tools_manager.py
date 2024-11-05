@@ -80,7 +80,6 @@ class ToolsManager:
             return None
 
         tags = response.stdout.decode().split("\n")
-        logging.info(tags)
         for tag in tags:
             try:
                 normalized_tag = tag.strip("'").strip('v')
