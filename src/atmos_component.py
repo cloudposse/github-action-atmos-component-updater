@@ -81,22 +81,22 @@ class AtmosComponent:
         self.__migrate_new_org()
 
     def __migrate_new_org(self):
-        if (self.has_version() and
-                self.has_valid_uri() and
-                self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git' and
-                semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1):
+        if semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1:
             self.migrate()
 
     def migrate(self):
-        component_name = '/'.join(self.__uri_path.split('/')[1:])
-        config_path = os.path.join(os.path.dirname(__file__), "assets", "config.yaml")
-        migration_config = yaml.load(io.read_file_to_string(config_path), Loader=yaml.FullLoader)
-        prefix = migration_config.get('repo_settings').get('prefix')
-        destination = migration_config.get('component_map').get(component_name).replace('/', '-')
-        self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
-        is_monorepo = len(
-            [item for item in migration_config.get('component_map').values() if item == component_name]) > 1
-        self.__uri_path = "src/" if is_monorepo else "src/" + component_name
+        if (self.has_version() and
+                self.has_valid_uri() and
+                self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git'):
+            component_name = '/'.join(self.__uri_path.split('/')[1:])
+            config_path = os.path.join(os.path.dirname(__file__), "assets", "config.yaml")
+            migration_config = yaml.load(io.read_file_to_string(config_path), Loader=yaml.FullLoader)
+            prefix = migration_config.get('repo_settings').get('prefix')
+            destination = migration_config.get('component_map').get(component_name).replace('/', '-')
+            self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
+            is_monorepo = len(
+                [item for item in migration_config.get('component_map').values() if item == component_name]) > 1
+            self.__uri_path = "src/" if is_monorepo else "src/" + component_name
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
