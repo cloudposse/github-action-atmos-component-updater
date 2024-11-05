@@ -82,8 +82,12 @@ class ToolsManager:
         tags = response.stdout.strip().decode("utf-8").split("\n")
         for tag in tags:
             try:
-                semver.parse(tag.strip(u"v"))
-                return tag.strip(u"v")
+                normalized_tag = unicodedata.normalize('NFC', tag)
+                logging.info(f"{normalized_tag}")
+                logging.info(type(normalized_tag))
+                logging.info(normalized_tag.strip('v'))
+                semver.parse(normalized_tag)
+                return normalized_tag
             except Exception as e:
                 logging.error(f"{e}")
                 continue
