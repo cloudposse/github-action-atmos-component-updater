@@ -1,6 +1,9 @@
 import os
 import logging
 import subprocess
+
+import semver
+
 from atmos_component import AtmosComponent
 
 
@@ -65,7 +68,7 @@ class ToolsManager:
         logging.debug(f"Pulled whole component repo successfully: {component.uri_repo}")
 
     def git_get_latest_tag(self, git_dir: str):
-        command = ["git", "describe", "--tags", "--abbrev=0"]
+        command = ["git", "for-each-ref", "--sort=-authordate", "--format", "'%(refname:short)'", "refs/tags"]
 
         logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
@@ -76,13 +79,16 @@ class ToolsManager:
             logging.error(error_message)
             return None
 
-        tag = response.stdout
+        tags = response.stdout.split("\n")
+        for tag in tags:
+            try:
+                semver.parse_version_info("tag")
+                return tag.strip().decode("utf-8") if tag else None
+            except Exception as e:
+                logging.error(f"Error parsing tag: {tag} - {e}")
+                continue
 
-        logging.info("===================================================")
-        logging.info(response.stdout)
-        logging.info("===================================================")
-
-        return tag.strip().decode("utf-8") if tag else None
+        return None
 
     def is_git_repo(self, repo_dir: str) -> bool:
         return os.path.exists(os.path.join(repo_dir, '.git'))
