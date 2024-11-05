@@ -1,7 +1,7 @@
 import os
 import logging
 import subprocess
-
+import unicodedata
 import semver
 
 from atmos_component import AtmosComponent
@@ -82,10 +82,9 @@ class ToolsManager:
         tags = response.stdout.strip().decode("utf-8").split("\n")
         for tag in tags:
             try:
-                logging.info(f"Checking tag: " + tag.strip("v"))
-                logging.info(f"Checking tag length" + str(len(tag.strip("v"))))
-                semver.parse(tag.strip("v"))
-                return tag
+                normalized_tag = unicodedata.normalize('NFC', tag).strip("v")
+                semver.parse(normalized_tag)
+                return normalized_tag
             except Exception as e:
                 logging.error(f"{e}")
                 continue
