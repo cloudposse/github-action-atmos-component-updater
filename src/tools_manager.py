@@ -86,7 +86,7 @@ class ToolsManager:
                 semver.parse(normalized_tag)
                 return tag.strip("'")
             except Exception as e:
-                logging.error(f"{e}")
+                logging.info(f"{e}")
                 continue
 
         return None
