@@ -12,7 +12,7 @@ VERSION_PATTERN = r"(?<=source:)(?<!mixins:)(.*?)(version:\s*v?\d+\.\d+\.\d+)"
 URI_PATTERN = r"uri:\s*.*"
 COMPONENT_YAML = 'component.yaml'
 README_EXTENTION = '.md'
-MONOREPO_MAXIMUM_VERSION = '1.523.0'
+MONOREPO_MAXIMUM_VERSION = '1.532.0'
 
 
 class AtmosComponent:
