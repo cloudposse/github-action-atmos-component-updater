@@ -97,7 +97,7 @@ class AtmosComponent:
             destination = migration_config.get('component_map').get(component_name).replace('/', '-')
             self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
             self.__uri_path = "src"
-            template = f"uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
+            template = f"\g<1>uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
             self.__content = re.sub(URI_PATTERN, template, self.__content, flags=re.DOTALL)
             self.__yaml_content = self.__load_yaml_content()
 
