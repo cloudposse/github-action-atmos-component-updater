@@ -9,26 +9,26 @@ component_map:
   acm: acm
   alb: alb
   amplify: amplify
-  api-gateway-account-settings: api-gateway
-  api-gateway-rest-api: api-gateway
+  api-gateway-account-settings: api-gateway-account-settings
+  api-gateway-rest-api: api-gateway-rest-api
   athena: athena
   aurora-mysql: aurora-mysql
-  aurora-mysql-resources: aurora-mysql
+  aurora-mysql-resources: aurora-mysql-resources
   aurora-postgres: aurora-postgres
-  aurora-postgres-resources: aurora-postgres
-  auth0/app: auth0
-  auth0/connection: auth0
-  auth0/tenant: auth0
+  aurora-postgres-resources: aurora-postgres-resources
+  auth0/app: auth0-app
+  auth0/connection: auth0-connection
+  auth0/tenant: auth0-tenant
   aws-backup: backup
   aws-config: config
   aws-inspector: inspector
   aws-inspector2: inspector2
   aws-saml: saml
   aws-shield: shield
-  aws-sso: sso
+  aws-sso: identity-center
   aws-ssosync: ssosync
   aws-teams: teams
-  aws-team-roles: teams
+  aws-team-roles: team-roles
   bastion: bastion
   cloudmap-namespace: cloudmap-namespace
   cloudtrail: cloudtrail
@@ -36,7 +36,7 @@ component_map:
   cloudwatch-logs: cloudwatch-logs
   cognito: cognito
   config-bucket: config-bucket
-  datadog-configuration: datadog
+  datadog-configuration: datadog-credentials
   datadog-integration: datadog-integration
   datadog-lambda-forwarder: datadog-lambda-forwarder
   datadog-logs-archive: datadog-logs-archive
@@ -44,12 +44,12 @@ component_map:
   datadog-private-location-ecs: datadog-private-location-ecs
   datadog-synthetics: datadog-synthetics
   datadog-synthetics-private-location: datadog-synthetics-private-location
-  dms/endpoint: dms
-  dms/iam: dms
-  dms/replication-instance: dms
-  dms/replication-task: dms
-  dns-delegated: dns
-  dns-primary: dns
+  dms/endpoint: dms-endpoint
+  dms/iam: dms-iam
+  dms/replication-instance: dms-replication-instance
+  dms/replication-task: dms-replication-task
+  dns-delegated: dns-delegated
+  dns-primary: dns-primary
   documentdb: documentdb
   dynamodb: dynamodb
   ec2-client-vpn: ec2-client-vpn
@@ -58,32 +58,33 @@ component_map:
   ecs: ecs
   ecs-service: ecs-service
   efs: efs
-  eks/actions-runner-controller: eks/actions-runner-controller
-  eks/alb-controller: eks/alb-controller
-  eks/alb-controller-ingress-class: eks/alb-controller
-  eks/alb-controller-ingress-group: eks/alb-controller
-  argocd-repo: argocd
-  eks/argocd: argocd
-  eks/aws-node-termination-handler: eks/aws-node-termination-handler
-  eks/cert-manager: eks/cert-manager
-  eks/cluster: eks/cluster
-  eks/datadog-agent: eks/datadog-agent
-  eks/echo-server: eks/echo-server
-  eks/external-dns: eks/external-dns
-  eks/external-secrets-operator: eks/external-secrets-operator
-  eks/github-actions-runner: eks/github-actions-runner
-  eks/idp-roles: eks/idp-roles
-  eks/karpenter: eks/karpenter
-  eks/karpenter-node-pool: eks/karpenter
-  eks/keda: eks/keda
-  eks/loki: eks/loki
-  eks/metrics-server: eks/metrics-server
-  eks/prometheus-scraper: eks/prometheus-scraper
-  eks/promtail: eks/promtail
-  eks/redis: eks/redis
-  eks/redis-operator: eks/redis-operator
-  eks/reloader: eks/reloader
-  eks/storage-class: eks/storage-class
+  eks/actions-runner-controller: eks-actions-runner-controller
+  eks/alb-controller: eks-alb-controller
+  eks/alb-controller-ingress-class: eks-alb-controller-ingress-class
+  eks/alb-controller-ingress-group: eks-alb-controller-ingress-group
+  argocd-repo: argocd-github-repo
+  eks/argocd: eks-argocd
+  eks/aws-node-termination-handler: eks-node-termination-handler
+  eks/cert-manager: eks-cert-manager
+  eks/cluster: eks-cluster
+  eks/datadog-agent: eks-datadog-agent
+  eks/echo-server: eks-echo-server
+  eks/external-dns: eks-external-dns
+  eks/external-secrets-operator: eks-external-secrets-operator
+  eks/github-actions-runner: eks-github-actions-runner
+  eks/idp-roles: eks-idp-roles
+  eks/karpenter: eks-karpenter-controller
+  eks/karpenter-node-pool: eks-karpenter-node-pool
+  eks/keda: eks-keda
+  eks/loki: eks-loki
+  eks/metrics-server: eks-metrics-server
+  eks/prometheus-scraper: eks-prometheus-scraper
+  eks/promtail: eks-promtail
+  eks/redis: eks-redis
+  eks/redis-operator: eks-redis-operator
+  eks/reloader: eks-reloader
+  eks/storage-class: eks-storage-class
+  eks/tailscale: eks-tailscale
   elasticache-redis: elasticache-redis
   elasticsearch: elasticsearch
   eventbridge: eventbridge
@@ -94,16 +95,16 @@ component_map:
   github-webhook: github-webhook
   global-accelerator: global-accelerator
   global-accelerator-endpoint-group: global-accelerator-endpoint-group
-  glue/catalog-database: glue
-  glue/catalog-table: glue
-  glue/connection: glue
-  glue/crawler: glue
-  glue/iam: glue
-  glue/job: glue
-  glue/registry: glue
-  glue/schema: glue
-  glue/trigger: glue
-  glue/workflow: glue
+  glue/catalog-database: glue-catalog-database
+  glue/catalog-table: glue-catalog-table
+  glue/connection: glue-connection
+  glue/crawler: glue-crawler
+  glue/iam: glue-iam
+  glue/job: glue-job
+  glue/registry: glue-registry
+  glue/schema: glue-schema
+  glue/trigger: glue-trigger
+  glue/workflow: glue-workflow
   guardduty: guardduty
   iam-role: iam-role
   iam-service-linked-roles: iam-service-linked-roles
@@ -113,13 +114,12 @@ component_map:
   lakeformation: lakeformation
   lambda: lambda
   macie: macie
-  managed-grafana/api-key: managed-grafana
-  managed-grafana/dashboard: managed-grafana
-  managed-grafana/data-source: managed-grafana
-  managed-grafana/data-source/loki: managed-grafana
-  managed-grafana/data-source/managed-prometheus: managed-grafana
-  managed-grafana/workspace: managed-grafana
-  managed-prometheus/workspace: managed-prometheus
+  managed-grafana/api-key: managed-grafana-api-key
+  managed-grafana/dashboard: managed-grafana-dashboard
+  managed-grafana/data-source/loki: managed-grafana-data-source-loki
+  managed-grafana/data-source/managed-prometheus: managed-grafana-data-source-managed-prometheus
+  managed-grafana/workspace: managed-grafana-workspace
+  managed-prometheus/workspace: managed-prometheus-workspace
   memorydb: memorydb
   mq-broker: mq-broker
   msk: msk
@@ -129,29 +129,31 @@ component_map:
   philips-labs-github-runners: philips-labs-github-runners
   rds: rds
   redshift: redshift
+  redshift-serverless: redshift-serverless
   route53-resolver-dns-firewall: route53-resolver-dns-firewall
+  runs-on: runs-on
   s3-bucket: s3-bucket
   security-hub: security-hub
   ses: ses
   sftp: sftp
   site-to-site-vpn: site-to-site-vpn
-  snowflake-account: snowflake
-  snowflake-database: snowflake
+  snowflake-account: snowflake-account
+  snowflake-database: snowflake-database
   sns-topic: sns-topic
   spa-s3-cloudfront: spa-s3-cloudfront
-  spacelift/admin-stack: spacelift
-  spacelift/spaces: spacelift
-  spacelift/worker-pool: spacelift
-  spacelift: spacelift
+  spacelift/admin-stack: spacelift-admin-stack
+  spacelift/spaces: spacelift-spaces
+  spacelift/worker-pool: spacelift-worker-pool-asg
+  eks/spacelift-worker-pool-controller: eks-spacelift-worker-pool-controller
+  eks/spacelift-worker-pool: eks-spacelift-worker-pool
   sqs-queue: sqs-queue
   ssm-parameters: ssm-parameters
   sso-saml-provider: sso-saml-provider
   strongdm: strongdm
   tfstate-backend: tfstate-backend
-  tgw/cross-region-hub-connector: tgw
-  tgw/hub: tgw
-  tgw/spoke: tgw
-  tgw: tgw
+  tgw/cross-region-hub-connector: tgw-hub-connector
+  tgw/hub: tgw-hub
+  tgw/spoke: tgw-spoke
   vpc: vpc
   vpc-flow-logs-bucket: vpc-flow-logs-bucket
   vpc-peering: vpc-peering

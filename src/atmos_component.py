@@ -7,7 +7,8 @@ import semver
 
 from utils import io
 
-VERSION_PATTERN = r"version:\s*v?\d+\.\d+\.\d+"
+VERSION_PATTERN = r"(?<=source:)(?<!mixins:)(.*?)(version:\s*v?\d+\.\d+\.\d+)"
+# VERSION_PATTERN = r"version:\s*v?\d+\.\d+\.\d+"
 URI_PATTERN = r"uri:\s*.*"
 COMPONENT_YAML = 'component.yaml'
 README_EXTENTION = '.md'
@@ -95,9 +96,7 @@ class AtmosComponent:
             prefix = migration_config.get('repo_settings').get('prefix')
             destination = migration_config.get('component_map').get(component_name).replace('/', '-')
             self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
-            is_monorepo = len(
-                [item for item in migration_config.get('component_map').values() if item == destination]) > 1
-            self.__uri_path = f"src/{component_name}" if is_monorepo else "src/"
+            self.__uri_path = "src/"
             template = f"uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
             self.__content = re.sub(URI_PATTERN, template, self.__content)
             self.__yaml_content = self.__load_yaml_content()
@@ -134,7 +133,7 @@ class AtmosComponent:
         return bool(self.uri_repo and self.uri_path)
 
     def update_version(self, new_version: str):
-        self.__content = re.sub(VERSION_PATTERN, f"version: {new_version}", self.__content)
+        self.__content = re.sub(VERSION_PATTERN, f"\g<1>version: {new_version}", self.__content, flags=re.DOTALL)
         self.__yaml_content = self.__load_yaml_content()
 
     def persist(self, output_file=None):
