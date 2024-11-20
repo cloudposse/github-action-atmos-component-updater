@@ -9,7 +9,7 @@ from utils import io
 
 VERSION_PATTERN = r"(?<=source:)(?<!mixins:)(.*?)(version:\s*v?\d+\.\d+\.\d+)"
 # VERSION_PATTERN = r"version:\s*v?\d+\.\d+\.\d+"
-URI_PATTERN = r"uri:\s*.*"
+URI_PATTERN = r"(?<=source:)(?<!mixins:)(.*?)(uri:\s*[^\n]*)"
 COMPONENT_YAML = 'component.yaml'
 README_EXTENTION = '.md'
 MONOREPO_MAXIMUM_VERSION = '1.532.0'
@@ -98,7 +98,7 @@ class AtmosComponent:
             self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
             self.__uri_path = "src"
             template = f"uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
-            self.__content = re.sub(URI_PATTERN, template, self.__content)
+            self.__content = re.sub(URI_PATTERN, template, self.__content, flags=re.DOTALL)
             self.__yaml_content = self.__load_yaml_content()
 
     def __fetch_name(self) -> str:
