@@ -94,12 +94,14 @@ class AtmosComponent:
             config_path = os.path.join(os.path.dirname(__file__), "assets", "config.yaml")
             migration_config = yaml.load(io.read_file_to_string(config_path), Loader=yaml.FullLoader)
             prefix = migration_config.get('repo_settings').get('prefix')
-            destination = migration_config.get('component_map').get(component_name).replace('/', '-')
-            self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
-            self.__uri_path = "src"
-            template = f"\g<1>uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
-            self.__content = re.sub(URI_PATTERN, template, self.__content, flags=re.DOTALL)
-            self.__yaml_content = self.__load_yaml_content()
+            new_component_name = migration_config.get('component_map').get(component_name)
+            if new_component_name:
+                destination = new_component_name.replace('/', '-')
+                self.__uri_repo = f"github.com/cloudposse-terraform-components/{prefix}-{destination}.git"
+                self.__uri_path = "src"
+                template = f"\g<1>uri: {self.__uri_repo}//{self.__uri_path}?ref={{{{ .Version }}}}"
+                self.__content = re.sub(URI_PATTERN, template, self.__content, flags=re.DOTALL)
+                self.__yaml_content = self.__load_yaml_content()
 
     def __fetch_name(self) -> str:
         return os.path.dirname(os.path.relpath(self.__component_file, os.path.join(self.__infra_repo_dir, self.__infra_terraform_dir)))
