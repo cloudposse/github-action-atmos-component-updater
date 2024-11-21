@@ -8,7 +8,6 @@ import semver
 from utils import io
 
 VERSION_PATTERN = r"(?<=source:)(?<!mixins:)(.*?)(version:\s*['\"]?v?\d+\.\d+\.\d+['\"]?)"
-# VERSION_PATTERN = r"version:\s*v?\d+\.\d+\.\d+"
 URI_PATTERN = r"(?<=source:)(?<!mixins:)(.*?)(uri:\s*[^\n]*)"
 COMPONENT_YAML = 'component.yaml'
 README_EXTENTION = '.md'
