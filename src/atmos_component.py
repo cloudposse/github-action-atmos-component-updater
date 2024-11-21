@@ -83,11 +83,11 @@ class AtmosComponent:
         self.__migrate_new_org()
 
     def __migrate_new_org(self):
-        if self.has_semver() and semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1:
+        if self.has_version() and semver.compare(self.version, MONOREPO_MAXIMUM_VERSION) != -1:
             self.migrate()
 
     def migrate(self):
-        if (self.has_semver() and
+        if (self.has_version() and
                 self.has_valid_uri() and
                 self.__uri_repo == 'github.com/cloudposse/terraform-aws-components.git'):
             component_name = '/'.join(self.__uri_path.split('/')[1:])
@@ -127,9 +127,6 @@ class AtmosComponent:
         return yaml.load(self.__content, Loader=yaml.FullLoader)
 
     def has_version(self) -> bool:
-        return bool(self.version)
-
-    def has_semver(self) -> bool:
         try:
             return bool(semver.parse(self.version))
         except Exception:
