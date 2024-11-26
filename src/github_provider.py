@@ -94,12 +94,7 @@ class GitHubProvider:
         print("=======================================================================================================")
         for d in diffs:
             with open(d.a_path, "r") as f:
-                import datetime
-                now = datetime.datetime.now()
-                content = str(now)
-                print(d.a_path)
-                print(content)
-                # blob = self.__repo.create_git_blob(content, "utf-8")
+                content = f.read()
                 item = InputGitTreeElement(
                     path=d.a_path,
                     mode='100644',
