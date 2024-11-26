@@ -95,6 +95,7 @@ class GitHubProvider:
         for d in diffs:
             with open(d.a_path, "r") as f:
                 content = f.read()
+                print(d.a_path)
                 print(content)
                 # blob = self.__repo.create_git_blob(content, "utf-8")
                 item = InputGitTreeElement(
@@ -104,10 +105,8 @@ class GitHubProvider:
                     content=content
                 )
                 tree_elements.append(item)
-        print(tree_elements)
         print("=======================================================================================================")
         # repo_dir
-
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
             message=commit_message,
