@@ -88,8 +88,9 @@ class GitHubProvider:
 
         repo = git.repo.Repo(repo_dir)
         diff = repo.git.diff('HEAD')
+        print("=======================================================================================================")
         print(diff)
-
+        print("=======================================================================================================")
         # repo_dir
 
         ref = self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
