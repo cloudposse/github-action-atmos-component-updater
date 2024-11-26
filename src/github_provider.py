@@ -94,7 +94,9 @@ class GitHubProvider:
         print("=======================================================================================================")
         for d in diffs:
             with open(d.a_path, "r") as f:
-                content = f.read()
+                import datetime
+                now = datetime.datetime.now()
+                content = str(now)
                 print(d.a_path)
                 print(content)
                 # blob = self.__repo.create_git_blob(content, "utf-8")
