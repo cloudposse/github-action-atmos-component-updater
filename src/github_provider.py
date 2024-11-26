@@ -3,7 +3,7 @@ import logging
 from typing import Optional, Tuple, List
 import jinja2
 import git.repo
-from github import Github
+from github import Github, InputGitTreeElement
 from github.PullRequest import PullRequest
 from jinja2 import FileSystemLoader, Template
 from atmos_component import AtmosComponent
@@ -88,15 +88,23 @@ class GitHubProvider:
 
         repo = git.repo.Repo(repo_dir)
         diffs = repo.index.diff(None)
+        tree_elements = []
         print("=======================================================================================================")
         for d in diffs:
+            tree_elements.append(InputGitTreeElement(
+                path=d.a_path,
+                mode=d.a_mode,
+                type=d.a_blob.type,
+                content=d.a_blob.data_stream.read().decode('utf-8'),
+                sha=d.a_blob.hexsha
+            ))
             print(d.a_path)
         print("=======================================================================================================")
         # repo_dir
 
         ref = self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
 
-        new_tree = self.__repo.create_git_tree([], base_tree)
+        new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
             message=commit_message,
             tree=new_tree.sha,
