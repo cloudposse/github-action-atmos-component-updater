@@ -99,12 +99,9 @@ class GitHubProvider:
             import os
             with open(os.path.join(repo_dir, d.b_path), "r") as f:
                 content = f.read()
-                print("====================================")
-                print(str(oct(d.b_mode))[2:])
-                print("====================================")
                 item = InputGitTreeElement(
                     path=d.b_path,
-                    mode=str(d.b_mode),
+                    mode=str(oct(d.b_mode))[2:],
                     type='commit',
                     content=content
                 )
