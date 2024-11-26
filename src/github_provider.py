@@ -108,7 +108,7 @@ class GitHubProvider:
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
             message=commit_message,
-            tree=new_tree.sha,
+            tree=new_tree,
             parents=[base_branch.commit.sha]
         )
 
