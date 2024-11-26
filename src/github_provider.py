@@ -95,7 +95,7 @@ class GitHubProvider:
                 path=d.a_path,
                 mode=d.a_mode,
                 type=d.a_blob.type,
-                content=d.a_blob.data_stream.read().decode('utf-8'),
+                content="",
                 sha=d.a_blob.hexsha
             ))
             print(d.a_path)
