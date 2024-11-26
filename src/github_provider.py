@@ -93,7 +93,8 @@ class GitHubProvider:
         tree_elements = []
         print("=======================================================================================================")
         for d in diffs:
-            with open(d.a_path, "r") as f:
+            import os
+            with open(os.path.join(repo_dir, d.a_path), "r") as f:
                 content = f.read()
                 print(content)
                 item = InputGitTreeElement(
