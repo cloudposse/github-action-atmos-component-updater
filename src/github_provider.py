@@ -101,7 +101,7 @@ class GitHubProvider:
                 item = InputGitTreeElement(
                     path=d.a_path,
                     mode='100644',
-                    type='blob',
+                    type='commit',
                     content=content
                 )
                 tree_elements.append(item)
