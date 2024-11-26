@@ -99,6 +99,7 @@ class GitHubProvider:
                     path=d.a_path,
                     mode='100644',
                     type='blob',
+                    content=blob.content,
                     sha=blob.sha
                 ))
             print(d.a_path)
