@@ -96,13 +96,14 @@ class GitHubProvider:
             with open(d.a_path, "r") as f:
                 content = f.read()
                 print(content)
-                blob = self.__repo.create_git_blob(content, "utf-8")
-                tree_elements.append(InputGitTreeElement(
+                # blob = self.__repo.create_git_blob(content, "utf-8")
+                item = InputGitTreeElement(
                     path=d.a_path,
                     mode='100644',
                     type='blob',
-                    sha=blob.sha
-                ))
+                    content=content
+                )
+                tree_elements.append(item)
         print(tree_elements)
         print("=======================================================================================================")
         # repo_dir
