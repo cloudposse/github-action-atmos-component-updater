@@ -82,11 +82,17 @@ class GitHubProvider:
 
         return set(branches)
 
-    def create_branch_and_push_all_changes(self, branch_name: str, commit_message: str):
+    def create_branch_and_push_all_changes(self, repo_dir, branch_name: str, commit_message: str):
         base_branch = self.__repo.get_branch(self.__repo.default_branch)
         base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
-        self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
+        repo = git.repo.Repo(repo_dir)
+        diff = repo.git.diff('HEAD')
+        print(diff)
+
+        # repo_dir
+
+        ref = self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
 
         new_tree = self.__repo.create_git_tree([], base_tree.sha)
         commit = self.__repo.create_git_commit(
