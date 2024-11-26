@@ -95,6 +95,7 @@ class GitHubProvider:
         for d in diffs:
             with open(d.a_path, "r") as f:
                 content = f.read()
+                print(content)
                 item = InputGitTreeElement(
                     path=d.a_path,
                     mode='100644',
