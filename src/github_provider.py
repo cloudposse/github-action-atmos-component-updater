@@ -95,7 +95,7 @@ class GitHubProvider:
                 blob = self.__repo.create_git_blob(f.read(), "utf-8")
                 tree_elements.append(InputGitTreeElement(
                     path=d.a_path,
-                    mode=d.a_mode,
+                    mode='100644',
                     type='blob',
                     sha=blob.sha
                 ))
