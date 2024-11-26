@@ -100,7 +100,7 @@ class GitHubProvider:
             with open(os.path.join(repo_dir, d.b_path), "r") as f:
                 content = f.read()
                 print("====================================")
-                print(str(d.b_mode))
+                print(str(oct(d.b_mode)))
                 print("====================================")
                 item = InputGitTreeElement(
                     path=d.b_path,
