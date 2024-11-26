@@ -95,14 +95,15 @@ class GitHubProvider:
         for d in diffs:
             with open(d.a_path, "r") as f:
                 content = f.read()
+                print(content)
                 blob = self.__repo.create_git_blob(content, "utf-8")
                 tree_elements.append(InputGitTreeElement(
                     path=d.a_path,
                     mode='100644',
                     type='blob',
-                    content=content
+                    sha=blob.sha
                 ))
-            print(d.a_path)
+        print(tree_elements)
         print("=======================================================================================================")
         # repo_dir
 
@@ -113,7 +114,7 @@ class GitHubProvider:
             parents=[parent_commit]
         )
 
-        self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=commit.sha)
+        self.__repo.create_git_ref(ref=f"heads/{branch_name}", sha=commit.sha)
 
         if not self.__config.dry_run:
             logging.info(f"Changes pushed to branch {branch_name}")
