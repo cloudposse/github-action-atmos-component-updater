@@ -87,15 +87,16 @@ class GitHubProvider:
         base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
         repo = git.repo.Repo(repo_dir)
-        diff = repo.git.diff('HEAD')
+        diffs = repo.index.diff(None)
         print("=======================================================================================================")
-        print(diff)
+        for d in diffs:
+            print(d.a_path)
         print("=======================================================================================================")
         # repo_dir
 
         ref = self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
 
-        new_tree = self.__repo.create_git_tree([], base_tree.sha)
+        new_tree = self.__repo.create_git_tree([], base_tree)
         commit = self.__repo.create_git_commit(
             message=commit_message,
             tree=new_tree.sha,
