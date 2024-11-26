@@ -86,6 +86,8 @@ class GitHubProvider:
         base_branch = self.__repo.get_branch(self.__repo.default_branch)
         base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
+        parent_commit = self.__repo.get_git_commit(base_branch.commit.sha)
+
         repo = git.repo.Repo(repo_dir)
         diffs = repo.index.diff(None)
         tree_elements = []
@@ -109,7 +111,7 @@ class GitHubProvider:
         commit = self.__repo.create_git_commit(
             message=commit_message,
             tree=new_tree,
-            parents=[base_branch.commit.sha]
+            parents=[parent_commit]
         )
 
         self.__repo.update_git_ref(ref=f"heads/{branch_name}", sha=commit.sha)
