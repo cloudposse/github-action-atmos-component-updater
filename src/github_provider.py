@@ -88,7 +88,7 @@ class GitHubProvider:
 
         parent_commit = self.__repo.get_git_commit(base_branch.commit.sha)
 
-        if not self.__config.dry_run:
+        if self.__config.dry_run:
             logging.info(f"Dry run: Changes pushed to branch {branch_name}")
             return
 
