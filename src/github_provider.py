@@ -86,6 +86,7 @@ class GitHubProvider:
         base_branch = self.__repo.get_branch(self.__repo.default_branch)
         base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
+        
         self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
 
         new_tree = self.__repo.create_git_tree([], base_tree.sha)
