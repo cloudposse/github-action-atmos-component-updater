@@ -88,23 +88,24 @@ class GitHubProvider:
 
         parent_commit = self.__repo.get_git_commit(base_branch.commit.sha)
 
+        if self.__config.dry_run:
+            logging.info(f"Dry run: Changes pushed to branch {branch_name}")
+            return
+
         repo = git.repo.Repo(repo_dir)
         diffs = repo.index.diff(None)
         tree_elements = []
-        print("=======================================================================================================")
         for d in diffs:
             import os
-            with open(os.path.join(repo_dir, d.a_path), "r") as f:
+            with open(os.path.join(repo_dir, d.b_path), "r") as f:
                 content = f.read()
-                print(content)
                 item = InputGitTreeElement(
-                    path=d.a_path,
-                    mode='100644',
+                    path=d.b_path,
+                    mode=str(d.b_mode),
                     type='commit',
                     content=content
                 )
                 tree_elements.append(item)
-        print("=======================================================================================================")
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
@@ -114,9 +115,6 @@ class GitHubProvider:
         )
 
         self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=commit.sha)
-
-        if not self.__config.dry_run:
-            logging.info(f"Changes pushed to branch {branch_name}")
 
     def branch_exists(self, branch_name: str):
         remote_branch_name = f'origin/{branch_name}'
