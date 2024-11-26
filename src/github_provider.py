@@ -105,8 +105,6 @@ class GitHubProvider:
         print("=======================================================================================================")
         # repo_dir
 
-        ref = self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_branch.commit.sha)
-
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
             message=commit_message,
@@ -114,7 +112,7 @@ class GitHubProvider:
             parents=[parent_commit]
         )
 
-        self.__repo.update_git_ref(ref=f"heads/{branch_name}", sha=commit.sha)
+        self.__repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=commit.sha)
 
         if not self.__config.dry_run:
             logging.info(f"Changes pushed to branch {branch_name}")
