@@ -275,8 +275,7 @@ class ComponentUpdater:
         return needs_update
 
     def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
-        self.__github_provider.create_branch_and_push_all_changes(repo_dir,
-                                                                  branch_name,
+        self.__github_provider.create_branch_and_push_all_changes(repo_dir, branch_name,
                                                                   COMMIT_MESSAGE_TEMPLATE.format(
                                                                       component_name=updated_component.name,
                                                                       component_version=updated_component.version))

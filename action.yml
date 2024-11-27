@@ -41,10 +41,6 @@ inputs:
     description: "Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in 'outputs.affected-components-file'"
     required: false
     default: 'false'
-  gpg-key-id:
-    description: "GPG key ID to sign commits. Default ''"
-    required: false
-    default: ''
   pr-labels:
     description: "Comma or new line separated list of labels that will added on PR creation. Default: `component-update`"
     required: false
@@ -74,7 +70,6 @@ runs:
     EXCLUDE: ${{ inputs.exclude }}
     LOG_LEVEL: ${{ inputs.log-level }}
     DRY_RUN: ${{ inputs.dry-run }}
-    GPG_KEY_ID: ${{ inputs.gpg-key-id }}
     PR_LABELS: ${{ inputs.pr-labels }}
     PR_TITLE_TEMPLATE: ${{ inputs.pr-title-template }}
     PR_BODY_TEMPLATE: ${{ inputs.pr-body-template }}
