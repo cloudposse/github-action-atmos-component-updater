@@ -231,7 +231,6 @@ _And_ you need to allow GitHub Actions to create and approve pulls requests in b
 | dry-run | Skip creation of remote branches and pull requests. Only print list of affected componented into file that is defined in 'outputs.affected-components-file' | false | false |
 | exclude | Comma or new line separated list of component names to exclude. For example: 'vpc,eks/\*,rds'. By default no components are excluded. Default '' |  | false |
 | github-access-token | GitHub Token used to perform git and GitHub operations | ${{ github.token }} | false |
-| gpg-key-id | GPG key ID to sign commits. Default '' |  | false |
 | include | Comma or new line separated list of component names to include. For example: 'vpc,eks/\*,rds'. By default all components are included. Default '\*' | \* | false |
 | infra-terraform-dirs | Comma or new line separated list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform' | components/terraform | false |
 | log-level | Log level for this action. Default 'INFO' | INFO | false |
