@@ -37,3 +37,4 @@ smmap==5.0.0
 tomlkit==0.11.7
 urllib3==1.26.15
 wrapt==1.15.0
+semver==3.0.2

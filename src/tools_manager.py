@@ -1,6 +1,9 @@
 import os
 import logging
 import subprocess
+import unicodedata
+import semver
+
 from atmos_component import AtmosComponent
 
 
@@ -28,7 +31,7 @@ class ToolsManager:
             logging.error(error_message)
             logging.debug(f"Component: {component}")
             # log to debug the file at infra_terraform_dir/component.name/component.yaml
-            component_path = os.path.join(component.infra_terraform_dir, component.name, 'component.yaml')
+            component_path = os.path.join(component.infra_repo_dir, component.infra_terraform_dir, component.name, 'component.yaml')
             logging.debug(f"Content for {component_path}:")
             with open(component_path, 'r') as f:
                 logging.debug(f.read())
@@ -65,7 +68,7 @@ class ToolsManager:
         logging.debug(f"Pulled whole component repo successfully: {component.uri_repo}")
 
     def git_get_latest_tag(self, git_dir: str):
-        command = ["git", "describe", "--tags", "--abbrev=0"]
+        command = ["git", "for-each-ref", "--sort=-authordate", "--format", "'%(refname:short)'", "refs/tags"]
 
         logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
@@ -76,9 +79,17 @@ class ToolsManager:
             logging.error(error_message)
             return None
 
-        tag = response.stdout
+        tags = response.stdout.decode().split("\n")
+        for tag in tags:
+            try:
+                normalized_tag = tag.strip("'").strip('v')
+                semver.parse(normalized_tag)
+                return tag.strip("'")
+            except Exception as e:
+                logging.info(f"{e}")
+                continue
 
-        return tag.strip().decode("utf-8") if tag else None
+        return None
 
     def is_git_repo(self, repo_dir: str) -> bool:
         return os.path.exists(os.path.join(repo_dir, '.git'))

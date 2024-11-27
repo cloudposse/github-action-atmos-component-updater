@@ -9,6 +9,10 @@ inputs:
     description: "GitHub Token used to perform git and GitHub operations"
     required: false
     default: ${{ github.token }}
+  infra-repo-dir:
+    description: "Path to the infra repository. Default '/github/workspace/'"
+    required: false
+    default: '/github/workspace/'
   infra-terraform-dirs:
     description: "Comma or new line separated list of terraform directories in infra repo. For example 'components/terraform,components/terraform-old. Default 'components/terraform'"
     required: false
@@ -64,6 +68,7 @@ runs:
   env:
     GITHUB_ACCESS_TOKEN: ${{ inputs.github-access-token }}
     INFRA_TERRAFORM_DIRS: ${{ inputs.infra-terraform-dirs }}
+    INFRA_REPO_DIR: ${{ inputs.infra-repo-dir }}
     VENDORING_ENABLED: ${{ inputs.vendoring-enabled }}
     MAX_NUMBER_OF_PRS: ${{ inputs.max-number-of-prs }}
     INCLUDE: ${{ inputs.include }}

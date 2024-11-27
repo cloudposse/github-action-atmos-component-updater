@@ -131,16 +131,19 @@ class GitHubProvider:
         original_component_release_link = self.__build_component_release_tag_link(original_component)
         updated_component_release_link = self.__build_component_release_tag_link(updated_component)
 
-        source_name, source_link = self.__build_get_source(original_component)
+        old_source_name, old_source_link = self.__build_get_source(original_component)
+        new_source_name, new_source_link = self.__build_get_source(updated_component)
 
         title = self.__pr_title_template.render(component_name=original_component.name,
-                                                source_name=source_name,
+                                                source_name=old_source_name,
                                                 old_version=original_component.version,
                                                 new_version=updated_component.version)
 
         body = self.__pr_body_template.render(component_name=original_component.name,
-                                              source_name=source_name,
-                                              source_link=source_link,
+                                              old_source_name=old_source_name,
+                                              old_source_link=old_source_link,
+                                              new_source_name=new_source_name,
+                                              new_source_link=old_source_link,
                                               old_version=original_component.version,
                                               new_version=updated_component.version,
                                               old_version_link=original_component_version_link,
@@ -190,24 +193,31 @@ class GitHubProvider:
     def __build_component_version_link(self, component: AtmosComponent):
         component_version_link = None
 
+        version = component.version
+        if "cloudposse-terraform-components" not in component.uri_repo:
+            version = f"v{version.lstrip('v')}"
+
         if component.uri_repo.startswith('github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
-            component_version_link = f'https://{normalized_repo_uri}/tree/{component.version}/{component.uri_path}'
+            component_version_link = f'https://{normalized_repo_uri}/tree/{version}/{component.uri_path}'
         elif component.uri_repo.startswith('https://github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
-            component_version_link = f'{normalized_repo_uri}/tree/{component.version}/{component.uri_path}'
+            component_version_link = f'{normalized_repo_uri}/tree/{version}/{component.uri_path}'
 
         return component_version_link
 
     def __build_component_release_tag_link(self, component: AtmosComponent):
         component_release_tag_link = None
+        version = component.version
+        if "cloudposse-terraform-components" not in component.uri_repo:
+            version = f"v{version.lstrip('v')}"
 
         if component.uri_repo.startswith('github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
-            component_release_tag_link = f'https://{normalized_repo_uri}/releases/tag/{component.version}'
+            component_release_tag_link = f'https://{normalized_repo_uri}/releases/tag/{version}'
         elif component.uri_repo.startswith('https://github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
-            component_release_tag_link = f'{normalized_repo_uri}/releases/tag/{component.version}'
+            component_release_tag_link = f'{normalized_repo_uri}/releases/tag/{version}'
 
         return component_release_tag_link
 

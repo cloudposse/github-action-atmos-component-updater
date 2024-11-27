@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 import logging
@@ -6,7 +7,7 @@ from typing import List, Optional
 from enum import Enum
 from tools_manager import ToolsManager, ToolExecutionError
 from utils import io
-from atmos_component import AtmosComponent, COMPONENT_YAML
+from atmos_component import AtmosComponent, COMPONENT_YAML, README_EXTENTION
 from github_provider import GitHubProvider, PullRequestCreationResponse
 from config import Config
 
@@ -142,7 +143,10 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.NOT_VALID_URI_FOUND_IN_SOURCE_YAML
             return response
 
-        repo_dir = self.__fetch_component_repo(original_component) if not self.__config.skip_component_repo_fetching else self.__config.components_download_dir
+        migrated_component = copy.deepcopy(original_component)
+        migrated_component.migrate()
+
+        repo_dir = self.__fetch_component_repo(migrated_component) if not self.__config.skip_component_repo_fetching else self.__config.components_download_dir
 
         if not self.__tools_manager.is_git_repo(repo_dir):
             logging.error(f"Component '{original_component.name}' uri is not git repo. Can't figure out latest version. Skipping")
@@ -150,6 +154,7 @@ class ComponentUpdater:
             return response
 
         latest_tag = self.__tools_manager.git_get_latest_tag(repo_dir)
+        logging.info(f"Latest tag for component '{original_component.name}' is '{latest_tag}'")
 
         if not latest_tag:
             logging.error(f"Unable to figure out latest tag for component '{original_component.name}' source uri. Skipping")
@@ -161,7 +166,8 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.ALREADY_UP_TO_DATE
             return response
 
-        updated_component = self.__clone_infra_for_component(infra_terraform_dir, original_component)
+        updated_component = self.__clone_infra_for_component(infra_terraform_dir, migrated_component)
+        updated_component.migrate()
 
         logging.debug(f"Updated component:\n{str(updated_component)}")
 
@@ -251,6 +257,9 @@ class ComponentUpdater:
         for updated_file in updated_files:
             # skip "component.yaml"
             if updated_file.endswith(COMPONENT_YAML):
+                continue
+
+            if updated_file.endswith(README_EXTENTION):
                 continue
 
             # skip folders
