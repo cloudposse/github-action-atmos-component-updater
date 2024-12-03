@@ -153,9 +153,9 @@ class GitHubProvider:
 
         response = PullRequestCreationResponse(branch_name, title, body, self.__config.pr_labels)
 
-        # if self.__config.dry_run:
-        #     logging.info("Skipping pull request creation in dry-run mode")
-        #     return response
+        if self.__config.dry_run:
+            logging.info("Skipping pull request creation in dry-run mode")
+            return response
 
         branch = self.__repo.get_branch(branch_name)
 
