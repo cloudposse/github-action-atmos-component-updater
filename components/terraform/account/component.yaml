@@ -11,8 +11,8 @@ spec:
     # and all URL and archive formats as described in https://github.com/hashicorp/go-getter
     # In 'uri', Golang templates are supported  https://pkg.go.dev/text/template
     # If 'version' is provided, {{ .Version }} will be replaced with the 'version' value before pulling the files from 'uri'
-    uri: github.com/cloudposse/terraform-aws-components.git//modules/account?ref={{ .Version }}
-    version: 1.107.0
+    uri: github.com/cloudposse-terraform-components/aws-eks-argocd.git//src?ref={{ .Version }}
+    version: v1.532.0
     # Only include the files that match the 'included_paths' patterns
     # If 'included_paths' is not specified, all files will be matched except those that match the patterns from 'excluded_paths'
     # 'included_paths' support POSIX-style Globs for file names/paths (double-star `**` is supported)
@@ -24,3 +24,4 @@ spec:
     # Note that we are excluding 'context.tf' since a newer version of it will be downloaded using 'mixins'
     # 'excluded_paths' support POSIX-style Globs for file names/paths (double-star `**` is supported)
     excluded_paths: []
+
