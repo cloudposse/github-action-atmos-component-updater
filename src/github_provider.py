@@ -93,19 +93,28 @@ class GitHubProvider:
             return
 
         repo = git.repo.Repo(repo_dir)
-        diffs = repo.index.diff(None)
+        repo.git.add(A=True)
+        logging.info("=======================================")
+        logging.info(repo.index.entries)
+        logging.info("=======================================")
         tree_elements = []
-        for d in diffs:
-            import os
-            with open(os.path.join(repo_dir, d.b_path), "r") as f:
-                content = f.read()
+        import os
+        import base64
+        for key, value in repo.index.entries.items():
+            file_path = os.path.join(repo_dir, value.path)
+            if os.path.getsize(file_path) > 100000000:
+                raise Exception("File size limit reached! File '{}' is larger than 100MB.".format(value.path))
+            with open(file_path, "rb") as f:
+                data = base64.b64encode(f.read())
+                blob = self.__repo.create_git_blob(content=data.decode("utf-8"), encoding='base64')
                 item = InputGitTreeElement(
-                    path=d.b_path,
-                    mode=str(oct(d.b_mode))[2:],
-                    type='commit',
-                    content=content
+                    path=value.path,
+                    mode=str(oct(value.mode))[2:],
+                    type='blob',
+                    sha=blob.sha
                 )
                 tree_elements.append(item)
+        logging.info("=======================================")
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
