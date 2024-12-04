@@ -94,6 +94,9 @@ class GitHubProvider:
 
         repo = git.repo.Repo(repo_dir)
         repo.git.add(A=True)
+        logging.info("=======================================")
+        logging.info(repo.index.entries)
+        logging.info("=======================================")
         tree_elements = []
         for key, value in repo.index.entries:
             import os
