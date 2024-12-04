@@ -94,18 +94,15 @@ class GitHubProvider:
 
         repo = git.repo.Repo(repo_dir)
         repo.git.add(A=True)
-        logging.info(repo.index.entries)
-        diffs = repo.index.diff(None)
         tree_elements = []
-        logging.info("=======================================")
-        for d in diffs:
+        for key, value in repo.index.entries:
             import os
-            logging.info(d.b_path)
-            with open(os.path.join(repo_dir, d.b_path), "r") as f:
+            logging.info(key[0])
+            with open(os.path.join(repo_dir, key[0]), "r") as f:
                 content = f.read()
                 item = InputGitTreeElement(
-                    path=d.b_path,
-                    mode=str(oct(d.b_mode))[2:],
+                    path=key[0],
+                    mode=str(value[0]),
                     type='commit',
                     content=content
                 )
