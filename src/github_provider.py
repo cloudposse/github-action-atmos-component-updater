@@ -98,7 +98,8 @@ class GitHubProvider:
         logging.info(repo.index.entries)
         logging.info("=======================================")
         tree_elements = []
-        for value in repo.index.entries:
+        for key, value in repo.index.entries.items():
+            logging.info(key)
             logging.info(value)
             # import os
             # with open(os.path.join(repo_dir, key[0]), "r") as f:
