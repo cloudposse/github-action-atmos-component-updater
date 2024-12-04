@@ -94,6 +94,7 @@ class GitHubProvider:
 
         repo = git.repo.Repo(repo_dir)
         repo.git.add(A=True)
+        logging.info(repo.index.entries)
         diffs = repo.index.diff(None)
         tree_elements = []
         logging.info("=======================================")
