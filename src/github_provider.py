@@ -98,19 +98,17 @@ class GitHubProvider:
         logging.info(repo.index.entries)
         logging.info("=======================================")
         tree_elements = []
+        import os
         for key, value in repo.index.entries.items():
-            logging.info(key)
-            logging.info(value)
-            # import os
-            # with open(os.path.join(repo_dir, key[0]), "r") as f:
-            #     content = f.read()
-            #     item = InputGitTreeElement(
-            #         path=key[0],
-            #         mode=str(value[0]),
-            #         type='commit',
-            #         content=content
-            #     )
-            #     tree_elements.append(item)
+            with open(os.path.join(repo_dir, value.path), "r") as f:
+                content = f.read()
+                item = InputGitTreeElement(
+                    path=value.path,
+                    mode=str(value.mode),
+                    type='commit',
+                    content=content
+                )
+                tree_elements.append(item)
         logging.info("=======================================")
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
