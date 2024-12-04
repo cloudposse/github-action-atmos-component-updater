@@ -247,12 +247,20 @@ class ComponentUpdater:
 
         update_infra_repo_dir = io.create_tmp_dir()
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
+        io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
         if clean:
             source_file = os.path.join(component.infra_repo_dir, component.relative_path)
-            os.makedirs(os.path.dirname(component_file), exist_ok=True)
+            component_folder = os.path.dirname(component_file)
+            for filename in os.listdir(component_folder):
+                file_path = os.path.join(component_folder, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    logging.error('Failed to delete {file_path}. Reason: {e}')
             shutil.copyfile(source_file, component_file)
-        else:
-            io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
 
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
