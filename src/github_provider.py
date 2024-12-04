@@ -96,8 +96,10 @@ class GitHubProvider:
         repo.git.add(A=True)
         diffs = repo.index.diff(None)
         tree_elements = []
+        logging.info("=======================================")
         for d in diffs:
             import os
+            logging.info(d.b_path)
             with open(os.path.join(repo_dir, d.b_path), "r") as f:
                 content = f.read()
                 item = InputGitTreeElement(
@@ -107,6 +109,7 @@ class GitHubProvider:
                     content=content
                 )
                 tree_elements.append(item)
+        logging.info("=======================================")
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
