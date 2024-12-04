@@ -182,10 +182,10 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXISTS
             return response
 
-        if self.__github_provider.pr_for_branch_exists(branch_name):
-            logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
-            response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
-            return response
+        # if self.__github_provider.pr_for_branch_exists(branch_name):
+        #     logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
+        #     response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
+        #     return response
 
         updated_component.update_version(latest_tag)
         updated_component.persist()
