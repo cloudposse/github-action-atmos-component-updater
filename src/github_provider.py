@@ -93,10 +93,7 @@ class GitHubProvider:
             return
 
         repo = git.repo.Repo(repo_dir)
-        logging.info("==============================================================")
-        logging.info(repo.untracked_files)
-        logging.info("==============================================================")
-        repo.index.add(repo.untracked_files)
+        repo.git.add(A=True)
         diffs = repo.index.diff(None)
         tree_elements = []
         for d in diffs:
