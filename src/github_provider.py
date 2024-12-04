@@ -109,7 +109,7 @@ class GitHubProvider:
                 blob = self.__repo.create_git_blob(content=data.decode("utf-8"), encoding='base64')
                 item = InputGitTreeElement(
                     path=value.path,
-                    mode=str(value.mode),
+                    mode=str(oct(value.mode))[2:],
                     type='blob',
                     sha=blob.sha
                 )
