@@ -248,7 +248,8 @@ class ComponentUpdater:
         update_infra_repo_dir = io.create_tmp_dir()
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
         if clean:
-            source_file = os.path.join(component.infra_repo_dir, infra_terraform_dir, component.relative_path)
+            source_file = os.path.join(component.infra_repo_dir, component.relative_path)
+            os.makedirs(os.path.dirname(component_file), exist_ok=True)
             shutil.copyfile(source_file, component_file)
         else:
             io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
