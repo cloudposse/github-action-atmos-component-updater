@@ -191,7 +191,7 @@ class ComponentUpdater:
         updated_component.persist()
 
         original_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, original_component)
-        updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, updated_component)
+        updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, updated_component, clean=True)
 
         logging.debug(f"Original re-vendored component:\n{str(original_vendored_component)}")
         logging.debug(f"Updated re-vendored component:\n{str(updated_vendored_component)}")
@@ -242,10 +242,17 @@ class ComponentUpdater:
         self.__tools_manager.go_getter_pull_component_repo(component, normalized_repo_path, self.__config.components_download_dir)
         return os.path.join(self.__config.components_download_dir, normalized_repo_path)
 
-    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent):
+    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent, clean=False) -> AtmosComponent:
+        import shutil
+
         update_infra_repo_dir = io.create_tmp_dir()
-        io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
+        if clean:
+            source_file = os.path.join(component.infra_repo_dir, component.relative_path)
+            shutil.copyfile(source_file, component_file)
+        else:
+            io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
+
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
     def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> bool:
