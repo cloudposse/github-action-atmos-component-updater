@@ -182,16 +182,16 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXISTS
             return response
 
-        if self.__github_provider.pr_for_branch_exists(branch_name):
-            logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
-            response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
-            return response
+        # if self.__github_provider.pr_for_branch_exists(branch_name):
+        #     logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
+        #     response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
+        #     return response
 
         updated_component.update_version(latest_tag)
         updated_component.persist()
 
         original_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, original_component)
-        updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, updated_component)
+        updated_vendored_component: AtmosComponent = self.__clone_infra_for_component(infra_terraform_dir, updated_component, clean=True)
 
         logging.debug(f"Original re-vendored component:\n{str(original_vendored_component)}")
         logging.debug(f"Updated re-vendored component:\n{str(updated_vendored_component)}")
@@ -213,16 +213,16 @@ class ComponentUpdater:
 
         if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
             if self.__config.vendoring_enabled:
-                self.__tools_manager.atmos_vendor_component(updated_component)
+                self.__tools_manager.atmos_vendor_component(updated_vendored_component)
             else:
                 if self.__is_vendored(original_component, original_vendored_component):
                     logging.error(f"Component '{original_component.name}' is vendored but vendoring disabled. Skipping")
                     response.state = ComponentUpdaterResponseState.COMPONENT_VENDORED_BUT_VENDORING_DISABLED
                     return response
 
-            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
-                                                                                                      original_component,
-                                                                                                      updated_component,
+            pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_vendored_component.infra_repo_dir,
+                                                                                                      original_vendored_component,
+                                                                                                      updated_vendored_component,
                                                                                                       branch_name)
             response.pull_request_creation_response = pull_request_creation_response
 
@@ -242,10 +242,26 @@ class ComponentUpdater:
         self.__tools_manager.go_getter_pull_component_repo(component, normalized_repo_path, self.__config.components_download_dir)
         return os.path.join(self.__config.components_download_dir, normalized_repo_path)
 
-    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent):
+    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent, clean=False) -> AtmosComponent:
+        import shutil
+
         update_infra_repo_dir = io.create_tmp_dir()
-        io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
+        io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
+        if clean:
+            source_file = os.path.join(component.infra_repo_dir, component.relative_path)
+            component_folder = os.path.dirname(component_file)
+            for filename in os.listdir(component_folder):
+                file_path = os.path.join(component_folder, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    logging.error('Failed to delete {file_path}. Reason: {e}')
+            shutil.copyfile(source_file, component_file)
+
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
     def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> bool:
