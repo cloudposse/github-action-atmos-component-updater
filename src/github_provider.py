@@ -97,6 +97,10 @@ class GitHubProvider:
         logging.info("=======================================")
         logging.info(repo.index.entries)
         logging.info("=======================================")
+        import glob
+        files = glob.glob(repo_dir + '/**/*', recursive=True)
+        logging.info(files)
+        logging.info("=======================================")
         tree_elements = []
         import os
         import base64
