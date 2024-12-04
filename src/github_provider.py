@@ -99,14 +99,19 @@ class GitHubProvider:
         logging.info("=======================================")
         tree_elements = []
         import os
+        import base64
         for key, value in repo.index.entries.items():
-            with open(os.path.join(repo_dir, value.path), "r") as f:
-                content = f.read()
+            file_path = os.path.join(repo_dir, value.path)
+            if os.path.getsize(file_path) > 100000000:
+                raise Exception("File size limit reached! File '{}' is larger than 100MB.".format(value.path))
+            with open(file_path, "rb") as f:
+                data = base64.b64encode(f.read())
+                blob = self.__repo.create_git_blob(content=data.decode("utf-8"), encoding='base64')
                 item = InputGitTreeElement(
                     path=value.path,
                     mode=str(value.mode),
-                    type='commit',
-                    content=content
+                    type='blob',
+                    sha=blob.sha
                 )
                 tree_elements.append(item)
         logging.info("=======================================")
