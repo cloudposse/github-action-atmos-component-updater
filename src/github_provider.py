@@ -123,7 +123,7 @@ class GitHubProvider:
                 path=file,
                 mode='100644',
                 type='blob',
-                sha='null'
+                sha=None
             )
             logging.info(item)
             tree_elements.append(item)
