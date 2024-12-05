@@ -93,18 +93,13 @@ class GitHubProvider:
             return
 
         repo = git.repo.Repo(repo_dir)
-        logging.info("=======================================")
-        for x in repo.index.diff(None):
-            logging.info(f"{x.a_path} {x.a_mode}")
-            logging.info(f"{x.b_path} {x.b_mode}")
+        files_to_remove = []
+
+        for diff in repo.index.diff(None):
+            if diff.b_mode == 0 and diff.b_blob is None:
+                files_to_remove.append(diff.b_path)
+
         repo.git.add(A=True)
-        logging.info("=======================================")
-        logging.info(repo.index.entries)
-        logging.info("=======================================")
-        import glob
-        files = glob.glob(repo_dir + '/**/*', recursive=True)
-        logging.info(files)
-        logging.info("=======================================")
         tree_elements = []
         import os
         import base64
@@ -122,6 +117,15 @@ class GitHubProvider:
                     sha=blob.sha
                 )
                 tree_elements.append(item)
+        for file in files_to_remove:
+            item = InputGitTreeElement(
+                path=file,
+                mode='100644',
+                type='blob',
+                sha=None
+            )
+            tree_elements.append(item)
+
         logging.info("=======================================")
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
