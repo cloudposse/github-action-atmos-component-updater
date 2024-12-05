@@ -94,11 +94,11 @@ class GitHubProvider:
             logging.info(f"Dry run: Changes pushed to branch {branch_name}")
             return
 
-        files_to_remove = []
-
-        for diff in repo.index.diff(None):
-            if diff.b_mode == 0 and diff.b_blob is None:
-                files_to_remove.append(diff.b_path)
+        # files_to_remove = []
+        #
+        # for diff in repo.index.diff(None):
+        #     if diff.b_mode == 0 and diff.b_blob is None:
+        #         files_to_remove.append(diff.b_path)
 
         repo.git.add(A=True)
         tree_elements = []
