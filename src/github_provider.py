@@ -85,7 +85,7 @@ class GitHubProvider:
     def create_branch_and_push_all_changes(self, repo_dir, branch_name: str, commit_message: str):
         repo = git.repo.Repo(repo_dir)
 
-        base_branch = self.__repo.get_branch(repo.active_branch)
+        base_branch = self.__repo.get_branch(repo.active_branch.name)
         base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
         parent_commit = self.__repo.get_git_commit(base_branch.commit.sha)
