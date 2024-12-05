@@ -290,7 +290,8 @@ class ComponentUpdater:
         logging.info(f"Created branch: {branch_name} in 'origin'")
         logging.info(f"Opening PR for branch {branch_name}")
 
-        pull_request_creation_response: PullRequestCreationResponse = self.__github_provider.open_pr(branch_name,
+        pull_request_creation_response: PullRequestCreationResponse = self.__github_provider.open_pr(repo_dir,
+                                                                                                     branch_name,
                                                                                                      original_component,
                                                                                                      updated_component)
         if not self.__config.dry_run and pull_request_creation_response.pull_request:

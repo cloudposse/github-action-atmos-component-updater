@@ -146,6 +146,7 @@ class GitHubProvider:
         return branch_name in self.__branches or remote_branch_name in self.__branches
 
     def open_pr(self,
+                repo_dir,
                 branch_name: str,
                 original_component: AtmosComponent,
                 updated_component: AtmosComponent) -> PullRequestCreationResponse:
@@ -182,10 +183,10 @@ class GitHubProvider:
             return response
 
         branch = self.__repo.get_branch(branch_name)
-
+        repo = git.repo.Repo(repo_dir)
         pull_request: PullRequest = self.__repo.create_pull(title=title,
                                                             body=body,
-                                                            base=self.__repo.default_branch,
+                                                            base=repo.active_branch.name,
                                                             head=branch.name)
 
         pull_request.add_to_labels(*self.__config.pr_labels)
