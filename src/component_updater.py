@@ -182,10 +182,10 @@ class ComponentUpdater:
             response.state = ComponentUpdaterResponseState.REMOTE_BRANCH_FOR_COMPONENT_UPDATER_ALREADY_EXISTS
             return response
 
-        if self.__github_provider.pr_for_branch_exists(branch_name):
-            logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
-            response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
-            return response
+        # if self.__github_provider.pr_for_branch_exists(branch_name):
+        #     logging.warning(f"PR for branch '{branch_name}' already exists. Skipping")
+        #     response.state = ComponentUpdaterResponseState.PR_FOR_BRANCH_ALREADY_EXISTS
+        #     return response
 
         updated_component.update_version(latest_tag)
         updated_component.persist()
@@ -242,10 +242,10 @@ class ComponentUpdater:
         self.__tools_manager.go_getter_pull_component_repo(component, normalized_repo_path, self.__config.components_download_dir)
         return os.path.join(self.__config.components_download_dir, normalized_repo_path)
 
-    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent):
+    def __clone_infra_for_component(self, infra_terraform_dir: str, component: AtmosComponent) -> AtmosComponent:
         update_infra_repo_dir = io.create_tmp_dir()
-        io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
+        io.copy_dirs(component.infra_repo_dir, update_infra_repo_dir)
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
     def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> bool:
