@@ -5,12 +5,12 @@ This is an auto-generated PR that updates component `{{ component_name }}` to ve
 | Meta               | Details                                |
 |:-------------------|:---------------------------------------|
 | **Component**      | `{{ component_name }}`                 |
-{%- if new_source_name == old_source_name -%}
+{%- if new_source_name == old_source_name %}
 | **Source**         | [{{ old_source_name }}]({{ old_source_link }}) |
-{%- else -%}
+{%- else %}
 | **Old Source**         | [{{ old_source_name }}]({{ old_source_link }}) |
 | **New Source**         | [{{ new_source_name }}]({{ new_source_link }}) |
-{%- endif -%}
+{%- endif %}
 | **Old Version**    | {% if old_version_link is defined %}[`{{ old_version }}`]({{ old_version_link }}){% else %}`{{ old_version }}`{% endif %}{% if old_component_release_link is defined %}, [Release notes]({{ old_component_release_link }}){% endif %} |
 | **New Version**    | {% if new_version_link is defined %}[`{{ new_version }}`]({{ new_version_link }}){% else %}`{{ new_version }}`{% endif %}{% if new_component_release_link is defined %}, [Release notes]({{ new_component_release_link }}){% endif %} |
 
