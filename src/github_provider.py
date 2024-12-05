@@ -118,16 +118,17 @@ class GitHubProvider:
                     sha=blob.sha
                 )
                 tree_elements.append(item)
-        # for file in files_to_remove:
-        #     logging.info(file)
-        #     item = InputGitTreeElement(
-        #         path=file,
-        #         mode='100644',
-        #         type='blob',
-        #         sha=None
-        #     )
-        #     logging.info(item)
-        #     tree_elements.append(item)
+
+        for file in files_to_remove:
+            logging.info(file)
+            item = InputGitTreeElement(
+                path=file,
+                mode='100644',
+                type='blob',
+                sha=None
+            )
+            logging.info(item)
+            tree_elements.append(item)
 
         logging.info("=======================================")
         # repo_dir
