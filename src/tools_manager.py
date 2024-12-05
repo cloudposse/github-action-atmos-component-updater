@@ -1,8 +1,8 @@
 import os
 import logging
 import subprocess
-import unicodedata
 import semver
+import shutil
 
 from atmos_component import AtmosComponent
 
@@ -18,6 +18,21 @@ class ToolsManager:
         self.__go_getter_tool = go_getter_tool
 
     def atmos_vendor_component(self, component: AtmosComponent):
+        # Delete all files in the component folder except the component.yaml file
+        # Until atmos issue would be solved https://github.com/cloudposse/atmos/issues/821
+        component_folder = os.path.dirname(component.component_file)
+        for filename in os.listdir(component_folder):
+            file_path = os.path.join(component_folder, filename)
+            if file_path == component.component_file:
+                continue
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                logging.error('Failed to delete {file_path}. Reason: {e}')
+
         os.environ['ATMOS_COMPONENTS_TERRAFORM_BASE_PATH'] = component.infra_terraform_dir
         command = ["atmos", "vendor", "pull", "-c", component.name]
 
@@ -68,7 +83,7 @@ class ToolsManager:
         logging.debug(f"Pulled whole component repo successfully: {component.uri_repo}")
 
     def git_get_latest_tag(self, git_dir: str):
-        command = ["git", "for-each-ref", "--sort=-authordate", "--format", "'%(refname:short)'", "refs/tags"]
+        command = ["git", "for-each-ref", "--sort=-version:refname", "--format", "'%(refname:short)'", "refs/tags"]
 
         logging.debug(f"Executing: '{' '.join(command)}' ... ")
 

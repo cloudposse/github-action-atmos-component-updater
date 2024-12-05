@@ -1,5 +1,7 @@
 import re
 import logging
+import os
+import base64
 from typing import Optional, Tuple, List
 import jinja2
 import git.repo
@@ -83,7 +85,9 @@ class GitHubProvider:
         return set(branches)
 
     def create_branch_and_push_all_changes(self, repo_dir, branch_name: str, commit_message: str):
-        base_branch = self.__repo.get_branch(self.__repo.default_branch)
+        repo = git.repo.Repo(repo_dir)
+
+        base_branch = self.__repo.get_branch(repo.active_branch.name)
         base_tree = self.__repo.get_git_tree(base_branch.commit.sha)
 
         parent_commit = self.__repo.get_git_commit(base_branch.commit.sha)
@@ -92,20 +96,41 @@ class GitHubProvider:
             logging.info(f"Dry run: Changes pushed to branch {branch_name}")
             return
 
-        repo = git.repo.Repo(repo_dir)
-        diffs = repo.index.diff(None)
+        files_to_remove = []
+
+        for diff in repo.index.diff(None):
+            if diff.b_mode == 0 and diff.b_blob is None:
+                files_to_remove.append(diff.b_path)
+
+        repo.git.add(A=True)
         tree_elements = []
-        for d in diffs:
-            import os
-            with open(os.path.join(repo_dir, d.b_path), "r") as f:
-                content = f.read()
+
+        for key, value in repo.index.entries.items():
+            file_path = os.path.join(repo_dir, value.path)
+            if os.path.getsize(file_path) > 100000000:
+                raise Exception("File size limit reached! File '{}' is larger than 100MB.".format(value.path))
+
+            with open(file_path, "rb") as f:
+                data = base64.b64encode(f.read())
+                blob = self.__repo.create_git_blob(content=data.decode("utf-8"), encoding='base64')
                 item = InputGitTreeElement(
-                    path=d.b_path,
-                    mode=str(oct(d.b_mode))[2:],
-                    type='commit',
-                    content=content
+                    path=value.path,
+                    mode=str(oct(value.mode))[2:],
+                    type='blob',
+                    sha=blob.sha
                 )
                 tree_elements.append(item)
+
+        for file in files_to_remove:
+            logging.debug(f"Delete file {file}")
+            item = InputGitTreeElement(
+                path=file,
+                mode='100644',
+                type='blob',
+                sha=None
+            )
+            tree_elements.append(item)
+
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
@@ -122,6 +147,7 @@ class GitHubProvider:
         return branch_name in self.__branches or remote_branch_name in self.__branches
 
     def open_pr(self,
+                repo_dir,
                 branch_name: str,
                 original_component: AtmosComponent,
                 updated_component: AtmosComponent) -> PullRequestCreationResponse:
@@ -158,10 +184,10 @@ class GitHubProvider:
             return response
 
         branch = self.__repo.get_branch(branch_name)
-
+        repo = git.repo.Repo(repo_dir)
         pull_request: PullRequest = self.__repo.create_pull(title=title,
                                                             body=body,
-                                                            base=self.__repo.default_branch,
+                                                            base=repo.active_branch.name,
                                                             head=branch.name)
 
         pull_request.add_to_labels(*self.__config.pr_labels)
