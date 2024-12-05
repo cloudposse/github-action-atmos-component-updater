@@ -93,6 +93,8 @@ class GitHubProvider:
             return
 
         repo = git.repo.Repo(repo_dir)
+        logging.info("=======================================")
+        logging.info(repo.index.diff(None))
         repo.git.add(A=True)
         logging.info("=======================================")
         logging.info(repo.index.entries)
