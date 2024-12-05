@@ -94,7 +94,9 @@ class GitHubProvider:
 
         repo = git.repo.Repo(repo_dir)
         logging.info("=======================================")
-        logging.info(list(repo.index.diff(None)))
+        for x in repo.index.diff(None):
+            logging.info(f"{x.a_path} {x.a_mode}")
+            logging.info(f"{x.b_path} {x.b_mode}")
         repo.git.add(A=True)
         logging.info("=======================================")
         logging.info(repo.index.entries)
