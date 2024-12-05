@@ -104,10 +104,8 @@ class ComponentUpdater:
                 for file in files:
                     if file == COMPONENT_YAML:
                         component_name = os.path.relpath(root, infra_components_dir)
-
                         if not self.__should_component_be_processed(component_name):
                             continue
-
                         component_yaml_paths.append(os.path.join(root, file))
         except FileNotFoundError as error:
             logging.error(f"Could not get components from '{infra_components_dir}': {error}")
