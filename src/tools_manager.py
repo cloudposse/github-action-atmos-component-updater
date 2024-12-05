@@ -1,8 +1,8 @@
 import os
 import logging
 import subprocess
-import unicodedata
 import semver
+import shutil
 
 from atmos_component import AtmosComponent
 
@@ -18,7 +18,8 @@ class ToolsManager:
         self.__go_getter_tool = go_getter_tool
 
     def atmos_vendor_component(self, component: AtmosComponent):
-        import shutil
+        # Delete all files in the component folder except the component.yaml file
+        # Until atmos issue would be solved https://github.com/cloudposse/atmos/issues/821
         component_folder = os.path.dirname(component.component_file)
         for filename in os.listdir(component_folder):
             file_path = os.path.join(component_folder, filename)

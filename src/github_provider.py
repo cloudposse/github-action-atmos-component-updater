@@ -1,5 +1,7 @@
 import re
 import logging
+import os
+import base64
 from typing import Optional, Tuple, List
 import jinja2
 import git.repo
@@ -102,12 +104,12 @@ class GitHubProvider:
 
         repo.git.add(A=True)
         tree_elements = []
-        import os
-        import base64
+
         for key, value in repo.index.entries.items():
             file_path = os.path.join(repo_dir, value.path)
             if os.path.getsize(file_path) > 100000000:
                 raise Exception("File size limit reached! File '{}' is larger than 100MB.".format(value.path))
+
             with open(file_path, "rb") as f:
                 data = base64.b64encode(f.read())
                 blob = self.__repo.create_git_blob(content=data.decode("utf-8"), encoding='base64')
@@ -120,17 +122,15 @@ class GitHubProvider:
                 tree_elements.append(item)
 
         for file in files_to_remove:
-            logging.info(file)
+            logging.debug(f"Delete file {file}")
             item = InputGitTreeElement(
                 path=file,
                 mode='100644',
                 type='blob',
                 sha=None
             )
-            logging.info(item)
             tree_elements.append(item)
 
-        logging.info("=======================================")
         # repo_dir
         new_tree = self.__repo.create_git_tree(tree_elements, base_tree)
         commit = self.__repo.create_git_commit(
