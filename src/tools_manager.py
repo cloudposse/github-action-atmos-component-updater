@@ -83,7 +83,7 @@ class ToolsManager:
         logging.debug(f"Pulled whole component repo successfully: {component.uri_repo}")
 
     def git_get_latest_tag(self, git_dir: str):
-        command = ["git", "for-each-ref", "--sort=-authordate", "--format", "'%(refname:short)'", "refs/tags"]
+        command = ["git", "for-each-ref", "--sort=-version:refname", "--format", "'%(refname:short)'", "refs/tags"]
 
         logging.debug(f"Executing: '{' '.join(command)}' ... ")
 
