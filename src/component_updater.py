@@ -276,9 +276,9 @@ class ComponentUpdater:
             relative_path = os.path.relpath(updated_file, updated_component.infra_repo_dir)
             original_file = os.path.join(original_component.infra_repo_dir, relative_path)
 
+            files_to_update.append(relative_path)
             if not os.path.isfile(original_file):
                 logging.info(f"New file: {relative_path}")
-                files_to_update.append(relative_path)
                 needs_update = True
                 continue
 
@@ -287,7 +287,6 @@ class ComponentUpdater:
                 if num_diffs < MAX_NUMBER_OF_DIFF_TO_SHOW:
                     logging.info(f"diff: {self.__tools_manager.diff(original_file, updated_file)}")
                     num_diffs += 1
-                files_to_update.append(relative_path)
                 needs_update = True
 
         for original_file in original_files:
@@ -304,7 +303,6 @@ class ComponentUpdater:
         if needs_update:
             logging.info(f"Component '{os.path.relpath(original_component.component_file, original_component.infra_repo_dir)}' needs to be updated")
             files_to_update.append(os.path.relpath(original_component.component_file, original_component.infra_repo_dir))
-
 
         return (needs_update, files_to_update, files_to_remove)
 
