@@ -299,6 +299,7 @@ class ComponentUpdater:
                 continue
 
         if needs_update:
+            logging.info(f"Component '{original_component.component_file}' needs to be updated")
             files_to_update.append(original_component.component_file)
 
         return (needs_update, files_to_update, files_to_remove)
