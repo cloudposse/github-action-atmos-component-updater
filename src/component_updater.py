@@ -299,8 +299,8 @@ class ComponentUpdater:
                 continue
 
         if needs_update:
-            logging.info(f"Component '{original_component.component_file}' needs to be updated")
-            files_to_update.append(original_component.component_file)
+            logging.info(f"Component '{os.path.relpath(original_component.component_file, original_component.infra_repo_dir)}' needs to be updated")
+            files_to_update.append(os.path.relpath(original_component.component_file, original_component.infra_repo_dir))
 
         return (needs_update, files_to_update, files_to_remove)
 
