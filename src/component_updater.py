@@ -208,8 +208,8 @@ class ComponentUpdater:
         # - vendoring_enabled = false
         #   - component vendored     => skip component
         #   - component not vendored => do not vendor
-
-        if self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component):
+        needs_update, files_to_update, files_to_remove = self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component)
+        if needs_update:
             if self.__config.vendoring_enabled:
                 self.__tools_manager.atmos_vendor_component(updated_component)
             else:
@@ -219,6 +219,8 @@ class ComponentUpdater:
                     return response
 
             pull_request_creation_response: PullRequestCreationResponse = self.__create_branch_and_pr(updated_component.infra_repo_dir,
+                                                                                                      files_to_update,
+                                                                                                      files_to_remove,
                                                                                                       original_component,
                                                                                                       updated_component,
                                                                                                       branch_name)
@@ -246,11 +248,15 @@ class ComponentUpdater:
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
-    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> bool:
+    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> (bool, list(str), list(str)):
         updated_files = io.get_filenames_in_dir(updated_component.component_dir, ['**/*'])
+        original_files = io.get_filenames_in_dir(original_component.component_dir, ['**/*'])
 
         needs_update = False
         num_diffs = 0
+
+        files_to_update = []
+        files_to_remove = []
 
         for updated_file in updated_files:
             # skip "component.yaml"
@@ -269,6 +275,7 @@ class ComponentUpdater:
 
             if not os.path.isfile(original_file):
                 logging.info(f"New file: {relative_path}")
+                files_to_update.append(relative_path)
                 needs_update = True
                 continue
 
@@ -277,12 +284,26 @@ class ComponentUpdater:
                 if num_diffs < MAX_NUMBER_OF_DIFF_TO_SHOW:
                     logging.info(f"diff: {self.__tools_manager.diff(original_file, updated_file)}")
                     num_diffs += 1
+                files_to_update.append(relative_path)
                 needs_update = True
 
-        return needs_update
+        for original_file in original_files:
+            relative_path = os.path.relpath(original_file, original_component.infra_repo_dir)
+            updated_file = os.path.join(updated_component.infra_repo_dir, relative_path)
 
-    def __create_branch_and_pr(self, repo_dir, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
-        self.__github_provider.create_branch_and_push_all_changes(repo_dir, branch_name,
+            if not os.path.isfile(updated_file):
+                logging.info(f"Remove file: {relative_path}")
+                files_to_remove.append(relative_path)
+                needs_update = True
+                continue
+
+        return needs_update, files_to_update, files_to_remove
+
+    def __create_branch_and_pr(self, repo_dir, files_to_update: list(str), files_to_remove: list(str), original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
+        self.__github_provider.create_branch_and_push_all_changes(repo_dir,
+                                                                  files_to_update,
+                                                                  files_to_remove,
+                                                                  branch_name,
                                                                   COMMIT_MESSAGE_TEMPLATE.format(
                                                                       component_name=updated_component.name,
                                                                       component_version=updated_component.version))
