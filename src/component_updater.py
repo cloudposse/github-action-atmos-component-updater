@@ -248,7 +248,7 @@ class ComponentUpdater:
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
-    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent) -> (bool, list(str), list(str)):
+    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent):
         updated_files = io.get_filenames_in_dir(updated_component.component_dir, ['**/*'])
         original_files = io.get_filenames_in_dir(original_component.component_dir, ['**/*'])
 
@@ -297,7 +297,7 @@ class ComponentUpdater:
                 needs_update = True
                 continue
 
-        return needs_update, files_to_update, files_to_remove
+        return (needs_update, files_to_update, files_to_remove)
 
     def __create_branch_and_pr(self, repo_dir, files_to_update, files_to_remove, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
         self.__github_provider.create_branch_and_push_all_changes(repo_dir,
