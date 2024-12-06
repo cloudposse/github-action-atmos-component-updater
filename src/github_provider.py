@@ -84,7 +84,7 @@ class GitHubProvider:
 
         return set(branches)
 
-    def create_branch_and_push_all_changes(self, repo_dir, branch_name: str, commit_message: str):
+    def create_branch_and_push_all_changes(self, repo_dir, files_to_update, files_to_remove, branch_name: str, commit_message: str):
         repo = git.repo.Repo(repo_dir)
 
         base_branch = self.__repo.get_branch(repo.active_branch.name)
@@ -96,16 +96,14 @@ class GitHubProvider:
             logging.info(f"Dry run: Changes pushed to branch {branch_name}")
             return
 
-        files_to_remove = []
-
-        for diff in repo.index.diff(None):
-            if diff.b_mode == 0 and diff.b_blob is None:
-                files_to_remove.append(diff.b_path)
-
         repo.git.add(A=True)
+
         tree_elements = []
 
         for key, value in repo.index.entries.items():
+            if value.path not in files_to_update:
+                continue
+
             file_path = os.path.join(repo_dir, value.path)
             if os.path.getsize(file_path) > 100000000:
                 raise Exception("File size limit reached! File '{}' is larger than 100MB.".format(value.path))
