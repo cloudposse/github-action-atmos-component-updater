@@ -302,6 +302,7 @@ class ComponentUpdater:
             logging.info(f"Component '{os.path.relpath(original_component.component_file, original_component.infra_repo_dir)}' needs to be updated")
             files_to_update.append(os.path.relpath(original_component.component_file, original_component.infra_repo_dir))
 
+
         return (needs_update, files_to_update, files_to_remove)
 
     def __create_branch_and_pr(self, repo_dir, files_to_update, files_to_remove, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
