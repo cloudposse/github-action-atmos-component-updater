@@ -32,7 +32,7 @@ jobs:
         id: current
         with:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: 'false'
+          dry-run: 'true'
           log-level: 'DEBUG'
 
     outputs:
