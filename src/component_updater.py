@@ -252,6 +252,9 @@ class ComponentUpdater:
         updated_files = io.get_filenames_in_dir(updated_component.component_dir, ['**/*'])
         original_files = io.get_filenames_in_dir(original_component.component_dir, ['**/*'])
 
+        logging.debug(f"Original files: {original_files}")
+        logging.debug(f"Updated files: {updated_files}")
+
         needs_update = False
         num_diffs = 0
 
