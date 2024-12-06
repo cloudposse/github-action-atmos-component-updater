@@ -84,7 +84,7 @@ class GitHubProvider:
 
         return set(branches)
 
-    def create_branch_and_push_all_changes(self, repo_dir, files_to_update: list(str), files_to_remove: list(str), branch_name: str, commit_message: str):
+    def create_branch_and_push_all_changes(self, repo_dir, files_to_update, files_to_remove, branch_name: str, commit_message: str):
         repo = git.repo.Repo(repo_dir)
 
         base_branch = self.__repo.get_branch(repo.active_branch.name)

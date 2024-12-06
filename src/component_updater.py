@@ -299,7 +299,7 @@ class ComponentUpdater:
 
         return needs_update, files_to_update, files_to_remove
 
-    def __create_branch_and_pr(self, repo_dir, files_to_update: list(str), files_to_remove: list(str), original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
+    def __create_branch_and_pr(self, repo_dir, files_to_update, files_to_remove, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
         self.__github_provider.create_branch_and_push_all_changes(repo_dir,
                                                                   files_to_update,
                                                                   files_to_remove,
