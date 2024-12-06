@@ -298,6 +298,9 @@ class ComponentUpdater:
                 needs_update = True
                 continue
 
+        if needs_update:
+            files_to_update.append(original_component.component_file)
+
         return (needs_update, files_to_update, files_to_remove)
 
     def __create_branch_and_pr(self, repo_dir, files_to_update, files_to_remove, original_component: AtmosComponent, updated_component: AtmosComponent, branch_name: str) -> PullRequestCreationResponse:
