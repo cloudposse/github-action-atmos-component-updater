@@ -97,10 +97,18 @@ class GitHubProvider:
             return
 
         files_to_remove = []
+        files_to_add = []
+        files_to_update = []
 
         for diff in repo.index.diff(None):
+            logging.info(f"Diff: {diff.a_path} -> {diff.b_path}")
+            logging.info(f"Diff: {diff.a_mode} -> {diff.b_mode}")
             if diff.b_mode == 0 and diff.b_blob is None:
                 files_to_remove.append(diff.b_path)
+
+            if diff.a_path == 0 and diff.b_blob is None:
+                files_to_remove.append(diff.b_path)
+
 
         repo.git.add(A=True)
         tree_elements = []
