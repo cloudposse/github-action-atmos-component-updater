@@ -208,7 +208,7 @@ class ComponentUpdater:
         # - vendoring_enabled = false
         #   - component vendored     => skip component
         #   - component not vendored => do not vendor
-        needs_update, files_to_update, files_to_remove = self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component)
+        needs_update, files_to_update, files_to_remove = self.__does_component_needs_to_be_updated(original_vendored_component, updated_vendored_component, original_component)
         if needs_update:
             if self.__config.vendoring_enabled:
                 self.__tools_manager.atmos_vendor_component(updated_component)
@@ -248,7 +248,7 @@ class ComponentUpdater:
         component_file = os.path.join(update_infra_repo_dir, component.relative_path)
         return AtmosComponent(update_infra_repo_dir, infra_terraform_dir, component_file)
 
-    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent):
+    def __does_component_needs_to_be_updated(self, original_component: AtmosComponent, updated_component: AtmosComponent, original_component_source: AtmosComponent) -> (bool, List[str], List[str]):
         updated_files = io.get_filenames_in_dir(updated_component.component_dir, ['**/*'])
         original_files = io.get_filenames_in_dir(original_component.component_dir, ['**/*'])
 
@@ -290,8 +290,9 @@ class ComponentUpdater:
         for original_file in original_files:
             relative_path = os.path.relpath(original_file, original_component.infra_repo_dir)
             updated_file = os.path.join(updated_component.infra_repo_dir, relative_path)
+            source_file = os.path.join(original_component_source.infra_repo_dir, relative_path)
 
-            if not os.path.isfile(updated_file):
+            if os.path.isfile(source_file) and not os.path.isfile(updated_file):
                 logging.info(f"Remove file: {relative_path}")
                 files_to_remove.append(relative_path)
                 needs_update = True
