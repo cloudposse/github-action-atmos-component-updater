@@ -265,10 +265,7 @@ class ComponentUpdater:
             # skip "component.yaml"
             if updated_file.endswith(COMPONENT_YAML):
                 continue
-
-            if updated_file.endswith(README_EXTENTION):
-                continue
-
+                
             # skip folders
             if not os.path.isfile(updated_file):
                 continue
