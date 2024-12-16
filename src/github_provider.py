@@ -167,7 +167,7 @@ class GitHubProvider:
                                               old_source_name=old_source_name,
                                               old_source_link=old_source_link,
                                               new_source_name=new_source_name,
-                                              new_source_link=old_source_link,
+                                              new_source_link=new_source_link,
                                               old_version=original_component.version,
                                               new_version=updated_component.version,
                                               old_version_link=original_component_version_link,
