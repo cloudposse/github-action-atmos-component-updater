@@ -277,7 +277,7 @@ class ComponentUpdater:
             if not os.path.isfile(original_file):
                 logging.info(f"New file: {relative_path}")
                 # Adding *.md file does not require component update, but still should be included into a PR
-                needs_update = not relative_path.endswith(README_EXTENTION)
+                needs_update = needs_update or not relative_path.endswith(README_EXTENTION)
                 continue
 
             if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(updated_file):
@@ -286,7 +286,7 @@ class ComponentUpdater:
                     logging.info(f"diff: {self.__tools_manager.diff(original_file, updated_file)}")
                     num_diffs += 1
                 # Adding *.md file does not require component update, but still should be included into a PR
-                needs_update = not relative_path.endswith(README_EXTENTION)
+                needs_update = needs_update or not relative_path.endswith(README_EXTENTION)
 
         for original_file in original_files:
             relative_path = os.path.relpath(original_file, original_component.infra_repo_dir)
@@ -297,7 +297,7 @@ class ComponentUpdater:
                 logging.info(f"Remove file: {relative_path}")
                 files_to_remove.append(relative_path)
                 # Adding *.md file does not require component update, but still should be included into a PR
-                needs_update = not relative_path.endswith(README_EXTENTION)
+                needs_update = needs_update or not relative_path.endswith(README_EXTENTION)
                 continue
 
         if needs_update:
