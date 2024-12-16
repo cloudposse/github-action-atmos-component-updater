@@ -266,9 +266,6 @@ class ComponentUpdater:
             if updated_file.endswith(COMPONENT_YAML):
                 continue
 
-            if updated_file.endswith(README_EXTENTION):
-                continue
-
             # skip folders
             if not os.path.isfile(updated_file):
                 continue
@@ -279,7 +276,8 @@ class ComponentUpdater:
             files_to_update.append(relative_path)
             if not os.path.isfile(original_file):
                 logging.info(f"New file: {relative_path}")
-                needs_update = True
+                # Adding *.md file does not require component update, but still should be included into a PR
+                needs_update = needs_update or not relative_path.endswith(README_EXTENTION)
                 continue
 
             if io.calc_file_md5_hash(original_file) != io.calc_file_md5_hash(updated_file):
@@ -287,7 +285,8 @@ class ComponentUpdater:
                 if num_diffs < MAX_NUMBER_OF_DIFF_TO_SHOW:
                     logging.info(f"diff: {self.__tools_manager.diff(original_file, updated_file)}")
                     num_diffs += 1
-                needs_update = True
+                # Adding *.md file does not require component update, but still should be included into a PR
+                needs_update = needs_update or not relative_path.endswith(README_EXTENTION)
 
         for original_file in original_files:
             relative_path = os.path.relpath(original_file, original_component.infra_repo_dir)
@@ -297,7 +296,8 @@ class ComponentUpdater:
             if os.path.isfile(source_file) and not os.path.isfile(updated_file):
                 logging.info(f"Remove file: {relative_path}")
                 files_to_remove.append(relative_path)
-                needs_update = True
+                # Adding *.md file does not require component update, but still should be included into a PR
+                needs_update = needs_update or not relative_path.endswith(README_EXTENTION)
                 continue
 
         if needs_update:
