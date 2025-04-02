@@ -34,6 +34,7 @@ jobs:
           github-access-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: 'true'
           log-level: 'DEBUG'
+          max-number-of-prs: '1'
 
     outputs:
       affected: "${{ steps.current.outputs.affected }}"
