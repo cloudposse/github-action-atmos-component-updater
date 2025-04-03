@@ -57,7 +57,7 @@ class ComponentUpdater:
         self.__infra_terraform_dirs = infra_terraform_dirs
         self.__config = config
         self.__tools_manager = tools_manager
-        self.__num_pr_created = 0
+        self.__num_pr_created = github_provider.get_open_prs_for_component("")
 
     def update(self) -> List[ComponentUpdaterResponse]:
         responses = []

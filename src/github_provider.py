@@ -202,8 +202,10 @@ class GitHubProvider:
 
         for pull_request in self.__pull_requests:
             pr_branch_name = pull_request.head.ref
-
-            if pr_branch_name.startswith(f'{BRANCH_PREFIX}/{component_name}/'):
+            branch_prefixs = list(filter(None, [ BRANCH_PREFIX, component_name]))
+            branch_prefix = '/'.join(branch_prefixs) + '/'
+            # e.g. component-update/component-name/
+            if pr_branch_name.startswith(branch_prefix): 
                 open_prs.append(pull_request)
 
         return open_prs
