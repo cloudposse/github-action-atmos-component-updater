@@ -1,4 +1,3 @@
----
 #
 # This is the canonical configuration for the `README.md`
 # Run `make readme` to rebuild the `README.md`
@@ -16,13 +15,17 @@ license: "APACHE2"
 github_repo: cloudposse/github-action-atmos-component-updater
 
 badges:
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/github-action-atmos-component-updater.svg"
-    url: "https://github.com/cloudposse/github-action-atmos-component-updater/releases/latest"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/badge.svg"
-    url: "https://slack.cloudposse.com"
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse/github-action-atmos-component-updater.svg?style=for-the-badge
+    url: https://github.com/cloudposse/github-action-atmos-component-updater/releases/latest
+  - name: Last Updated
+    image: https://img.shields.io/github/last-commit/cloudposse/github-action-atmos-component-updater.svg?style=for-the-badge
+    url: https://github.com/cloudposse/github-action-atmos-component-updater/commits
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://cloudposse.com/slack
 
+# List any related terraform modules that this module may be used with or that this module depends on.
 related: []
 
 description: This is GitHub Action that can be used as a workflow for automatic updates via Pull Requests in your infrastructure repository according to versions in components sources.
@@ -56,7 +59,7 @@ usage: |-
   - use [`GITHUB_TOKEN`](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret)
 
   If you would like to use `GITHUB_TOKEN` make sure to set permissions in the workflow as follow:
-  
+
   ```yaml
   permissions:
     contents: write
@@ -179,9 +182,9 @@ usage: |-
   ```
 
   ### The action cannot find the `component.yaml` file
-  
+
   You may see the action fail to find the `component.yaml` file for a given component as such:
-  
+
   ```console
   FileNotFoundError: [Errno 2] No such file or directory: 'components/terraform/account-map/component.yaml'
   ```
@@ -200,7 +203,7 @@ usage: |-
   ```console
   github.GithubException.GithubException: 403 {"message": "GitHub Actions is not permitted to create or approve pull requests.", "documentation_url": "https://docs.github.com/rest/pulls/pulls#create-a-pull-request"}
   ```
-  
+
   In order to create Pull Requests in your repository, we need to set the permissions for the workflow:
 
   ```yaml
@@ -214,8 +217,5 @@ usage: |-
   1. `https://github.com/organizations/YOUR-ORG/settings/actions` > `Allow GitHub Actions to create and approve pull requests`
   2. `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions` > `Allow GitHub Actions to create and approve pull requests`
 
-include:
-  - "docs/github-action.md"
-
-# Contributors to this project
+include: []
 contributors: []
