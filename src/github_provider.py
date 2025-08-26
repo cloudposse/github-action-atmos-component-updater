@@ -219,9 +219,7 @@ class GitHubProvider:
     def __build_component_version_link(self, component: AtmosComponent):
         component_version_link = None
 
-        version = component.version
-        if "cloudposse-terraform-components" not in component.uri_repo:
-            version = f"v{version.lstrip('v')}"
+        version = component.raw_version
 
         if component.uri_repo.startswith('github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
@@ -234,9 +232,7 @@ class GitHubProvider:
 
     def __build_component_release_tag_link(self, component: AtmosComponent):
         component_release_tag_link = None
-        version = component.version
-        if "cloudposse-terraform-components" not in component.uri_repo:
-            version = f"v{version.lstrip('v')}"
+        version = component.raw_version
 
         if component.uri_repo.startswith('github.com'):
             normalized_repo_uri = self.__remove_git_suffix(component.uri_repo)
