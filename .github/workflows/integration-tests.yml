@@ -23,9 +23,9 @@ jobs:
       - name: Install Python Dependencies
         shell: bash
         run: |
-          make install-deps
+          pip install -r src/requirements.txt
 
       - name: Run Tests
         shell: bash
         run: |
-          make test
+          pytest -s -v --log-level DEBUG -rP --pyargs src/
