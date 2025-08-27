@@ -65,6 +65,7 @@ If you would like to use `GITHUB_TOKEN` make sure to set permissions in the work
 ```yaml
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 ```
 
@@ -211,6 +212,7 @@ In order to create Pull Requests in your repository, we need to set the permissi
 ```yaml
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 ```
 
