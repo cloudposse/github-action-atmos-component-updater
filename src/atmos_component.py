@@ -29,6 +29,11 @@ class AtmosComponent:
         return version.strip().lstrip("v") if version else None
 
     @property
+    def raw_version(self):
+        version = self.__yaml_content.get('spec', {}).get('source', {}).get('version')
+        return version.strip() if version else None
+    
+    @property
     def uri_repo(self) -> str:
         return self.__uri_repo
 
