@@ -34,6 +34,13 @@ class ToolsManager:
                 logging.error('Failed to delete {file_path}. Reason: {e}')
 
         os.environ['ATMOS_COMPONENTS_TERRAFORM_BASE_PATH'] = component.infra_terraform_dir
+        # Atmos requires stacks configuration even for vendoring.
+        # Set defaults so vendoring works without a full atmos.yaml.
+        for var, default in [('ATMOS_STACKS_BASE_PATH', 'stacks'),
+                             ('ATMOS_STACKS_INCLUDED_PATHS', 'orgs/**/*'),
+                             ('ATMOS_STACKS_NAME_PATTERN', '{tenant}-{environment}-{stage}')]:
+            if var not in os.environ:
+                os.environ[var] = default
         command = ["atmos", "vendor", "pull", "-c", component.name]
 
         logging.info(f"Executing '{' '.join(command)}' for component version '{component.version}' ... ")
