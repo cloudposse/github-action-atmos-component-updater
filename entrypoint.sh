@@ -4,6 +4,13 @@ set -e
 
 export GO_GETTER_TOOL="/root/go/bin/go-getter"
 
+# Install the requested atmos version if specified
+if [ -n "$ATMOS_VERSION" ] && [ "$ATMOS_VERSION" != "latest" ]; then
+    echo "Installing atmos version ${ATMOS_VERSION}..."
+    apt-get update -qq > /dev/null 2>&1
+    apt-get install -y -qq atmos="${ATMOS_VERSION}-*" > /dev/null 2>&1
+fi
+
 cd /github/action/
 
 python3 src/main.py \

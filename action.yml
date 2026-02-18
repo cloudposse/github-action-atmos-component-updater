@@ -78,3 +78,4 @@ runs:
     PR_LABELS: ${{ inputs.pr-labels }}
     PR_TITLE_TEMPLATE: ${{ inputs.pr-title-template }}
     PR_BODY_TEMPLATE: ${{ inputs.pr-body-template }}
+    ATMOS_VERSION: ${{ inputs.atmos-version }}
