@@ -33,12 +33,12 @@
 This is GitHub Action that can be used as a workflow for automatic updates via Pull Requests in your infrastructure repository according to versions in components sources.
 
 
+> [!WARNING]
+> **Deprecated.** Migrate to [`atmos vendor update --pull-request`](https://atmos.tools/cli/commands/vendor/vendor-update).
+
 
 
 ## Introduction
-
-> [!WARNING]
-> **Deprecated.** Migrate to [`atmos vendor update --pull-request`](https://atmos.tools/cli/commands/vendor/vendor-update).
 
 This action is deprecated in favor of Atmos Native CI. `atmos vendor update --pull-request` now
 discovers and updates vendored component versions and opens the pull request directly, with no
