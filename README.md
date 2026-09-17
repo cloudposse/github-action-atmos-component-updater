@@ -37,6 +37,14 @@ This is GitHub Action that can be used as a workflow for automatic updates via P
 
 ## Introduction
 
+> [!WARNING]
+> **Deprecated.** Migrate to [`atmos vendor update --pull-request`](https://atmos.tools/cli/commands/vendor/vendor-update).
+
+This action is deprecated in favor of Atmos Native CI. `atmos vendor update --pull-request` now
+discovers and updates vendored component versions and opens the pull request directly, with no
+wrapper action needed. See https://atmos.tools/cli/commands/vendor/vendor-update for the full
+workflow, or https://atmos.tools/deprecated/github-actions/component-updater for the migration guide.
+
 This is GitHub Action that can be used as a workflow for automatic updates via Pull Requests in your infrastructure repository according to versions in components sources.
 
 ### Key Features:
@@ -225,6 +233,10 @@ _And_ you need to allow GitHub Actions to create and approve pulls requests in b
 
 
 
+
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
 
 ## Inputs
 <!-- markdownlint-disable -->
